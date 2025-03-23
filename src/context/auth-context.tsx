@@ -11,6 +11,7 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 };
 
 // Créer le contexte avec des valeurs par défaut
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   signOut: async () => {},
+  refreshProfile: async () => {},
 });
 
 // Hook personnalisé pour utiliser le contexte d'authentification
@@ -28,6 +30,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  const refreshProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+  };
 
   // Gérer la déconnexion
   const signOut = async () => {
@@ -93,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Fournir le contexte aux composants enfants
   return (
-    <AuthContext.Provider value={{ user, isLoading, signOut }}>
+    <AuthContext.Provider value={{ user, isLoading, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
