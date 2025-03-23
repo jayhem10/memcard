@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/auth-context";
 import { ReactQueryProvider } from "@/providers/query-provider";
 import { Toaster } from "react-hot-toast";
+import "@fontsource/press-start-2p";
 import "./globals.css";
 
 const inter = Inter({
@@ -30,7 +31,13 @@ export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased min-h-screen bg-background`}>
         <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider 
+            attribute="class" 
+            defaultTheme="light" 
+            disableTransitionOnChange
+            forcedTheme={undefined}
+            themes={["light", "dark", "cyberpunk", "retro", "colorblind", "nintendo", "playstation", "xbox"]}
+          >
             <ReactQueryProvider>
               {children}
               <Toaster position="top-right" />

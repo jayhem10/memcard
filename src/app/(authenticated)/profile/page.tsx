@@ -1,29 +1,53 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
+import { useProfileStore } from '@/store/useProfileStore';
+import { useAuth } from '@/context/auth-context';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface ProfileFormData {
   username: string;
+  full_name: string;
   email: string;
+  avatar_url: string;
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
 }
 
 export default function ProfilePage() {
+  const { user, refreshProfile } = useAuth();
+  const { profile, isLoading: profileLoading, updateProfile } = useProfileStore();
   const [isLoading, setIsLoading] = useState(false);
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<ProfileFormData>();
+  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<ProfileFormData>();
   const newPassword = watch('newPassword');
+
+  // Remplir le formulaire avec les données du profil
+  useEffect(() => {
+    if (profile) {
+      setValue('username', profile.username || '');
+      setValue('full_name', profile.full_name || '');
+      setValue('email', user?.email || '');
+      setValue('avatar_url', profile.avatar_url || '');
+    }
+  }, [profile, user, setValue]);
 
   const onSubmit = async (data: ProfileFormData) => {
     setIsLoading(true);
     try {
-      // Mise à jour du mot de passe si fourni
+      // 1. Mise à jour du profil dans la table profiles
+      await updateProfile({
+        username: data.username,
+        full_name: data.full_name,
+        avatar_url: data.avatar_url
+      });
+      
+      // 2. Mise à jour du mot de passe si fourni
       if (data.currentPassword && data.newPassword) {
         const { error } = await supabase.auth.updateUser({
           password: data.newPassword
@@ -32,7 +56,7 @@ export default function ProfilePage() {
         toast.success('Mot de passe mis à jour avec succès');
       }
 
-      // Mise à jour de l'email si modifié
+      // 3. Mise à jour de l'email si modifié
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
 
@@ -43,6 +67,9 @@ export default function ProfilePage() {
         if (error) throw error;
         toast.success('Email mis à jour avec succès. Vérifiez votre boîte mail pour confirmer.');
       }
+      
+      // 4. Rafraîchir les données du profil
+      await refreshProfile();
 
     } catch (error: any) {
       toast.error(error.message);
@@ -53,11 +80,24 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Profil</h1>
-        <p className="mt-2 text-muted-foreground">
-          Gérez vos informations personnelles et vos préférences
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Profil</h1>
+          <p className="mt-2 text-muted-foreground">
+            Gérez vos informations personnelles et vos préférences
+          </p>
+        </div>
+        {profile && (
+          <div className="flex flex-col items-center">
+            <Avatar className="h-24 w-24 mb-2">
+              <AvatarImage src={profile.avatar_url || ''} alt={profile.username || ''} />
+              <AvatarFallback>{profile.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+            </Avatar>
+            <span className="text-sm text-muted-foreground">
+              {profile.provider === 'email' ? 'Compte email' : `Via ${profile.provider}`}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-8">
@@ -74,11 +114,36 @@ export default function ProfilePage() {
                 {...register('username', {
                   required: 'Le nom d\'utilisateur est requis',
                 })}
-                disabled={isLoading}
+                disabled={isLoading || profileLoading}
               />
               {errors.username && (
                 <p className="text-sm text-destructive">{errors.username.message}</p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="full_name" className="text-sm font-medium">
+                Nom complet
+              </label>
+              <Input
+                id="full_name"
+                {...register('full_name')}
+                disabled={isLoading || profileLoading}
+                placeholder="Votre nom complet (facultatif)"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="avatar_url" className="text-sm font-medium">
+                URL de l'avatar
+              </label>
+              <Input
+                id="avatar_url"
+                {...register('avatar_url')}
+                disabled={isLoading || profileLoading}
+                placeholder="https://exemple.com/votre-avatar.jpg"
+              />
+              <p className="text-xs text-muted-foreground">Laissez vide pour utiliser l'avatar par défaut</p>
             </div>
 
             <div className="space-y-2">
@@ -95,7 +160,7 @@ export default function ProfilePage() {
                     message: 'Email invalide',
                   },
                 })}
-                disabled={isLoading}
+                disabled={isLoading || profileLoading}
               />
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email.message}</p>
@@ -113,7 +178,7 @@ export default function ProfilePage() {
                   id="currentPassword"
                   type="password"
                   {...register('currentPassword')}
-                  disabled={isLoading}
+                  disabled={isLoading || profileLoading}
                 />
               </div>
 
@@ -130,7 +195,7 @@ export default function ProfilePage() {
                       message: 'Le mot de passe doit contenir au moins 6 caractères',
                     },
                   })}
-                  disabled={isLoading}
+                  disabled={isLoading || profileLoading}
                 />
                 {errors.newPassword && (
                   <p className="text-sm text-destructive">{errors.newPassword.message}</p>
@@ -148,7 +213,7 @@ export default function ProfilePage() {
                     validate: value =>
                       value === newPassword || 'Les mots de passe ne correspondent pas',
                   })}
-                  disabled={isLoading}
+                  disabled={isLoading || profileLoading}
                 />
                 {errors.confirmPassword && (
                   <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
@@ -156,8 +221,8 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Enregistrement...' : 'Enregistrer les modifications'}
+            <Button type="submit" className="w-full" disabled={isLoading || profileLoading}>
+              {isLoading || profileLoading ? 'Enregistrement...' : 'Enregistrer les modifications'}
             </Button>
           </form>
         </div>

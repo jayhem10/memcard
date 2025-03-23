@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import { Sun, Moon, Menu, X } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { Menu, X } from 'lucide-react';
+import { ThemeSelector } from '@/components/theme/theme-selector';
 
 export function Navbar() {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navigation = [
@@ -49,13 +49,7 @@ export function Navbar() {
                 {item.name}
               </Link>
             ))}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
+            <ThemeSelector />
             <Button variant="destructive" onClick={handleSignOut}>
               Déconnexion
             </Button>
@@ -63,14 +57,9 @@ export function Navbar() {
 
           {/* Mobile menu button */}
           <div className="flex items-center md:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="mr-2"
-            >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
+            <div className="mr-2">
+              <ThemeSelector />
+            </div>
             <Button
               variant="ghost"
               size="icon"

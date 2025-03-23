@@ -27,6 +27,7 @@
     --radius: 0.5rem;
   }
 
+  /* Thème sombre */
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -48,13 +49,454 @@
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
   }
+
+  /* Thème Cyberpunk */
+  .cyberpunk {
+    --background: 230 50% 3%;
+    --foreground: 220 100% 90%;
+    --card: 230 50% 5%;
+    --card-foreground: 220 100% 90%;
+    --popover: 230 50% 5%;
+    --popover-foreground: 220 100% 90%;
+    --primary: 260 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 100% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 230 50% 8%;
+    --muted-foreground: 220 70% 70%;
+    --accent: 250 100% 60%;
+    --accent-foreground: 220 100% 90%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 230 50% 8%;
+    --input: 230 50% 8%;
+    --ring: 260 100% 60%;
+    
+    /* Variables néon */
+    --neon-blue: 220 100% 60%;
+    --neon-purple: 260 100% 60%;
+    --neon-indigo: 250 100% 60%;
+    --neon-violet: 270 100% 60%;
+
+    /* Fond avec gradient */
+    background: linear-gradient(
+      135deg,
+      hsl(230 50% 3%) 0%,
+      hsl(240 50% 2%) 100%
+    );
+  }
+
+  /* Thème Daltonien */
+  .colorblind {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 12%;
+    --card: 0 0% 92%;
+    --card-foreground: 0 0% 12%;
+    --popover: 0 0% 92%;
+    --popover-foreground: 0 0% 12%;
+    --primary: 0 0% 20%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 40%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 85%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 25%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 0% 15%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 75%;
+    --input: 0 0% 75%;
+    --ring: 0 0% 20%;
+
+    /* Haute contraste et motifs */
+    --contrast-border: 3px;
+    --contrast-outline: 2px;
+    --pattern-dots: repeating-linear-gradient(
+      45deg,
+      currentColor 0,
+      currentColor 1px,
+      transparent 0,
+      transparent 50%
+    );
+    --pattern-stripes: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 8px,
+      currentColor 8px,
+      currentColor 10px
+    );
+  }
+
+  /* Thème Rétro */
+  .retro {
+    --background: 45 100% 98%;
+    --foreground: 20 14.3% 4.1%;
+    --card: 60 5% 96%;
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 45 100% 98%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --primary: 47 95% 50%;
+    --primary-foreground: 26 83.3% 14.1%;
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 47 95% 50%;
+    --radius: 0;
+    font-size: 90%;
+  }
+
+  /* Thème Nintendo */
+  .nintendo {
+    --background: 0 100% 97%;
+    --foreground: 0 80% 40%;
+    --card: 0 70% 98%;
+    --card-foreground: 0 80% 40%;
+    --popover: 0 70% 98%;
+    --popover-foreground: 0 80% 40%;
+    --primary: 0 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 60% 96%;
+    --secondary-foreground: 0 80% 40%;
+    --muted: 0 60% 96%;
+    --muted-foreground: 0 60% 50%;
+    --accent: 0 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 60% 90%;
+    --input: 0 60% 90%;
+    --ring: 0 100% 45%;
+    --radius: 1rem;
+
+    /* Style Nintendo */
+    --nintendo-red: 0 100% 45%;
+    background: linear-gradient(
+      135deg,
+      hsl(0 100% 97%) 0%,
+      hsl(0 70% 95%) 100%
+    );
+  }
+
+  /* Thème PlayStation */
+  .playstation {
+    --background: 225 50% 98%;
+    --foreground: 220 80% 40%;
+    --card: 220 30% 98%;
+    --card-foreground: 220 80% 40%;
+    --popover: 220 30% 98%;
+    --popover-foreground: 220 80% 40%;
+    --primary: 220 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 60% 96%;
+    --secondary-foreground: 220 80% 40%;
+    --muted: 220 60% 96%;
+    --muted-foreground: 220 60% 50%;
+    --accent: 220 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 60% 90%;
+    --input: 220 60% 90%;
+    --ring: 220 100% 45%;
+    --radius: 0.25rem;
+
+    /* Style PlayStation */
+    background: linear-gradient(
+      135deg,
+      hsl(225 50% 98%) 0%,
+      hsl(220 30% 95%) 100%
+    );
+  }
+
+  /* Thème Xbox */
+  .xbox {
+    --background: 120 50% 98%;
+    --foreground: 120 80% 30%;
+    --card: 120 30% 98%;
+    --card-foreground: 120 80% 30%;
+    --popover: 120 30% 98%;
+    --popover-foreground: 120 80% 30%;
+    --primary: 120 100% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 120 60% 96%;
+    --secondary-foreground: 120 80% 30%;
+    --muted: 120 60% 96%;
+    --muted-foreground: 120 60% 40%;
+    --accent: 120 100% 35%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 120 60% 90%;
+    --input: 120 60% 90%;
+    --ring: 120 100% 35%;
+    --radius: 0.5rem;
+
+    /* Style Xbox */
+    background: linear-gradient(
+      135deg,
+      hsl(120 50% 98%) 0%,
+      hsl(120 30% 95%) 100%
+    );
+  }
+
+
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border transition-colors;
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Styles spécifiques au thème rétro */
+  .retro * {
+    font-family: "Press Start 2P", system-ui, -apple-system, sans-serif !important;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+    line-height: 1.6;
+  }
+
+  .retro h1 {
+    font-size: 1.5rem;
+    line-height: 2;
+  }
+
+  .retro h2 {
+    font-size: 1.25rem;
+    line-height: 1.8;
+  }
+
+  .retro h3 {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+
+  .retro p, .retro span, .retro div {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  /* Style de base pour les cartes de jeux récents */
+  .recent-games-card {
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+  }
+
+  .recent-games-card:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .recent-games-card .game-info {
+    display: grid;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .recent-games-card .game-title {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: var(--foreground);
+  }
+
+  /* Style spécifique pour le thème rétro */
+  .retro .recent-games-card {
+    border-width: 2px;
+    padding: 1rem;
+  }
+
+  .retro .recent-games-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+  }
+
+  .retro .recent-games-card .game-title {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .recent-games-card .game-meta {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .recent-games-card .game-meta-text {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    color: var(--muted-foreground);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .recent-games-card:hover .game-meta-text {
+    color: var(--accent-foreground);
+  }
+
+  .recent-games-card .game-status-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    height: auto;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* Style spécifique pour le thème rétro */
+  .retro .recent-games-card .game-meta-text {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+
+  .retro .game-status-badge {
+    border: 1px solid currentColor;
+  }
+
+  .nintendo * {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 500;
+  }
+
+  .nintendo .button-primary {
+    background: hsl(var(--nintendo-red));
+    box-shadow: 0 4px 0 hsl(var(--nintendo-red) / 0.7);
+    transform: translateY(-2px);
+  }
+
+  .nintendo .button-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 0 hsl(var(--nintendo-red) / 0.7);
+  }
+
+  .playstation * {
+    font-family: system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  .playstation .card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid hsl(220 60% 90%);
+  }
+
+  .xbox * {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+  }
+
+  .xbox .card {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius);
+    border: 1px solid hsl(120 60% 90%);
+  }
+
+  /* Styles spécifiques au thème cyberpunk */
+  .cyberpunk .card,
+  .cyberpunk .border {
+    background: linear-gradient(
+      45deg,
+      hsla(230, 50%, 5%, 0.8) 0%,
+      hsla(240, 50%, 8%, 0.8) 100%
+    );
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px hsla(var(--neon-purple) / 0.3),
+                inset 0 0 20px hsla(var(--neon-blue) / 0.2);
+    border: 1px solid hsla(var(--neon-indigo) / 0.2);
+  }
+
+  .cyberpunk .button-primary {
+    background: linear-gradient(
+      45deg,
+      hsl(var(--neon-purple)) 0%,
+      hsl(var(--neon-indigo)) 100%
+    );
+    text-shadow: 0 0 5px hsla(var(--neon-purple) / 0.8);
+    box-shadow: 0 0 20px hsla(var(--neon-purple) / 0.5);
+  }
+
+  .cyberpunk .button-secondary {
+    background: linear-gradient(
+      45deg,
+      hsl(var(--neon-blue)) 0%,
+      hsl(var(--neon-violet)) 100%
+    );
+    text-shadow: 0 0 5px hsla(var(--neon-blue) / 0.8);
+    box-shadow: 0 0 20px hsla(var(--neon-blue) / 0.5);
+  }
+
+  .cyberpunk h1, 
+  .cyberpunk h2, 
+  .cyberpunk h3 {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--neon-blue)) 0%,
+      hsl(var(--neon-indigo)) 50%,
+      hsl(var(--neon-purple)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px hsla(var(--neon-blue) / 0.5);
+  }
+
+  /* Styles spécifiques pour le thème daltonien */
+  .colorblind .card,
+  .colorblind .border {
+    border: var(--contrast-border) solid hsl(var(--border));
+    outline: var(--contrast-outline) solid transparent;
+    background-image: var(--pattern-dots);
+    background-size: 10px 10px;
+  }
+
+  .colorblind .button-primary {
+    border: var(--contrast-border) solid currentColor;
+    outline: var(--contrast-outline) solid transparent;
+    text-decoration: underline;
+    background-image: var(--pattern-stripes);
+    background-size: 20px 20px;
+  }
+
+  .colorblind .button-secondary {
+    border: var(--contrast-border) solid currentColor;
+    outline: var(--contrast-outline) solid transparent;
+    text-decoration: underline;
+    background-image: var(--pattern-dots);
+    background-size: 5px 5px;
+  }
+
+  .colorblind h1,
+  .colorblind h2,
+  .colorblind h3 {
+    border-bottom: var(--contrast-border) solid currentColor;
+    position: relative;
+    padding-bottom: 0.5em;
+  }
+
+  .colorblind h1::after,
+  .colorblind h2::after,
+  .colorblind h3::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 0;
+    right: 0;
+    border-bottom: 1px solid currentColor;
   }
 }

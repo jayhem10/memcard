@@ -7,22 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/context/auth-context';
 import { useUserStatsStore } from '@/store/useUserStatsStore';
-import { Loader2 } from 'lucide-react';
+import { useCollectionStore } from '@/store/useCollectionStore';
+import { Loader2, Gamepad, Calendar } from 'lucide-react';
+import { UserProfileDisplay } from '@/components/user/user-profile-display';
 import { cn } from '@/lib/utils';
 
 // Composant pour les statistiques
 function UserStats() {
-  const { user } = useAuth();
   const { 
     total, completed, inProgress, wishlist, 
-    platforms, isLoading, fetchUserStats 
+    platforms, isLoading 
   } = useUserStatsStore();
-
-  useEffect(() => {
-    if (user) {
-      fetchUserStats(user.id);
-    }
-  }, [user, fetchUserStats]);
+  const { totalValue } = useCollectionStore();
 
   if (isLoading) {
     return (
@@ -50,6 +46,10 @@ function UserStats() {
         <p className="text-sm text-muted-foreground">Liste de souhaits</p>
         <p className="text-2xl font-bold">{wishlist}</p>
       </div>
+      <div className="col-span-2 bg-muted/50 p-3 rounded-md">
+        <p className="text-sm text-muted-foreground">Valeur de la collection</p>
+        <p className="text-2xl font-bold">{totalValue.toFixed(2)} €</p>
+      </div>
 
       {platforms.length > 0 && (
         <div className="col-span-2 mt-4">
@@ -70,21 +70,7 @@ function UserStats() {
 
 // Composant pour les jeux récents
 function RecentGames() {
-  const { user } = useAuth();
-  const { recentGames, isLoading, fetchUserStats } = useUserStatsStore();
-  
-  // Log auth status
-  useEffect(() => {
-    console.log('Auth user:', user ? `User ID: ${user.id}` : 'No user');
-  }, [user]);
-  
-  // Load user data when component mounts
-  useEffect(() => {
-    if (user) {
-      console.log('Fetching user stats for user ID:', user.id);
-      fetchUserStats(user.id);
-    }
-  }, [user, fetchUserStats]);
+  const { recentGames, isLoading } = useUserStatsStore();
   
   if (isLoading) {
     return (
@@ -105,58 +91,65 @@ function RecentGames() {
     );
   }
 
-  // Show all games regardless of id for debugging
-  const gamesForDisplay = recentGames;
-
   return (
-    <div className="space-y-3">
-      {gamesForDisplay.map(game => (
-        <Link 
-          href={`/games/${game.game_id}`} 
-          key={`recent-game-${game.id}`}
-          className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded-md transition-colors cursor-pointer"
-        >
-          <div className="relative w-12 h-16 shrink-0">
-            {game.cover_url ? (
-              <Image 
-                src={game.cover_url}
-                alt={game.title}
-                fill
-                sizes="(max-width: 640px) 96px, 120px"
-                className="object-cover rounded-sm"
-              />
-            ) : (
-              <div className="w-full h-full bg-muted flex items-center justify-center rounded-sm">
-                <span className="text-xs text-muted-foreground">No Cover</span>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm truncate" title={game.title}>{game.title}</p>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-xs text-muted-foreground">
-              <span>{game.console_name}</span>
-              <span className="hidden sm:inline">•</span>
-              <span>Ajouté le {game.created_at}</span>
-            </div>
-          </div>
-          
-          <Badge 
-            className={cn(
-              "shrink-0",
-              game.status === "COMPLETED" && "bg-green-500/20 text-green-700 hover:bg-green-500/30",
-              game.status === "IN_PROGRESS" && "bg-blue-500/20 text-blue-700 hover:bg-blue-500/30",
-              game.status === "NOT_STARTED" && "bg-gray-500/20 text-gray-700 hover:bg-gray-500/30",
-              game.status === "WISHLIST" && "bg-amber-500/20 text-amber-700 hover:bg-amber-500/30"
-            )}
+    <div className="space-y-4">
+      <div className="grid gap-3">
+        {recentGames.map(game => (
+          <Link 
+            href={`/games/${game.game_id}`} 
+            key={`recent-game-${game.id}`}
+            className="recent-games-card group hover:bg-muted/50 rounded-md transition-all cursor-pointer"
           >
-            {game.status === "COMPLETED" && "Terminé"}
-            {game.status === "IN_PROGRESS" && "En cours"}
-            {game.status === "NOT_STARTED" && "Non commencé"}
-            {game.status === "WISHLIST" && "Souhaité"}
-          </Badge>
-        </Link>
-      ))}
+            {/* Image du jeu */}
+            <div className="relative w-12 h-16 shrink-0 rounded-sm overflow-hidden">
+              {game.cover_url ? (
+                <Image 
+                  src={game.cover_url}
+                  alt={game.title}
+                  fill
+                  sizes="(max-width: 640px) 96px, 120px"
+                  className="object-cover group-hover:scale-105 transition-transform"
+                />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <span className="text-xs text-muted-foreground">No Cover</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Informations du jeu */}
+            <div className="game-info min-w-0">
+              <p className="game-title font-medium truncate" title={game.title}>{game.title}</p>
+              <div className="game-meta text-muted-foreground">
+                <span className="game-meta-text inline-flex items-center gap-1">
+                  <Gamepad className="h-3 w-3" />
+                  {game.console_name}
+                </span>
+                <span className="game-meta-text inline-flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  Ajouté le {game.created_at}
+                </span>
+              </div>
+            </div>
+            
+            {/* Badge de statut */}
+            <Badge 
+              className={cn(
+                "game-status-badge shrink-0 transition-colors",
+                game.status === "COMPLETED" && "bg-green-500/20 text-green-700 group-hover:bg-green-500/30",
+                game.status === "IN_PROGRESS" && "bg-blue-500/20 text-blue-700 group-hover:bg-blue-500/30",
+                game.status === "NOT_STARTED" && "bg-gray-500/20 text-gray-700 group-hover:bg-gray-500/30",
+                game.status === "WISHLIST" && "bg-amber-500/20 text-amber-700 group-hover:bg-amber-500/30"
+              )}
+            >
+              {game.status === "COMPLETED" && "Terminé"}
+              {game.status === "IN_PROGRESS" && "En cours"}
+              {game.status === "NOT_STARTED" && "Non commencé"}
+              {game.status === "WISHLIST" && "Souhaité"}
+            </Badge>
+          </Link>
+        ))}
+      </div>
 
       <Button asChild variant="outline" className="w-full mt-2">
         <Link href="/collection">Voir toute la collection</Link>
@@ -166,13 +159,34 @@ function RecentGames() {
 }
 
 export default function HomePage() {
+  const { user, isLoading: authLoading } = useAuth();
+  const { fetchUserStats, reset: resetStats } = useUserStatsStore();
+  
+  // Gérer le chargement des données utilisateur
+  useEffect(() => {
+    if (!authLoading) {
+      if (user) {
+        // L'utilisateur est authentifié, charger ses stats
+        fetchUserStats(user.id);
+      } else {
+        // L'utilisateur n'est pas authentifié, réinitialiser les stats
+        resetStats();
+      }
+    }
+  }, [user, authLoading, fetchUserStats, resetStats]);
+  
   return (
     <div className="space-y-8">
-      <section className="space-y-4">
-        <h1 className="text-4xl font-bold">Bienvenue sur MemCard</h1>
-        <p className="text-xl text-muted-foreground">
-          Gérez votre collection de jeux vidéo en toute simplicité
-        </p>
+      <section className="flex items-start justify-between mb-6">
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold">Bienvenue sur MemCard</h1>
+          <p className="text-xl text-muted-foreground">
+            Gérez votre collection de jeux vidéo en toute simplicité
+          </p>
+        </div>
+        <div className="bg-card p-4 rounded-lg shadow-sm">
+          <UserProfileDisplay />
+        </div>
       </section>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

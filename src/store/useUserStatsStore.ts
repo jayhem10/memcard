@@ -87,7 +87,7 @@ const initialState: UserStats = {
   error: null
 };
 
-export const useUserStatsStore = create<UserStatsStore>((set) => ({
+export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
   ...initialState,
 
   fetchUserStats: async (userId: string) => {
@@ -95,9 +95,27 @@ export const useUserStatsStore = create<UserStatsStore>((set) => ({
       console.log('fetchUserStats called with no userId');
       return;
     }
-
-    console.log('Starting fetchUserStats for userId:', userId);
+    
+    // Vérifier si une requête est déjà en cours
+    const isLoading = get().isLoading;
+    if (isLoading) {
+      console.log('Stats already loading, skipping duplicate request');
+      return;
+    }
+    
     set({ isLoading: true, error: null });
+    
+    // Réinitialiser les stats avant de charger les nouvelles
+    set(state => ({
+      ...state,
+      total: 0,
+      completed: 0,
+      inProgress: 0,
+      notStarted: 0,
+      wishlist: 0,
+      platforms: [],
+      recentGames: []
+    }));
 
     try {
       // Récupérer les statistiques des jeux
@@ -221,5 +239,8 @@ export const useUserStatsStore = create<UserStatsStore>((set) => ({
     }
   },
 
-  reset: () => set(initialState)
+  reset: () => {
+    console.log('Resetting user stats store');
+    set(initialState);
+  }
 }));

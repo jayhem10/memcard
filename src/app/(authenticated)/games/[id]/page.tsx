@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { Loader2, Star, Clock, Trophy, Pencil, Save, X, Trash2 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { GameFormDialog } from '@/components/game-form-dialog';
 
 export default function GameDetailPage() {
   const params = useParams();
@@ -18,6 +19,7 @@ export default function GameDetailPage() {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPriceDialogOpen, setIsPriceDialogOpen] = useState(false);
   const [editedData, setEditedData] = useState({
     notes: '',
     rating: 0,
@@ -35,7 +37,10 @@ export default function GameDetailPage() {
       // 1. D'abord, récupérer les informations de base du jeu
       const { data: gameData, error: gameError } = await supabase
         .from('games')
-        .select('*')
+        .select(`
+          *,
+          console:console_id(id, name)
+        `)
         .eq('id', params.id)
         .single();
 
@@ -47,7 +52,7 @@ export default function GameDetailPage() {
       // 2. Ensuite, récupérer les données spécifiques à l'utilisateur pour ce jeu (si elles existent)
       const { data: userGameData, error: userGameError } = await supabase
         .from('user_games')
-        .select('id, notes, rating, status, play_time, completion_percentage, created_at, updated_at')
+        .select('id, notes, rating, status, play_time, completion_percentage, created_at, updated_at, buy_price')
         .eq('game_id', params.id)
         .eq('user_id', user.id)
         .maybeSingle();
@@ -70,6 +75,8 @@ export default function GameDetailPage() {
   });
 
   // Mutation pour mettre à jour les données du jeu
+  const queryClient = useQueryClient();
+
   const updateMutation = useMutation({
     mutationFn: async (data: typeof editedData) => {
       if (!user) throw new Error('Utilisateur non authentifié');
@@ -112,6 +119,8 @@ export default function GameDetailPage() {
     onSuccess: () => {
       toast.success('Modifications enregistrées');
       setIsEditing(false);
+      // Invalider le cache pour forcer un rechargement
+      queryClient.invalidateQueries({ queryKey: ['game', params.id, user?.id] });
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de la mise à jour');
@@ -218,7 +227,24 @@ export default function GameDetailPage() {
               </span>
               
               <span className="text-muted-foreground">Console</span>
-              <span className="font-medium text-right">{game.console_name || 'Non définie'}</span>
+              <span className="font-medium text-right">{game.console?.name || 'Non définie'}</span>
+
+              <span className="text-muted-foreground">Prix d'achat</span>
+              <div className="flex items-center justify-end gap-2">
+                <span className="font-medium">
+                  {userGame?.buy_price
+                    ? `${userGame.buy_price.toFixed(2)} €`
+                    : 'Non renseigné'}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setIsPriceDialogOpen(true)}
+                >
+                  <Pencil className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -453,6 +479,14 @@ export default function GameDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Formulaire de prix */}
+      <GameFormDialog
+        isOpen={isPriceDialogOpen}
+        onClose={() => setIsPriceDialogOpen(false)}
+        gameId={params.id as string}
+        initialBuyPrice={userGame?.buy_price}
+      />
     </div>
   );
 }
