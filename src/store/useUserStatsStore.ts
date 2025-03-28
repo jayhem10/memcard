@@ -92,14 +92,12 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
 
   fetchUserStats: async (userId: string) => {
     if (!userId) {
-      console.log('fetchUserStats called with no userId');
       return;
     }
     
     // Vérifier si une requête est déjà en cours
     const isLoading = get().isLoading;
     if (isLoading) {
-      console.log('Stats already loading, skipping duplicate request');
       return;
     }
     
@@ -205,7 +203,7 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
               // Use the raw game_id if game object is missing
               const hasValidGame = item?.game && typeof item.game === 'object';
               if (!hasValidGame) {
-                console.log('Game with missing data, using raw game_id instead:', item.game_id);
+                return null;
               }
               
               return {
@@ -240,7 +238,6 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
   },
 
   reset: () => {
-    console.log('Resetting user stats store');
     set(initialState);
   }
 }));

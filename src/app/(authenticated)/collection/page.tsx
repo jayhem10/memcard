@@ -77,15 +77,12 @@ export default function CollectionPage() {
       try {
         // Ne pas continuer si auth est en cours de chargement
         if (authLoading) {
-          console.log('Auth is still loading, waiting...');
           return;
         }
 
         setLoading(true);
-        console.log('Current user from context:', user);
         
         if (!user) {
-          console.log('Aucun utilisateur authentifié détecté');
           throw new Error('Utilisateur non authentifié');
         }
         
@@ -112,13 +109,10 @@ export default function CollectionPage() {
           throw error;
         }
         
-        console.log('Données brutes des jeux de l\'utilisateur:', data);
         // Afficher les statuts bruts pour vérifier les valeurs exactes en BDD
         const statuses = data.map(item => ({ id: item.game_id, status: item.status }));
-        console.log('Statuts bruts des jeux:', statuses);
         
         if (!data || data.length === 0) {
-          console.log('Aucun jeu trouvé pour cet utilisateur');
           setGames([]);
           setLoading(false);
           return;
@@ -230,10 +224,6 @@ export default function CollectionPage() {
   useEffect(() => {
     if (games.length > 0) {
       const uniqueStatuses = [...new Set(games.map(game => game.status))];
-      console.log('Statuts uniques dans les jeux formatés:', uniqueStatuses);
-      
-      // Afficher quelques exemples de jeux pour débogage
-      console.log('Exemples de jeux formatés:', games.slice(0, 3));
     }
   }, [games]);
 
@@ -292,11 +282,6 @@ export default function CollectionPage() {
     { label: 'À faire', value: 'backlog' },
     { label: 'Souhaits', value: 'wishlist' },
   ];
-  
-  // Débogage des filtres de statut - Afficher le filtre actif
-  useEffect(() => {
-    console.log('Filtre de statut actif:', statusFilter);
-  }, [statusFilter]);
 
   return (
     <div className="space-y-6">

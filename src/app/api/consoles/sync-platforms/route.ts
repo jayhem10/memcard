@@ -47,9 +47,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    
-    console.log(`Récupéré ${platforms.length} plateformes depuis IGDB`);
-    
+        
     // First check if the necessary columns exist in the consoles table
     try {
       // Vérifier si les colonnes existent déjà
@@ -61,7 +59,6 @@ export async function POST(request: NextRequest) {
       if (error && error.message.includes('column "igdb_platform_id" does not exist')) {
         // Ajouter les colonnes igdb_platform_id et abbreviation à la table consoles
         await supabaseAuth.rpc('add_columns_to_consoles');
-        console.log('Colonnes ajoutées à la table consoles');
       }
     } catch (error) {
       console.error('Erreur lors de la vérification des colonnes:', error);
@@ -94,9 +91,7 @@ export async function POST(request: NextRequest) {
     const platformsToAdd = platforms.filter(platform => 
       !existingPlatformIds.has(platform.id) && platform.name
     );
-    
-    console.log(`${platformsToAdd.length} nouvelles plateformes à ajouter`);
-    
+        
     // Batch insert les nouvelles plateformes
     let added = 0;
     if (platformsToAdd.length > 0) {
@@ -131,7 +126,6 @@ export async function POST(request: NextRequest) {
         console.error('Erreur lors de l\'ajout des consoles:', error);
       } else {
         added = data.length;
-        console.log(`${added} nouvelles consoles ajoutées`);
       }
     }
     

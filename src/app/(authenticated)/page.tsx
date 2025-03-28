@@ -9,7 +9,6 @@ import { useAuth } from '@/context/auth-context';
 import { useUserStatsStore } from '@/store/useUserStatsStore';
 import { useCollectionStore } from '@/store/useCollectionStore';
 import { Loader2, Gamepad, Calendar } from 'lucide-react';
-import { UserProfileDisplay } from '@/components/user/user-profile-display';
 import { cn } from '@/lib/utils';
 
 // Composant pour les statistiques
@@ -177,15 +176,12 @@ export default function HomePage() {
   
   return (
     <div className="space-y-8">
-      <section className="flex items-start justify-between mb-6">
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold">Bienvenue sur MemCard</h1>
-          <p className="text-xl text-muted-foreground">
+      <section className="mb-6">
+        <div className="space-y-2 sm:space-y-4 max-w-2xl">
+          <h1 className="text-3xl sm:text-4xl font-bold">Bienvenue sur MemCard</h1>
+          <p className="text-lg sm:text-xl text-muted-foreground">
             Gérez votre collection de jeux vidéo en toute simplicité
           </p>
-        </div>
-        <div className="bg-card p-4 rounded-lg shadow-sm">
-          <UserProfileDisplay />
         </div>
       </section>
 

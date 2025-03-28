@@ -1,17 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { Menu, X } from 'lucide-react';
 import { ThemeSelector } from '@/components/theme/theme-selector';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useProfileStore } from '@/store/useProfileStore';
+import { useAuth } from '@/context/auth-context';
 
 export function Navbar() {
   const pathname = usePathname();
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { profile, isLoading, fetchProfile } = useProfileStore();
+  const { user } = useAuth();
+  
+  useEffect(() => {
+    if (user && !profile && !isLoading) {
+      fetchProfile();
+    }
+  }, [user, profile, isLoading, fetchProfile]);
 
   const navigation = [
     { name: 'Ma Collection', href: '/collection' },
@@ -53,6 +63,24 @@ export function Navbar() {
             <Button variant="destructive" onClick={handleSignOut}>
               Déconnexion
             </Button>
+            {profile && (
+              <Link href="/profile" className="ml-2">
+                <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                  <AvatarImage 
+                    src={profile.avatar_url || ''} 
+                    alt={profile.full_name || profile.username || 'Utilisateur'} 
+                  />
+                  <AvatarFallback>
+                    {(profile.full_name || profile.username || profile.email?.split('@')[0] || 'U')
+                      .split(' ')
+                      .map(n => n[0])
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -60,6 +88,24 @@ export function Navbar() {
             <div className="mr-2">
               <ThemeSelector />
             </div>
+            {profile && (
+              <Link href="/profile" className="mr-2">
+                <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                  <AvatarImage 
+                    src={profile.avatar_url || ''} 
+                    alt={profile.full_name || profile.username || 'Utilisateur'} 
+                  />
+                  <AvatarFallback>
+                    {(profile.full_name || profile.username || profile.email?.split('@')[0] || 'U')
+                      .split(' ')
+                      .map(n => n[0])
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            )}
             <Button
               variant="ghost"
               size="icon"

@@ -70,10 +70,7 @@ export default function SearchPage() {
           .order('name');
         
         if (error) throw error;
-        
-        // Ajouter des logs pour débogage
-        console.log('Données brutes des plateformes:', data);
-        
+                
         // Vérifier que les plateformes ont un igdb_platform_id valide
         const validPlatforms = data.filter(platform => {
           // Vérifier si igdb_platform_id existe et est un nombre valide
@@ -99,9 +96,7 @@ export default function SearchPage() {
           { id: 'all', name: 'Toutes les plateformes', igdb_platform_id: 0, abbreviation: 'ALL' },
           ...formattedPlatforms
         ];
-        
-        console.log('Toutes les plateformes après formatage:', allPlatforms);
-        
+                
         setPlatforms(allPlatforms);
       } catch (error) {
         console.error('Erreur lors de la récupération des plateformes:', error);
@@ -128,11 +123,6 @@ export default function SearchPage() {
       // On cherche la plateforme par son ID IGDB pour l'affichage
       const selectedPlatformObj = selectedPlatform !== null ? 
         platforms.find(p => Number(p.igdb_platform_id) === Number(selectedPlatform)) : null;
-      
-      // Réduire les logs pour améliorer la performance
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Recherche: "${searchQuery}" avec plateforme: ${selectedPlatformObj?.name || 'Aucune'} (ID: ${selectedPlatform})`);
-      }
       
       const hasPlatformFilter = selectedPlatform !== null && selectedPlatform > 0;
       const query = `
@@ -269,7 +259,6 @@ export default function SearchPage() {
       // Vérifier si l'utilisateur possède déjà ce jeu pour cette console
       if (existingGame) {
         gameId = existingGame.id;
-        console.log('Jeu existant trouvé avec ID:', gameId);
         
         // Vérifier si l'utilisateur possède déjà ce jeu
         const { data: existingUserGame, error: userGameFindError } = await supabase
@@ -324,7 +313,6 @@ export default function SearchPage() {
           throw gameError;
         }
         gameId = newGame.id;
-        console.log('Nouveau jeu ajouté :', newGame);
         
         // Gestion des genres si le jeu a des genres
         if (selectedGame.genres && selectedGame.genres.length > 0) {

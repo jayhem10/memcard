@@ -1,17 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import toast from 'react-hot-toast';
-import { Loader2, Star, Clock, Trophy, Pencil, Save, X, Trash2 } from 'lucide-react';
+import { Loader2, Star, Clock, Pencil, Save, X, Trash2 } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { GameFormDialog } from '@/components/game-form-dialog';
+import Game3DImage from '@/components/games/Game3DImage';
 
 export default function GameDetailPage() {
   const params = useParams();
@@ -68,7 +68,6 @@ export default function GameDetailPage() {
         user_games: userGameData ? [userGameData] : []
       };
       
-      console.log('Données du jeu récupérées:', result);
       return result;
     },
     enabled: !!user, // N'exécute la requête que si l'utilisateur est connecté
@@ -94,7 +93,6 @@ export default function GameDetailPage() {
       let result;
       if (existingUserGame) {
         // Mettre à jour l'entrée existante
-        console.log('Mise à jour de l\'entrée existante avec ID:', existingUserGame.id);
         result = await supabase
           .from('user_games')
           .update(data)
@@ -102,7 +100,6 @@ export default function GameDetailPage() {
           .select();
       } else {
         // Créer une nouvelle entrée
-        console.log('Création d\'une nouvelle entrée pour le jeu');
         result = await supabase
           .from('user_games')
           .insert({
@@ -195,23 +192,16 @@ export default function GameDetailPage() {
       <div className="grid gap-8 md:grid-cols-[300px_1fr] xl:grid-cols-[300px_1fr_300px] max-w-screen-2xl mx-auto">
         {/* Image et informations de base */}
         <div className="space-y-6">
-          <div className="relative aspect-[3/4] rounded-lg overflow-hidden shadow-md">
-            {game.cover_url ? (
-              <Image
-                src={game.cover_url}
-                alt={game.title}
-                fill
-                sizes="(max-width: 768px) 100vw, 300px"
-                priority
-                className="object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                <span className="text-muted-foreground">Pas d'image</span>
-              </div>
-            )}
-          </div>
-
+          {game.cover_url ? (
+            <Game3DImage
+              src={game.cover_url}
+              alt={game.title}
+            />
+          ) : (
+            <div className="relative aspect-[3/4] rounded-lg overflow-hidden shadow-md flex items-center justify-center bg-muted">
+              <span className="text-muted-foreground">Pas d'image</span>
+            </div>
+          )}
           <div className="space-y-3 bg-card p-4 rounded-lg shadow-sm">
             <h3 className="font-semibold border-b pb-2">Informations</h3>
             <div className="grid grid-cols-2 gap-y-2 text-sm">
@@ -480,7 +470,6 @@ export default function GameDetailPage() {
         </div>
       </div>
 
-      {/* Formulaire de prix */}
       <GameFormDialog
         isOpen={isPriceDialogOpen}
         onClose={() => setIsPriceDialogOpen(false)}

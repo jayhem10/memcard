@@ -29,19 +29,16 @@ export function AuthForm() {
         if (error) throw error;
         toast.success('Vérifiez votre email pour confirmer votre inscription');
       } else {
-        console.log('🔒 Tentative de connexion avec email/mot de passe...');
         const { data: authData, error } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
         if (error) throw error;
         
-        console.log('✅ Connexion réussie avec email:', data.email);
         toast.success('Connexion réussie');
         
         // Forcer une redirection manuelle vers la page d'accueil après une connexion réussie
         // Cela contourne les problèmes potentiels avec le contexte d'authentification
-        console.log('🔜 Redirection manuelle vers la page d\'accueil...');
         setTimeout(() => {
           // Utiliser window.location.href pour forcer un rechargement complet
           window.location.href = '/';
@@ -58,7 +55,6 @@ export function AuthForm() {
   const handleOAuthLogin = async (provider: 'google' | 'discord') => {
     setOAuthLoading(provider);
     try {
-      console.log(`🔐 Tentative de connexion avec ${provider}...`);
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -67,8 +63,6 @@ export function AuthForm() {
         },
       });
       if (error) throw error;
-      console.log(`✅ Redirection vers ${provider} pour authentification`);
-      // Le reste du processus sera géré par la redirection OAuth
     } catch (error: any) {
       console.error(`❌ Erreur d'authentification ${provider}:`, error);
       toast.error(error.message || `Erreur lors de la connexion avec ${provider}`);

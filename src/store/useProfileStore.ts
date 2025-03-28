@@ -68,12 +68,12 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           username: user.email ? user.email.split('@')[0] : 'user_' + user.id.substring(0, 6),
           full_name: (user.user_metadata?.full_name as string) || null,
           avatar_url: (user.user_metadata?.avatar_url as string) || null,
+          theme: 'dark',
           updated_at: new Date().toISOString()
         };
         
         // On essaie d'insérer le profil par défaut si c'est possible
         try {
-          console.log('👷 Tentative de création d\'un profil par défaut:', defaultProfile);
           const { error: insertError } = await supabase
             .from('profiles')
             .insert([{
@@ -91,20 +91,18 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         // On utilise le profil par défaut même si l'insertion a échoué
         // Détecter le type d'authentification pour mieux gérer les différences
         const isEmailAuth = !user.app_metadata?.provider || user.app_metadata.provider === 'email';
-        
-        console.log('🔐 Type d\'authentification:', isEmailAuth ? 'Email/Password' : user.app_metadata?.provider);
-        
+                
         const userProfile: UserProfile = {
           id: user.id,
           email: user.email || null,
           username: defaultProfile.username || null,
           full_name: defaultProfile.full_name || null,
           avatar_url: defaultProfile.avatar_url || null,
+          theme: defaultProfile.theme || 'system',
           provider: isEmailAuth ? 'email' : String(user.app_metadata?.provider),
           last_sign_in_at: user.last_sign_in_at || null
         };
         
-        console.log('✅ Profil par défaut créé:', userProfile);
         set({ profile: userProfile, isLoading: false, error: null });
         return;
       }
@@ -119,6 +117,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         username: data?.username || null,
         full_name: data?.full_name || null,
         avatar_url: data?.avatar_url || null,
+        theme: data?.theme || 'system',
         provider: isEmailAuth ? 'email' : String(user.app_metadata?.provider),
         last_sign_in_at: user.last_sign_in_at || null
       };

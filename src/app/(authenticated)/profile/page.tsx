@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { useProfileStore } from '@/store/useProfileStore';
 import { useAuth } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ProfileThemeSelector } from '@/components/profile/profile-theme-selector';
 
 interface ProfileFormData {
   username: string;
@@ -231,6 +232,9 @@ export default function ProfilePage() {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Préférences</h2>
           <div className="grid gap-4">
+            {/* Sélecteur de thème */}
+            <ProfileThemeSelector />
+
             <div className="flex items-center justify-between p-4 rounded-lg bg-card">
               <div>
                 <h3 className="font-medium">Notifications par email</h3>

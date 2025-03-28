@@ -51,15 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fonction pour gérer la redirection
   const handleRedirection = (user: User | null, event?: string) => {
     const pathname = window.location.pathname;
-    console.log('Handling redirection:', { event, pathname, hasUser: !!user });
     
     if (user && pathname === '/login') {
-      console.log('Redirecting to home page from login');
-      // Forcer la redirection avec un refresh complet
       window.location.href = '/';
     } else if (!user && pathname !== '/login') {
-      console.log('Redirecting to login page');
-      // Forcer la redirection avec un refresh complet
       window.location.href = '/login';
     }
   };
@@ -69,7 +64,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Abonnement aux changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
         const newUser = session?.user ?? null;
         setUser(newUser);
         setIsLoading(false);
@@ -81,7 +75,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Vérifier la session initiale
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.email);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       setIsLoading(false);
