@@ -9,9 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Grid2X2, List, Loader2, Search, Database } from 'lucide-react';
 import Link from 'next/link';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/context/auth-context';
+import { supabase } from '@/lib/supabase';
 
 // Types de données
 type ViewMode = 'grid' | 'list';
@@ -69,8 +69,6 @@ export default function CollectionPage() {
   
   // Get auth context
   const { user, isLoading: authLoading } = useAuth();
-
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
     async function fetchUserGames() {
