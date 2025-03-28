@@ -13,6 +13,34 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { GameFormDialog } from '@/components/game-form-dialog';
 import Game3DImage from '@/components/games/Game3DImage';
 
+// Définition des types
+type UserGameData = {
+  id: string;
+  notes: string | null;
+  rating: number | null;
+  status: string | null;
+  play_time: number | null;
+  completion_percentage: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+  buy_price: number | null;
+};
+
+type GameData = {
+  id: string;
+  title: string;
+  description: string | null;
+  cover_url: string | null;
+  developer: string | null;
+  publisher: string | null;
+  release_date: string | null;
+  user_games: UserGameData[];
+  console: {
+    id: string;
+    name: string;
+  };
+};
+
 export default function GameDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -29,7 +57,7 @@ export default function GameDetailPage() {
   });
 
   // Récupérer les détails du jeu
-  const { data: game, isLoading } = useQuery({
+  const { data: game, isLoading } = useQuery<GameData, Error>({
     queryKey: ['game', params.id, user?.id],
     queryFn: async () => {
       if (!user) throw new Error('Utilisateur non authentifié');
@@ -50,12 +78,13 @@ export default function GameDetailPage() {
       }
       
       // 2. Ensuite, récupérer les données spécifiques à l'utilisateur pour ce jeu (si elles existent)
+      
       const { data: userGameData, error: userGameError } = await supabase
         .from('user_games')
         .select('id, notes, rating, status, play_time, completion_percentage, created_at, updated_at, buy_price')
         .eq('game_id', params.id)
         .eq('user_id', user.id)
-        .maybeSingle();
+        .maybeSingle<UserGameData>();
 
       if (userGameError) {
         console.error('Erreur lors de la récupération des données utilisateur pour le jeu:', userGameError);
@@ -63,8 +92,8 @@ export default function GameDetailPage() {
       }
       
       // 3. Combiner les données
-      const result = {
-        ...gameData,
+      const result: GameData = {
+        ...gameData as any,
         user_games: userGameData ? [userGameData] : []
       };
       
@@ -174,11 +203,11 @@ export default function GameDetailPage() {
 
   const handleEdit = () => {
     setEditedData({
-      notes: userGame?.notes || '',
-      rating: userGame?.rating || 0,
-      status: userGame?.status || '',
-      play_time: userGame?.play_time || 0,
-      completion_percentage: userGame?.completion_percentage || 0,
+      notes: typeof userGame?.notes === 'string' ? userGame.notes : '',
+      rating: typeof userGame?.rating === 'number' ? userGame.rating : 0,
+      status: typeof userGame?.status === 'string' ? userGame.status : '',
+      play_time: typeof userGame?.play_time === 'number' ? userGame.play_time : 0,
+      completion_percentage: typeof userGame?.completion_percentage === 'number' ? userGame.completion_percentage : 0,
     });
     setIsEditing(true);
   };
@@ -213,7 +242,7 @@ export default function GameDetailPage() {
               
               <span className="text-muted-foreground">Date de sortie</span>
               <span className="font-medium text-right">
-                {new Date(game.release_date).toLocaleDateString()}
+                {game.release_date ? new Date(game.release_date).toLocaleDateString() : 'Non définie'}
               </span>
               
               <span className="text-muted-foreground">Console</span>
@@ -474,7 +503,7 @@ export default function GameDetailPage() {
         isOpen={isPriceDialogOpen}
         onClose={() => setIsPriceDialogOpen(false)}
         gameId={params.id as string}
-        initialBuyPrice={userGame?.buy_price}
+        initialBuyPrice={typeof userGame?.buy_price === 'number' ? userGame.buy_price : undefined}
       />
     </div>
   );
