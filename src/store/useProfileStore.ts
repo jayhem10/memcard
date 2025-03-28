@@ -114,10 +114,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       const userProfile: UserProfile = {
         id: user.id,
         email: user.email || null,
-        username: data?.username || null,
-        full_name: data?.full_name || null,
-        avatar_url: data?.avatar_url || null,
-        theme: data?.theme || 'system',
+        username: typeof data?.username === 'string' ? data.username : null,
+        full_name: typeof data?.full_name === 'string' ? data.full_name : null,
+        avatar_url: typeof data?.avatar_url === 'string' ? data.avatar_url : null,
+        theme: typeof data?.theme === 'string' ? data.theme : 'system',
         provider: isEmailAuth ? 'email' : String(user.app_metadata?.provider),
         last_sign_in_at: user.last_sign_in_at || null
       };

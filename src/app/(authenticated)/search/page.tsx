@@ -64,10 +64,21 @@ export default function SearchPage() {
   useEffect(() => {
     const fetchPlatformsFromSupabase = async () => {
       try {
+        // Définir le type pour les données de consoles
+        type ConsoleData = {
+          id: string | number;
+          name: string;
+          igdb_platform_id: number | null;
+          release_year?: number | null;
+          image_url?: string | null;
+          abbreviation?: string | null;
+        };
+        
         const { data, error } = await supabase
           .from('consoles')
           .select('id, name, igdb_platform_id, release_year, image_url, abbreviation')
-          .order('name');
+          .order('name')
+          .returns<ConsoleData[]>();
         
         if (error) throw error;
                 
@@ -84,15 +95,18 @@ export default function SearchPage() {
         }
         
         // S'assurer que tous les champs sont du bon type
-        const formattedPlatforms = validPlatforms.map(platform => ({
-          ...platform,
+        const formattedPlatforms: Platform[] = validPlatforms.map(platform => ({
           id: Number(platform.id),
-          igdb_platform_id: Number(platform.igdb_platform_id)
+          name: platform.name,
+          igdb_platform_id: Number(platform.igdb_platform_id),
+          release_year: platform.release_year ? Number(platform.release_year) : undefined,
+          image_url: platform.image_url || undefined,
+          abbreviation: platform.abbreviation || undefined
         }));
         
         // Ajouter une option "Tous" en première position avec igdb_platform_id = 0
         // Pour plus de cohérence avec notre sélection par ID IGDB
-        const allPlatforms = [
+        const allPlatforms: Platform[] = [
           { id: 'all', name: 'Toutes les plateformes', igdb_platform_id: 0, abbreviation: 'ALL' },
           ...formattedPlatforms
         ];
@@ -173,17 +187,19 @@ export default function SearchPage() {
     
     // Sauvegarder le nom de la console sélectionnée pour l'affichage
     let consoleDisplayName = "cette plateforme";
-    if (consoleName) {
+    if (typeof consoleName === 'string') {
       consoleDisplayName = consoleName;
     } else {
       // Récupérer le nom de la console si non fourni
+      type ConsoleNameData = { name: string };
+      
       const { data: consoleData } = await supabase
         .from('consoles')
         .select('name')
         .eq('id', consoleId)
-        .single();
+        .single<ConsoleNameData>();
       
-      if (consoleData) {
+      if (consoleData && typeof consoleData.name === 'string') {
         consoleDisplayName = consoleData.name;
       }
     }
@@ -245,27 +261,34 @@ export default function SearchPage() {
       if (findError) throw findError;
       
       // Vérifier si le jeu existe pour un autre console
+      type GameIdData = { id: string }[];
+      
       const { data: existingGameOtherConsole, error: findErrorOther } = await supabase
         .from('games')
         .select('id')
         .eq('igdb_id', selectedGame.id)
-        .neq('console_id', consoleId);
+        .neq('console_id', consoleId)
+        .returns<GameIdData>();
       
       if (findErrorOther) throw findErrorOther;
       
       let gameId;
-      let isNewConsole = existingGameOtherConsole && existingGameOtherConsole.length > 0;
+      // Vérifier si le jeu existe déjà pour une autre console
+      let isNewConsole = existingGameOtherConsole && Array.isArray(existingGameOtherConsole) && existingGameOtherConsole.length > 0;
       
       // Vérifier si l'utilisateur possède déjà ce jeu pour cette console
       if (existingGame) {
         gameId = existingGame.id;
         
         // Vérifier si l'utilisateur possède déjà ce jeu
+        // S'assurer que gameId est une chaîne ou un nombre avant de l'utiliser
+        const gameIdString = typeof gameId === 'string' || typeof gameId === 'number' ? String(gameId) : '';
+        
         const { data: existingUserGame, error: userGameFindError } = await supabase
           .from('user_games')
           .select('id')
           .eq('user_id', user.id)
-          .eq('game_id', gameId)
+          .eq('game_id', gameIdString)
           .maybeSingle();
         
         if (userGameFindError) throw userGameFindError;

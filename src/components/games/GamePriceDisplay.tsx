@@ -32,12 +32,27 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
       try {
         const { data, error } = await supabase
           .from('game_prices')
-          .select('*')
+          .select('min_price, max_price, average_price, new_price, last_updated')
           .eq('game_id', gameId)
           .single();
           
         if (error) throw error;
-        setPriceData(data);
+        
+        // Convertir explicitement les données en objet GamePrice
+        if (data) {
+          const gamePriceData: GamePrice = {
+            min_price: typeof data.min_price === 'number' ? data.min_price : 0,
+            max_price: typeof data.max_price === 'number' ? data.max_price : 0,
+            average_price: typeof data.average_price === 'number' ? data.average_price : 0,
+            new_price: typeof data.new_price === 'number' ? data.new_price : 0,
+            last_updated: typeof data.last_updated === 'string' ? data.last_updated : new Date().toISOString()
+          };
+          
+          setPriceData(gamePriceData);
+        } else {
+          console.warn('Aucune donnée de prix trouvée');
+          setError('Aucune donnée de prix disponible');
+        }
       } catch (err: any) {
         console.error('Erreur lors de la récupération des prix:', err);
         setError(err.message || 'Erreur lors de la récupération des prix');

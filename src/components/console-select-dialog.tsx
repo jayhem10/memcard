@@ -50,7 +50,8 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
       let query = supabase
         .from('consoles')
         .select('id, name, igdb_platform_id, abbreviation')
-        .order('name');
+        .order('name')
+        .returns<Console[]>();
       
       const { data, error } = await query;
 
@@ -63,22 +64,26 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
           const gamePlatformIds = gamePlatforms.map(p => p.id);
           
           // Filtrer les consoles pour ne montrer que celles liées aux plateformes du jeu
-          const matchedConsoles = data.filter(console => 
-            console.igdb_platform_id && gamePlatformIds.includes(console.igdb_platform_id)
-          );
+          const matchedConsoles = data.filter(console => {
+            // Vérifier que igdb_platform_id est un nombre valide avant de l'utiliser
+            return typeof console.igdb_platform_id === 'number' && 
+                   gamePlatformIds.includes(console.igdb_platform_id);
+          });
           
           // Utiliser les consoles filtrées si nous avons des correspondances, sinon montrer toutes les consoles
           const consolesToShow = matchedConsoles.length > 0 ? matchedConsoles : data;
           setConsoles(consolesToShow);
           
           // Par défaut, sélectionner la première console
-          if (consolesToShow.length > 0) {
+          if (consolesToShow.length > 0 && typeof consolesToShow[0].id === 'string') {
             setSelectedConsoleId(consolesToShow[0].id);
           }
         } else {
           // Si aucune plateforme n'est fournie, afficher toutes les consoles
           setConsoles(data);
-          setSelectedConsoleId(data[0].id);
+          if (data.length > 0 && typeof data[0].id === 'string') {
+            setSelectedConsoleId(data[0].id);
+          }
         }
       } else {
         // Si aucune console, en créer une par défaut
@@ -107,14 +112,22 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
           igdb_platform_id: null,
           release_year: 2000 // Année par défaut
         })
-        .select()
+        .select('id, name, igdb_platform_id, abbreviation')
         .single();
 
       if (error) throw error;
       
       if (data) {
-        setConsoles([data]);
-        setSelectedConsoleId(data.id);
+        // Vérifier et convertir les données en objet Console
+        const id = typeof data.id === 'string' ? data.id : '';
+        const name = typeof data.name === 'string' ? data.name : 'Console par défaut';
+        const igdb_platform_id = typeof data.igdb_platform_id === 'number' ? data.igdb_platform_id : undefined;
+        const abbreviation = typeof data.abbreviation === 'string' ? data.abbreviation : undefined;
+        
+        const defaultConsole: Console = { id, name, igdb_platform_id, abbreviation };
+        
+        setConsoles([defaultConsole]);
+        setSelectedConsoleId(id);
       }
     } catch (error) {
       console.error('Error creating default console:', error);

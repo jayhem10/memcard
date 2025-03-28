@@ -22,13 +22,24 @@ function DataInitializer() {
       }
 
       setUserId(user.id);
+      // Définir le type pour les données de jeux
+      type GameWithPrice = {
+        buy_price: number | null;
+      };
+      
       const { data: games } = await supabase
         .from('user_games')
         .select('buy_price')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .returns<GameWithPrice[]>();
 
       if (games) {
-        calculateTotalFromGames(games);
+        // Transformer les données pour s'assurer que buy_price est toujours un nombre
+        const gamesWithValidPrices = games.map(game => ({
+          buy_price: typeof game.buy_price === 'number' ? game.buy_price : 0
+        }));
+        
+        calculateTotalFromGames(gamesWithValidPrices);
       }
     };
 

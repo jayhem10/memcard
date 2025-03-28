@@ -197,10 +197,10 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
           throw recentError;
         }
 
-        const recentGames = recentData
+        // Créer le tableau de jeux récents et filtrer les éléments null
+        const mappedGames = recentData
           ? (recentData as unknown as RecentGameData[]).map(item => {
-              // Instead of filtering out, create entries for all games
-              // Use the raw game_id if game object is missing
+              // Vérifier si l'objet game est valide
               const hasValidGame = item?.game && typeof item.game === 'object';
               if (!hasValidGame) {
                 return null;
@@ -218,6 +218,9 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
               };
             })
           : [];
+          
+        // Filtrer les éléments null pour s'assurer que recentGames est de type RecentGame[]
+        const recentGames = mappedGames.filter((game): game is RecentGame => game !== null);
 
         // Mettre à jour le state
         set({

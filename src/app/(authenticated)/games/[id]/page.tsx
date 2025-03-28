@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -43,6 +43,7 @@ type GameData = {
 
 export default function GameDetailPage() {
   const params = useParams();
+  const gameId = params?.id as string | undefined;
   const router = useRouter();
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
@@ -55,10 +56,17 @@ export default function GameDetailPage() {
     play_time: 0,
     completion_percentage: 0,
   });
+  
+  // Rediriger si l'ID du jeu n'est pas défini
+  useEffect(() => {
+    if (!gameId) {
+      router.push('/games');
+    }
+  }, [gameId, router]);
 
   // Récupérer les détails du jeu
   const { data: game, isLoading } = useQuery<GameData, Error>({
-    queryKey: ['game', params.id, user?.id],
+    queryKey: ['game', gameId, user?.id],
     queryFn: async () => {
       if (!user) throw new Error('Utilisateur non authentifié');
       
@@ -69,7 +77,7 @@ export default function GameDetailPage() {
           *,
           console:console_id(id, name)
         `)
-        .eq('id', params.id)
+        .eq('id', gameId || '')
         .single();
 
       if (gameError) {
@@ -82,7 +90,7 @@ export default function GameDetailPage() {
       const { data: userGameData, error: userGameError } = await supabase
         .from('user_games')
         .select('id, notes, rating, status, play_time, completion_percentage, created_at, updated_at, buy_price')
-        .eq('game_id', params.id)
+        .eq('game_id', gameId || '')
         .eq('user_id', user.id)
         .maybeSingle<UserGameData>();
 
@@ -99,7 +107,7 @@ export default function GameDetailPage() {
       
       return result;
     },
-    enabled: !!user, // N'exécute la requête que si l'utilisateur est connecté
+    enabled: !!gameId && !!user, // N'exécute la requête que si l'utilisateur est connecté et que l'ID du jeu est défini
   });
 
   // Mutation pour mettre à jour les données du jeu
@@ -107,14 +115,14 @@ export default function GameDetailPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: typeof editedData) => {
-      if (!user) throw new Error('Utilisateur non authentifié');
+      if (!user || !gameId) throw new Error('Utilisateur non authentifié ou ID de jeu manquant');
       
       // Vérifier si l'utilisateur a déjà ce jeu dans sa collection
       const { data: existingUserGame, error: findError } = await supabase
         .from('user_games')
         .select('id')
         .eq('user_id', user.id)
-        .eq('game_id', params.id as string)
+        .eq('game_id', gameId || '')
         .maybeSingle<{ id: string }>();
       
       if (findError) throw findError;
@@ -133,7 +141,7 @@ export default function GameDetailPage() {
           .from('user_games')
           .insert({
             user_id: user.id,
-            game_id: params.id as string,
+            game_id: gameId,
             ...data
           })
           .select();
@@ -146,7 +154,7 @@ export default function GameDetailPage() {
       toast.success('Modifications enregistrées');
       setIsEditing(false);
       // Invalider le cache pour forcer un rechargement
-      queryClient.invalidateQueries({ queryKey: ['game', params.id, user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['game', gameId, user?.id] });
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de la mise à jour');
@@ -156,13 +164,13 @@ export default function GameDetailPage() {
   // Mutation pour supprimer le jeu de la collection
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      if (!user) throw new Error('Utilisateur non authentifié');
+      if (!user || !gameId) throw new Error('Utilisateur non authentifié ou ID de jeu manquant');
       
       const { error } = await supabase
         .from('user_games')
         .delete()
         .eq('user_id', user.id)
-        .eq('game_id', params.id as string);
+        .eq('game_id', gameId);
 
       if (error) throw error;
     },
@@ -502,7 +510,7 @@ export default function GameDetailPage() {
       <GameFormDialog
         isOpen={isPriceDialogOpen}
         onClose={() => setIsPriceDialogOpen(false)}
-        gameId={params.id as string}
+        gameId={gameId || ''}
         initialBuyPrice={typeof userGame?.buy_price === 'number' ? userGame.buy_price : undefined}
       />
     </div>
