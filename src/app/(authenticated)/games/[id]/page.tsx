@@ -86,7 +86,7 @@ export default function GameDetailPage() {
         .select('id')
         .eq('user_id', user.id)
         .eq('game_id', params.id as string)
-        .maybeSingle();
+        .maybeSingle<{ id: string }>();
       
       if (findError) throw findError;
       
