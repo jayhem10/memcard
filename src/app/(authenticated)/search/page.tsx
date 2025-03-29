@@ -121,6 +121,8 @@ export default function SearchPage() {
   const [shouldSearch, setShouldSearch] = useState<boolean>(false);
   const [selectedPlatform, setSelectedPlatform] = useState<number | null>(null);
   const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const [filteredPlatforms, setFilteredPlatforms] = useState<Platform[]>([]);
+  const [platformSearchQuery, setPlatformSearchQuery] = useState('');
   const [selectedGame, setSelectedGame] = useState<IGDBGame | null>(null);
   const [isConsoleDialogOpen, setIsConsoleDialogOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -148,6 +150,23 @@ export default function SearchPage() {
     }
   }, []);
   
+  // Filtrer les plateformes lorsque la recherche change
+  useEffect(() => {
+    if (platforms.length > 0) {
+      if (platformSearchQuery.trim() === '') {
+        setFilteredPlatforms(platforms);
+      } else {
+        const searchValue = platformSearchQuery.toLowerCase();
+        const filtered = platforms.filter(platform => 
+          platform.id === 'all' || // Toujours inclure "Toutes les plateformes"
+          platform.name.toLowerCase().includes(searchValue) ||
+          (platform.abbreviation && platform.abbreviation.toLowerCase().includes(searchValue))
+        );
+        setFilteredPlatforms(filtered);
+      }
+    }
+  }, [platformSearchQuery, platforms]);
+
   // Charger les plateformes depuis Supabase au démarrage
   useEffect(() => {
     const fetchPlatformsFromSupabase = async () => {
@@ -200,6 +219,7 @@ export default function SearchPage() {
         ];
                 
         setPlatforms(allPlatforms);
+        setFilteredPlatforms(allPlatforms);
       } catch (error) {
         console.error('Erreur lors de la récupération des plateformes:', error);
         toast.error('Impossible de charger les plateformes');
@@ -570,64 +590,60 @@ export default function SearchPage() {
                 className="pl-8 pr-2"
                 type="text" 
                 placeholder="Rechercher une plateforme..."
-                onChange={(e) => {
-                  // Filtre local du select, ne lance pas de requête
-                  const searchValue = e.target.value.toLowerCase();
-                  // Le filtrage est géré via le CSS dynamique des options
-                  document.querySelectorAll('#platform-select option').forEach((option: Element) => {
-                    const optionElement = option as HTMLOptionElement;
-                    // Toujours afficher l'option "Toutes les plateformes"
-                    if (optionElement.textContent?.toLowerCase().includes(searchValue) || optionElement.value === '') {
-                      optionElement.classList.remove('hidden');
-                    } else {
-                      optionElement.classList.add('hidden');
-                    }
-                  });
-                  
-                  // Faire défiler vers le haut pour voir les résultats
-                  const selectElement = document.getElementById('platform-select');
-                  if (selectElement) {
-                    selectElement.scrollTop = 0;
-                  }
-                }}
+                value={platformSearchQuery}
+                onChange={(e) => setPlatformSearchQuery(e.target.value)}
               />
             </div>
             
-            {/* Select avec hauteur adaptative selon l'appareil */}
-            <select
-              id="platform-select"
-              className="w-full p-2 border rounded-md bg-background hover:cursor-pointer focus:ring-1 focus:ring-primary"
-              value={selectedPlatform || ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                const parsedValue = value ? parseInt(value, 10) : null;
-                
-                setSelectedPlatform(parsedValue);
-                
-                // Lancer une recherche si du texte existe
-                if (searchQuery) {
-                  setShouldSearch(true);
-                  refetchRef.current();
-                } else {
-                  setShouldSearch(false);
-                }
-              }}
-              size={isMobile ? 4 : 6} // Taille adaptative selon l'écran
+            {/* Liste de plateformes compatible mobile */}
+            <div 
+              id="platform-list"
+              className="w-full border rounded-md bg-background overflow-y-auto"
               style={{
-                overflowY: 'auto',
-                minHeight: isMobile ? '120px' : '180px',
-                maxHeight: isMobile ? '40vh' : '300px'
+                maxHeight: '40vh'
               }}
             >
-              <option value="">Toutes les plateformes</option>
-              {platforms
+              {/* Option "Toutes les plateformes" */}
+              <div 
+                className={`p-3 hover:bg-accent cursor-pointer ${selectedPlatform === null ? 'bg-accent/50' : ''}`}
+                onClick={() => {
+                  setSelectedPlatform(null);
+                  if (searchQuery) {
+                    setShouldSearch(true);
+                    refetchRef.current();
+                  }
+                }}
+              >
+                <div className="flex items-center">
+                  <div className={`w-4 h-4 rounded-full border ${selectedPlatform === null ? 'bg-primary border-primary' : 'border-muted-foreground'} mr-2`}></div>
+                  <span>Toutes les plateformes</span>
+                </div>
+              </div>
+              
+              {/* Liste des plateformes */}
+              {filteredPlatforms
                 .filter(p => p.id !== 'all')
                 .map((platform, index) => (
-                  <option key={`platform-${platform.igdb_platform_id || index}`} value={platform.igdb_platform_id || ''}>
-                    {platform.name} {platform.abbreviation ? `(${platform.abbreviation})` : ''}
-                  </option>
-              ))}
-            </select>
+                  <div 
+                    key={`platform-${platform.igdb_platform_id || index}`}
+                    className={`p-3 hover:bg-accent cursor-pointer ${selectedPlatform === platform.igdb_platform_id ? 'bg-accent/50' : ''}`}
+                    onClick={() => {
+                      setSelectedPlatform(platform.igdb_platform_id);
+                      if (searchQuery) {
+                        setShouldSearch(true);
+                        refetchRef.current();
+                      } else {
+                        setShouldSearch(false);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center">
+                      <div className={`w-4 h-4 rounded-full border ${selectedPlatform === platform.igdb_platform_id ? 'bg-primary border-primary' : 'border-muted-foreground'} mr-2`}></div>
+                      <span>{platform.name} {platform.abbreviation ? `(${platform.abbreviation})` : ''}</span>
+                    </div>
+                  </div>
+                ))}
+            </div>
           </div>
         </div>
 
