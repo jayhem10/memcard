@@ -153,13 +153,13 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
           </DialogTitle>
           <DialogDescription>
             Choisissez la console pour &quot;{gameName || 'ce jeu'}&quot;
-            {gamePlatforms && gamePlatforms.length > 0 && (
-              <div className="mt-2 text-xs">
-                <span className="font-medium">Plateformes disponibles:</span>{' '}
-                {gamePlatforms.map(p => p.abbreviation || p.name).join(', ')}
-              </div>
-            )}
           </DialogDescription>
+          {gamePlatforms && gamePlatforms.length > 0 && (
+            <div className="mt-2 text-xs px-6">
+              <span className="font-medium">Plateformes disponibles:</span>{' '}
+              {gamePlatforms.map(p => p.abbreviation || p.name).join(', ')}
+            </div>
+          )}
         </DialogHeader>
         
         {isLoading ? (

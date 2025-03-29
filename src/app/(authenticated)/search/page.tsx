@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { formatIGDBReleaseDate, getIGDBReleaseYear } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2, X, Check } from 'lucide-react';
+import { Search, Loader2, X, Check, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { queryIGDB, IGDB_CONFIG } from '@/lib/igdb';
 import toast from 'react-hot-toast';
@@ -127,9 +127,20 @@ export default function SearchPage() {
   const [isConsoleDialogOpen, setIsConsoleDialogOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [isPlatformSectionExpanded, setIsPlatformSectionExpanded] = useState(false);
+  
+  // Référence pour le conteneur des résultats de recherche
+  const searchResultsRef = useRef<HTMLDivElement>(null);
   
   // Utiliser le contexte d'authentification pour accéder à l'utilisateur
   const { user } = useAuth();
+
+  // Déplier automatiquement la section des plateformes si une recherche est en cours
+  useEffect(() => {
+    if (platformSearchQuery.trim() !== '') {
+      setIsPlatformSectionExpanded(true);
+    }
+  }, [platformSearchQuery]);
 
   // Détecter si l'appareil est mobile
   useEffect(() => {
@@ -233,6 +244,16 @@ export default function SearchPage() {
 
   const refetchRef = useRef<() => void>(() => {});
   
+  // Fonction pour faire défiler vers les résultats de recherche
+  const scrollToResults = useCallback(() => {
+    // Attendre que les résultats soient chargés et rendus
+    setTimeout(() => {
+      if (isMobile && searchResultsRef.current) {
+        searchResultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 500); // Délai pour laisser le temps aux résultats de se charger
+  }, [isMobile]);
+  
   type QueryFnParams = { pageParam: number };
   type PageResult = { games: IGDBGame[]; nextCursor: number };
   async function fetchGames({ pageParam }: QueryFnParams): Promise<PageResult> {
@@ -282,8 +303,15 @@ export default function SearchPage() {
   });
   
   useEffect(() => {
-    refetchRef.current = refetch;
-  }, [refetch]);
+    refetchRef.current = () => {
+      refetch().then(() => {
+        // Faire défiler vers les résultats après la recherche
+        if (shouldSearch) {
+          scrollToResults();
+        }
+      });
+    };
+  }, [refetch, scrollToResults, shouldSearch]);
   
   // Pas de recherche automatique lorsque la plateforme change, seulement lorsque l'utilisateur lance la recherche manuellement
 
@@ -556,17 +584,34 @@ export default function SearchPage() {
           // Input optimisé pour être plus rapide
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && searchQuery.trim() !== '') {
+              e.preventDefault();
               setShouldSearch(true);
-              refetchRef.current();
+              // Utiliser directement refetch au lieu de refetchRef.current
+              refetch().then(() => {
+                if (isMobile && searchResultsRef.current) {
+                  setTimeout(() => {
+                    searchResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 500);
+                }
+              });
             }
           }}
         />
         <Button 
           className="absolute right-0 top-0 h-full rounded-l-none"
           onClick={() => {
-            setShouldSearch(true);
-            refetchRef.current();
+            if (searchQuery.trim() !== '') {
+              setShouldSearch(true);
+              // Utiliser directement refetch au lieu de refetchRef.current
+              refetch().then(() => {
+                if (isMobile && searchResultsRef.current) {
+                  setTimeout(() => {
+                    searchResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 500);
+                }
+              });
+            }
           }}
         >
           Rechercher
@@ -577,107 +622,131 @@ export default function SearchPage() {
         Appuyez sur Entrée ou cliquez sur Rechercher pour lancer la recherche
       </div>
       
-      {/* Sélecteur de plateforme optimisé pour mobile et bureau */}
-      <div className="mb-6 p-4 bg-muted/30 rounded-lg">
-        <h2 className="text-sm font-medium mb-3">Sélectionner une plateforme (optionnel)</h2>
+      {/* Sélecteur de plateforme optimisé pour mobile et bureau avec système de dépliage */}
+      <div className="mb-6 bg-muted/30 rounded-lg overflow-hidden">
+        {/* En-tête cliquable pour déplier/replier */}
+        <div 
+          className="p-4 flex justify-between items-center cursor-pointer"
+          onClick={() => setIsPlatformSectionExpanded(!isPlatformSectionExpanded)}
+        >
+          <div className="flex items-center">
+            <h2 className="text-sm font-medium">Sélectionner une plateforme {selectedPlatform !== null && filteredPlatforms.find(p => p.igdb_platform_id === selectedPlatform)?.name ? `(${filteredPlatforms.find(p => p.igdb_platform_id === selectedPlatform)?.name})` : '(optionnel)'}</h2>
+          </div>
+          <ChevronDown className={`h-5 w-5 transition-transform ${isPlatformSectionExpanded ? 'rotate-180' : ''}`} />
+        </div>
         
-        <div className="relative">
-          <div className="flex flex-col space-y-2">
-            {/* Champ de recherche pour filtrer les plateformes */}
-            <div className="relative mb-2">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                className="pl-8 pr-2"
-                type="text" 
-                placeholder="Rechercher une plateforme..."
-                value={platformSearchQuery}
-                onChange={(e) => setPlatformSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            {/* Liste de plateformes compatible mobile */}
-            <div 
-              id="platform-list"
-              className="w-full border rounded-md bg-background overflow-y-auto"
-              style={{
-                maxHeight: '40vh'
-              }}
-            >
-              {/* Option "Toutes les plateformes" */}
-              <div 
-                className={`p-3 hover:bg-accent cursor-pointer ${selectedPlatform === null ? 'bg-accent/50' : ''}`}
-                onClick={() => {
-                  setSelectedPlatform(null);
-                  if (searchQuery) {
-                    setShouldSearch(true);
-                    refetchRef.current();
-                  }
-                }}
-              >
-                <div className="flex items-center">
-                  <div className={`w-4 h-4 rounded-full border ${selectedPlatform === null ? 'bg-primary border-primary' : 'border-muted-foreground'} mr-2`}></div>
-                  <span>Toutes les plateformes</span>
+        {/* Contenu dépliable */}
+        {isPlatformSectionExpanded && (
+          <div className="p-4 pt-0">
+            <div className="relative">
+              <div className="flex flex-col space-y-2">
+                {/* Champ de recherche pour filtrer les plateformes */}
+                <div className="relative mb-2">
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    className="pl-8 pr-2"
+                    type="text" 
+                    placeholder="Rechercher une plateforme..."
+                    value={platformSearchQuery}
+                    onChange={(e) => setPlatformSearchQuery(e.target.value)}
+                  />
                 </div>
-              </div>
-              
-              {/* Liste des plateformes */}
-              {filteredPlatforms
-                .filter(p => p.id !== 'all')
-                .map((platform, index) => (
+                
+                {/* Liste de plateformes compatible mobile */}
+                <div 
+                  id="platform-list"
+                  className="w-full border rounded-md bg-background overflow-y-auto"
+                  style={{
+                    maxHeight: '40vh'
+                  }}
+                >
+                  {/* Option "Toutes les plateformes" */}
                   <div 
-                    key={`platform-${platform.igdb_platform_id || index}`}
-                    className={`p-3 hover:bg-accent cursor-pointer ${selectedPlatform === platform.igdb_platform_id ? 'bg-accent/50' : ''}`}
-                    onClick={() => {
-                      setSelectedPlatform(platform.igdb_platform_id);
+                    className={`p-3 hover:bg-accent cursor-pointer ${selectedPlatform === null ? 'bg-accent/50' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Empêcher la propagation au parent
+                      setSelectedPlatform(null);
                       if (searchQuery) {
                         setShouldSearch(true);
                         refetchRef.current();
-                      } else {
-                        setShouldSearch(false);
+                      }
+                      // Replier la section après sélection sur mobile
+                      if (isMobile) {
+                        setIsPlatformSectionExpanded(false);
                       }
                     }}
                   >
                     <div className="flex items-center">
-                      <div className={`w-4 h-4 rounded-full border ${selectedPlatform === platform.igdb_platform_id ? 'bg-primary border-primary' : 'border-muted-foreground'} mr-2`}></div>
-                      <span>{platform.name} {platform.abbreviation ? `(${platform.abbreviation})` : ''}</span>
+                      <div className={`w-4 h-4 rounded-full border ${selectedPlatform === null ? 'bg-primary border-primary' : 'border-muted-foreground'} mr-2`}></div>
+                      <span>Toutes les plateformes</span>
                     </div>
                   </div>
-                ))}
-            </div>
-          </div>
-        </div>
-
-        {selectedPlatform && selectedPlatform > 0 && (
-          <div className="flex flex-wrap items-center mt-3">
-            <span className="text-sm text-muted-foreground mr-2">Plateforme sélectionnée :</span>
-            <div className="flex items-center mt-1 sm:mt-0">
-              <Badge className="mr-2">
-                {(() => {
-                  const platform = platforms.find(p => Number(p.igdb_platform_id) === Number(selectedPlatform));
-                  return platform ? 
-                    `${platform.name}${platform.abbreviation ? ` (${platform.abbreviation})` : ''}` : 
-                    `Plateforme IGDB #${selectedPlatform}`;
-                })()}
-              </Badge>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-5 w-5 p-0" 
-                onClick={() => {
-                  setSelectedPlatform(null);
-                  // Si une recherche existe déjà, relancer la recherche
-                  if (searchQuery && shouldSearch) {
-                    refetchRef.current();
-                  }
-                }}
-              >
-                <X className="h-3 w-3" />
-              </Button>
+                  
+                  {/* Liste des plateformes */}
+                  {filteredPlatforms
+                    .filter(p => p.id !== 'all')
+                    .map((platform, index) => (
+                      <div 
+                        key={`platform-${platform.igdb_platform_id || index}`}
+                        className={`p-3 hover:bg-accent cursor-pointer ${selectedPlatform === platform.igdb_platform_id ? 'bg-accent/50' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Empêcher la propagation au parent
+                          setSelectedPlatform(platform.igdb_platform_id);
+                          if (searchQuery) {
+                            setShouldSearch(true);
+                            refetchRef.current();
+                          } else {
+                            setShouldSearch(false);
+                          }
+                          // Replier la section après sélection sur mobile
+                          if (isMobile) {
+                            setIsPlatformSectionExpanded(false);
+                          }
+                        }}
+                      >
+                        <div className="flex items-center">
+                          <div className={`w-4 h-4 rounded-full border ${selectedPlatform === platform.igdb_platform_id ? 'bg-primary border-primary' : 'border-muted-foreground'} mr-2`}></div>
+                          <span>{platform.name} {platform.abbreviation ? `(${platform.abbreviation})` : ''}</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
       </div>
-      
+
+      {selectedPlatform && selectedPlatform > 0 && (
+        <div className="flex flex-wrap items-center mt-3">
+          <span className="text-sm text-muted-foreground mr-2">Plateforme sélectionnée :</span>
+          <div className="flex items-center mt-1 sm:mt-0">
+            <Badge className="mr-2">
+              {(() => {
+                const platform = platforms.find(p => Number(p.igdb_platform_id) === Number(selectedPlatform));
+                return platform ? 
+                  `${platform.name}${platform.abbreviation ? ` (${platform.abbreviation})` : ''}` : 
+                  `Plateforme IGDB #${selectedPlatform}`;
+              })()}
+            </Badge>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-5 w-5 p-0" 
+              onClick={() => {
+                setSelectedPlatform(null);
+                // Si une recherche existe déjà, relancer la recherche
+                if (searchQuery && shouldSearch) {
+                  refetchRef.current();
+                }
+              }}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {isError ? (
         <div className="text-center py-12">
           <p className="text-destructive">Une erreur est survenue lors de la recherche</p>
@@ -694,7 +763,7 @@ export default function SearchPage() {
           {!searchQuery && (
             <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
               <p className="text-muted-foreground">
-                {selectedPlatform && selectedPlatform > 0 
+                {selectedPlatform !== null && selectedPlatform > 0 
                   ? `Sélectionnez un jeu sur ${platforms.find(p => p.igdb_platform_id === selectedPlatform)?.name || 'la plateforme'} ou tapez un nom de jeu` 
                   : "Tapez un nom de jeu et appuyez sur Rechercher"}
               </p>
@@ -709,52 +778,55 @@ export default function SearchPage() {
           
           {/* Grille de résultats */}
           {searchQuery && data?.pages && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div ref={searchResultsRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {data.pages.map((page, pageIndex) => (
-                page.games.map((game: IGDBGame, gameIndex: number) => (
-                  <motion.div 
-                    key={`${pageIndex}-${gameIndex}-${game.id}`}
-                    className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md cursor-pointer"
-                    onClick={() => setSelectedGame(game)}
-                    whileHover={{ scale: 1.03 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  >
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-t-lg">
-                      {game.cover ? (
-                        <>
-                          <GameCover3D gameId={game.id} imageId={game.cover.image_id} gameName={game.name} pageIndex={pageIndex} gameIndex={gameIndex}>
-                          </GameCover3D>
-                        </>
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                          <span className="text-muted-foreground text-xs">No Image</span>
-                        </div>
-                      )}
-                      {/* Badge indiquant le nombre de plateformes */}
-                      {game.platforms && game.platforms.length > 0 && (
-                        <div className="absolute top-2 right-2 bg-black/70 text-white px-1.5 py-0.5 rounded text-xs">
-                          {game.platforms.length} {game.platforms.length > 1 ? "plateformes" : "plateforme"}
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-2">
-                      <h3 className="font-medium text-sm truncate" title={game.name}>
-                        {game.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {game.first_release_date 
-                          ? getIGDBReleaseYear(game.first_release_date)
-                          : 'Date inconnue'}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))
+                // Utiliser Fragment avec clé pour éviter les avertissements React
+                <React.Fragment key={`page-${pageIndex}`}>
+                  {page.games.map((game: IGDBGame, gameIndex: number) => (
+                    <motion.div 
+                      key={`${pageIndex}-${gameIndex}-${game.id}`}
+                      className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md cursor-pointer"
+                      onClick={() => setSelectedGame(game)}
+                      whileHover={{ scale: 1.03 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    >
+                      <div className="relative aspect-[3/4] overflow-hidden rounded-t-lg">
+                        {game.cover ? (
+                          <>
+                            <GameCover3D gameId={game.id} imageId={game.cover.image_id} gameName={game.name} pageIndex={pageIndex} gameIndex={gameIndex}>
+                            </GameCover3D>
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                            <span className="text-muted-foreground text-xs">No Image</span>
+                          </div>
+                        )}
+                        {/* Badge indiquant le nombre de plateformes */}
+                        {game.platforms && game.platforms.length > 0 && (
+                          <div className="absolute top-2 right-2 bg-black/70 text-white px-1.5 py-0.5 rounded text-xs">
+                            {game.platforms.length} {game.platforms.length > 1 ? "plateformes" : "plateforme"}
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2">
+                        <h3 className="font-medium text-sm truncate" title={game.name}>
+                          {game.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {game.first_release_date 
+                            ? getIGDBReleaseYear(game.first_release_date)
+                            : 'Date inconnue'}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </React.Fragment>
               ))}
             </div>
           )}
           
           {/* Bouton charger plus */}
-          {searchQuery && !isLoading && !isFetchingNextPage && hasMore && data?.pages && data.pages[0]?.games?.length > 0 && (
+          {searchQuery && !isLoading && !isFetchingNextPage && hasMore && data?.pages && data.pages[0] && data.pages[0].games && data.pages[0].games.length > 0 && (
             <div className="flex justify-center my-6">
               <Button onClick={() => fetchNextPage()} variant="outline">
                 Charger plus de jeux
@@ -768,7 +840,7 @@ export default function SearchPage() {
             </div>
           )}
           
-          {searchQuery && data?.pages && data.pages[0]?.games?.length === 0 && !isLoading && (
+          {searchQuery && data?.pages && data.pages[0] && data.pages[0].games && data.pages[0].games.length === 0 && !isLoading && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Aucun résultat trouvé</p>
             </div>
@@ -785,8 +857,8 @@ export default function SearchPage() {
             setSelectedGame(null);
           }}
           onSelect={handleAddGame}
-          gameName={selectedGame.name}
-          gamePlatforms={selectedGame.platforms}
+          gameName={selectedGame.name || 'Jeu sans nom'}
+          gamePlatforms={selectedGame.platforms || []}
         />
       )}
     </div>
