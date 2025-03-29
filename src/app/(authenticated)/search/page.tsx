@@ -13,6 +13,74 @@ import { supabase } from '@/lib/supabase';
 import { ConsoleSelectDialog } from '@/components/console-select-dialog';
 import { useAuth } from '@/context/auth-context';
 import { Badge } from "@/components/ui/badge";
+import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
+
+// Composant pour l'effet 3D tactile des jaquettes de jeux
+const GameCover3D: React.FC<{
+  gameId: number;
+  imageId: string;
+  gameName: string;
+  pageIndex: number;
+  gameIndex: number;
+  children?: React.ReactNode;
+}> = ({ gameId, imageId, gameName, pageIndex, gameIndex, children }) => {
+  // Valeurs de mouvement pour le suivi du toucher/souris
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  
+  // Transformer les mouvements en rotations avec des limites
+  const rotateY = useTransform(x, [-100, 100], [10, -10]);
+  const rotateX = useTransform(y, [-100, 100], [-10, 10]);
+  
+  // Ajouter un ressort pour des mouvements plus fluides
+  const springRotateY = useSpring(rotateY, { stiffness: 300, damping: 30 });
+  const springRotateX = useSpring(rotateX, { stiffness: 300, damping: 30 });
+  
+  // Gestionnaire pour le suivi du mouvement tactile/souris
+  const handleMouse = (event: React.PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // Calculer la position relative au centre
+    x.set(event.clientX - centerX);
+    y.set(event.clientY - centerY);
+  };
+  
+  // Réinitialiser la position quand le toucher/souris quitte l'élément
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+  
+  return (
+    <motion.div
+      className="absolute inset-0 w-full h-full"
+      style={{
+        perspective: "1000px",
+        rotateY: springRotateY,
+        rotateX: springRotateX
+      }}
+      onPointerMove={handleMouse}
+      onPointerLeave={handleMouseLeave}
+      whileHover={{ scale: 1.02 }}
+    >
+      <Image
+        src={`https://images.igdb.com/igdb/image/upload/t_cover_big/${imageId}.jpg`}
+        alt={gameName}
+        fill
+        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+        className="object-cover brightness-105 contrast-105"
+        priority={pageIndex === 0 && gameIndex < 6} // Priorité aux premières images visibles
+      />
+      {/* Effet de reflet statique */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/10 pointer-events-none" />
+      {/* Effet de bord 3D */}
+      <div className="absolute top-0 right-0 w-[3px] h-full bg-gradient-to-l from-black/40 to-black/10 transform origin-right z-10" />
+      {children}
+    </motion.div>
+  );
+};
 
 interface IGDBGame {
   id: number;
@@ -56,10 +124,30 @@ export default function SearchPage() {
   const [selectedGame, setSelectedGame] = useState<IGDBGame | null>(null);
   const [isConsoleDialogOpen, setIsConsoleDialogOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Utiliser le contexte d'authentification pour accéder à l'utilisateur
   const { user } = useAuth();
 
+  // Détecter si l'appareil est mobile
+  useEffect(() => {
+    // Vérifier si window est défini (client-side seulement)
+    if (typeof window !== 'undefined') {
+      const checkIfMobile = () => {
+        setIsMobile(window.innerWidth < 640);
+      };
+      
+      // Vérifier initialement
+      checkIfMobile();
+      
+      // Ajouter un écouteur pour les changements de taille d'écran
+      window.addEventListener('resize', checkIfMobile);
+      
+      // Nettoyer l'écouteur lors du démontage
+      return () => window.removeEventListener('resize', checkIfMobile);
+    }
+  }, []);
+  
   // Charger les plateformes depuis Supabase au démarrage
   useEffect(() => {
     const fetchPlatformsFromSupabase = async () => {
@@ -469,7 +557,7 @@ export default function SearchPage() {
         Appuyez sur Entrée ou cliquez sur Rechercher pour lancer la recherche
       </div>
       
-      {/* Sélecteur de plateforme simplifié */}
+      {/* Sélecteur de plateforme optimisé pour mobile et bureau */}
       <div className="mb-6 p-4 bg-muted/30 rounded-lg">
         <h2 className="text-sm font-medium mb-3">Sélectionner une plateforme (optionnel)</h2>
         
@@ -505,9 +593,10 @@ export default function SearchPage() {
               />
             </div>
             
+            {/* Select avec hauteur adaptative selon l'appareil */}
             <select
               id="platform-select"
-              className="w-full p-2 border rounded-md bg-background min-h-[180px] hover:cursor-pointer focus:ring-1 focus:ring-primary"
+              className="w-full p-2 border rounded-md bg-background hover:cursor-pointer focus:ring-1 focus:ring-primary"
               value={selectedPlatform || ""}
               onChange={(e) => {
                 const value = e.target.value;
@@ -523,8 +612,12 @@ export default function SearchPage() {
                   setShouldSearch(false);
                 }
               }}
-              size={6}
-              style={{ overflowY: 'auto' }}
+              size={isMobile ? 4 : 6} // Taille adaptative selon l'écran
+              style={{
+                overflowY: 'auto',
+                minHeight: isMobile ? '120px' : '180px',
+                maxHeight: isMobile ? '40vh' : '300px'
+              }}
             >
               <option value="">Toutes les plateformes</option>
               {platforms
@@ -539,30 +632,32 @@ export default function SearchPage() {
         </div>
 
         {selectedPlatform && selectedPlatform > 0 && (
-          <div className="flex items-center mt-3">
-            <span className="text-sm text-muted-foreground">Plateforme sélectionnée :</span>
-            <Badge className="ml-2">
-              {(() => {
-                const platform = platforms.find(p => Number(p.igdb_platform_id) === Number(selectedPlatform));
-                return platform ? 
-                  `${platform.name}${platform.abbreviation ? ` (${platform.abbreviation})` : ''}` : 
-                  `Plateforme IGDB #${selectedPlatform}`;
-              })()}
-            </Badge>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="ml-2 h-5 w-5 p-0" 
-              onClick={() => {
-                setSelectedPlatform(null);
-                // Si une recherche existe déjà, relancer la recherche
-                if (searchQuery && shouldSearch) {
-                  refetchRef.current();
-                }
-              }}
-            >
-              <X className="h-3 w-3" />
-            </Button>
+          <div className="flex flex-wrap items-center mt-3">
+            <span className="text-sm text-muted-foreground mr-2">Plateforme sélectionnée :</span>
+            <div className="flex items-center mt-1 sm:mt-0">
+              <Badge className="mr-2">
+                {(() => {
+                  const platform = platforms.find(p => Number(p.igdb_platform_id) === Number(selectedPlatform));
+                  return platform ? 
+                    `${platform.name}${platform.abbreviation ? ` (${platform.abbreviation})` : ''}` : 
+                    `Plateforme IGDB #${selectedPlatform}`;
+                })()}
+              </Badge>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-5 w-5 p-0" 
+                onClick={() => {
+                  setSelectedPlatform(null);
+                  // Si une recherche existe déjà, relancer la recherche
+                  if (searchQuery && shouldSearch) {
+                    refetchRef.current();
+                  }
+                }}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
         )}
       </div>
@@ -601,20 +696,19 @@ export default function SearchPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {data.pages.map((page, pageIndex) => (
                 page.games.map((game: IGDBGame, gameIndex: number) => (
-                  <div 
+                  <motion.div 
                     key={`${pageIndex}-${gameIndex}-${game.id}`}
-                    className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                    className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md cursor-pointer"
                     onClick={() => setSelectedGame(game)}
+                    whileHover={{ scale: 1.03 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
-                    <div className="relative aspect-[3/4]">
+                    <div className="relative aspect-[3/4] overflow-hidden rounded-t-lg">
                       {game.cover ? (
-                        <Image
-                          src={`https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.image_id}.jpg`}
-                          alt={game.name}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
-                          className="object-cover"
-                        />
+                        <>
+                          <GameCover3D gameId={game.id} imageId={game.cover.image_id} gameName={game.name} pageIndex={pageIndex} gameIndex={gameIndex}>
+                          </GameCover3D>
+                        </>
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center bg-muted">
                           <span className="text-muted-foreground text-xs">No Image</span>
@@ -637,7 +731,7 @@ export default function SearchPage() {
                           : 'Date inconnue'}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))
               ))}
             </div>
