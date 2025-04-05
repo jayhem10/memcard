@@ -1,10 +1,14 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/auth-context';
-import { Badge, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, ChevronDown, Trophy } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Trophy } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { SelectIcon } from '@radix-ui/react-select';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 
 interface Achievement {
   id: string;
@@ -141,7 +145,7 @@ export default function RewardsPage() {
                     {achievement.description}
                   </p>
                 </div>
-                <Badge 
+                <Badge
                   variant={achievement.is_active ? "default" : "outline"}
                   className={`px-3 py-1 text-xs ${achievement.is_active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
                 >
