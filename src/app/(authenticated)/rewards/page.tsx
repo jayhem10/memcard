@@ -41,7 +41,26 @@ export default function RewardsPage() {
         if (error) throw error;
 
         if (data) {
-          setAchievements(data);
+          // Vérifier que les données correspondent à notre interface Achievement
+          const validatedAchievements: Achievement[] = data
+            .filter((item: any) => {
+              return typeof item.id === 'string' &&
+                     typeof item.name_fr === 'string' &&
+                     typeof item.category === 'string' &&
+                     typeof item.description === 'string' &&
+                     typeof item.icon_url === 'string' &&
+                     typeof item.is_active === 'boolean';
+            })
+            .map((item: any) => ({
+              id: item.id,
+              name_fr: item.name_fr,
+              category: item.category,
+              description: item.description,
+              icon_url: item.icon_url,
+              is_active: item.is_active
+            }));
+
+          setAchievements(validatedAchievements);
         }
       } catch (error) {
         console.error('Erreur lors du chargement des récompenses:', error);
