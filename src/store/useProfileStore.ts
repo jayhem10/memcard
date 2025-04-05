@@ -56,7 +56,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         .from('profiles')
         .select(`
           *,
-          ranks:rank_id (
+          rank_id,
+          ranks (
+            id,
             name_fr
           )
         `)
@@ -76,7 +78,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           theme: 'dark',
           updated_at: new Date().toISOString(),
           quiz_completed: false,
-          rank_id: null
+          rank_id: null,
+          rank_name_fr: null
         };
         
         // On essaie d'insérer le profil par défaut si c'est possible
@@ -96,7 +99,6 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         }
         
         // On utilise le profil par défaut même si l'insertion a échoué
-        // Détecter le type d'authentification pour mieux gérer les différences
         const isEmailAuth = !user.app_metadata?.provider || user.app_metadata.provider === 'email';
                 
         const userProfile: UserProfile = {
@@ -108,9 +110,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           theme: defaultProfile.theme || 'system',
           provider: isEmailAuth ? 'email' : String(user.app_metadata?.provider),
           last_sign_in_at: user.last_sign_in_at || null,
-          quiz_completed: defaultProfile.quiz_completed || false,
-          rank_id: defaultProfile.rank_id || null,
-          rank_name_fr: null // Ajouter le champ pour le nom du rang
+          quiz_completed: typeof defaultProfile.quiz_completed === 'boolean' ? defaultProfile.quiz_completed : false,
+          rank_id: defaultProfile.rank_id,
+          rank_name_fr: defaultProfile.rank_name_fr
         };
         
         set({ profile: userProfile, isLoading: false, error: null });
@@ -118,7 +120,6 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       }
 
       // Fusionner les données auth.user et profiles
-      // Détecter le type d'authentification
       const isEmailAuth = !user.app_metadata?.provider || user.app_metadata.provider === 'email';
       
       const userProfile: UserProfile = {
@@ -130,9 +131,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         theme: typeof data?.theme === 'string' ? data.theme : 'system',
         provider: isEmailAuth ? 'email' : String(user.app_metadata?.provider),
         last_sign_in_at: user.last_sign_in_at || null,
-        quiz_completed: data?.quiz_completed || false,
-        rank_id: data?.rank_id || null,
-        rank_name_fr: data?.ranks?.name_fr || null // Récupérer le nom du rang en français
+        quiz_completed: typeof data?.quiz_completed === 'boolean' ? data.quiz_completed : false,
+        rank_id: data?.rank_id ? parseInt(data.rank_id.toString()) : null,
+        rank_name_fr: data?.ranks && typeof data.ranks === 'object' && 'name_fr' in data.ranks ? (data.ranks as any).name_fr : null
       };
       
       set({ profile: userProfile, isLoading: false });

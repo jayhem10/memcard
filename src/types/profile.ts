@@ -38,7 +38,7 @@ export interface Profile {
   updated_at: string | null;
   created_at: string;
   theme: string | null;
-  rank_id: string | null;
+  rank_id: number | null;
   quiz_completed: boolean;
   rank?: Rank;
 }
@@ -54,7 +54,7 @@ export interface UserProfile {
   last_sign_in_at: string | null;
   quiz_completed: boolean;
   rank_id: number | null;
-  rank_name_fr: string | null; // Nouveau champ pour le nom du rang en français
+  rank_name_fr: string | null;
 }
 
 export interface ProfileUpdateRequest {
@@ -62,6 +62,6 @@ export interface ProfileUpdateRequest {
   full_name?: string;
   avatar_url?: string;
   theme?: string;
-  rank_id?: string;
+  rank_id?: number;
   quiz_completed?: boolean;
 }
