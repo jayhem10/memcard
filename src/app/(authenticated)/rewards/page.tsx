@@ -89,6 +89,14 @@ export default function RewardsPage() {
   // Extraire les catégories uniques pour le filtre
   const uniqueCategories = Array.from(new Set(achievements.map(a => a.category)));
 
+  const handleStatusChange = (value: string) => {
+    setActiveTab(value as 'all' | 'active' | 'inactive');
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setCategoryFilter(value === 'all' ? 'all' : value);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-4 mb-6">
@@ -110,7 +118,7 @@ export default function RewardsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {/* Filtre par statut */}
         <div>
-          <Select value={activeTab} onValueChange={setActiveTab}>
+          <Select value={activeTab} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Tous les statuts" />
               <SelectIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -125,7 +133,7 @@ export default function RewardsPage() {
 
         {/* Filtre par catégorie */}
         <div>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <Select value={categoryFilter} onValueChange={handleCategoryChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Toutes les catégories" />
               <SelectIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
