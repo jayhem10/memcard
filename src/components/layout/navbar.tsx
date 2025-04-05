@@ -16,7 +16,6 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { profile, isLoading, fetchProfile } = useProfileStore();
   const { user } = useAuth();
-  console.log(profile);
 
   useEffect(() => {
     if (user && !profile && !isLoading) {
