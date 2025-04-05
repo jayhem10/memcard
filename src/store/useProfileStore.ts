@@ -51,10 +51,15 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         return;
       }
       
-      // Récupérer le profil de l'utilisateur dans la table profiles
+      // Récupérer le profil de l'utilisateur avec le nom du rang en français
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          ranks:rank_id (
+            name_fr
+          )
+        `)
         .eq('id', user.id)
         .single();
       
@@ -69,7 +74,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           full_name: (user.user_metadata?.full_name as string) || null,
           avatar_url: (user.user_metadata?.avatar_url as string) || null,
           theme: 'dark',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          quiz_completed: false,
+          rank_id: null
         };
         
         // On essaie d'insérer le profil par défaut si c'est possible
@@ -100,7 +107,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           avatar_url: defaultProfile.avatar_url || null,
           theme: defaultProfile.theme || 'system',
           provider: isEmailAuth ? 'email' : String(user.app_metadata?.provider),
-          last_sign_in_at: user.last_sign_in_at || null
+          last_sign_in_at: user.last_sign_in_at || null,
+          quiz_completed: defaultProfile.quiz_completed || false,
+          rank_id: defaultProfile.rank_id || null,
+          rank_name_fr: null // Ajouter le champ pour le nom du rang
         };
         
         set({ profile: userProfile, isLoading: false, error: null });
@@ -119,7 +129,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         avatar_url: typeof data?.avatar_url === 'string' ? data.avatar_url : null,
         theme: typeof data?.theme === 'string' ? data.theme : 'system',
         provider: isEmailAuth ? 'email' : String(user.app_metadata?.provider),
-        last_sign_in_at: user.last_sign_in_at || null
+        last_sign_in_at: user.last_sign_in_at || null,
+        quiz_completed: data?.quiz_completed || false,
+        rank_id: data?.rank_id || null,
+        rank_name_fr: data?.ranks?.name_fr || null // Récupérer le nom du rang en français
       };
       
       set({ profile: userProfile, isLoading: false });

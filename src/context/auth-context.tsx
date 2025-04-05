@@ -59,8 +59,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Fonction pour nettoyer le localStorage en cas de problème avec les tokens
+  const cleanupLocalStorage = () => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      // Identifier les clés liées à Supabase dans le localStorage
+      const supabaseKeys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('supabase') || key.includes('sb-'))) {
+          supabaseKeys.push(key);
+        }
+      }
+      
+      // Vérifier et nettoyer les tokens problématiques
+      supabaseKeys.forEach(key => {
+        try {
+          const value = localStorage.getItem(key);
+          if (value) {
+            // Essayer de parser la valeur pour vérifier si elle est valide
+            JSON.parse(value);
+          }
+        } catch (e) {
+          // Si le parsing échoue, supprimer cette entrée
+          console.warn(`Removing invalid token in localStorage: ${key}`);
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (error) {
+      console.error('Error cleaning localStorage:', error);
+    }
+  };
+
   // Vérifier l'état de la session utilisateur au chargement du composant
   useEffect(() => {
+    // Nettoyer le localStorage au démarrage
+    cleanupLocalStorage();
+    
     // Abonnement aux changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -83,6 +119,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setTimeout(() => {
         handleRedirection(currentUser);
       }, 100); // Petit délai pour s'assurer que le routeur est initialisé
+    }).catch(error => {
+      console.error('Error getting session:', error);
+      setIsLoading(false);
+      // En cas d'erreur, nettoyer le localStorage et rediriger vers la page de connexion
+      cleanupLocalStorage();
+      window.location.href = '/login';
     });
 
     // Nettoyer l'abonnement à la déconnexion du composant

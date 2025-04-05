@@ -33,7 +33,7 @@ interface Platform {
 interface ConsoleSelectDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (consoleId: string, consoleName?: string) => void;
+  onSelect: (consoleId: string, consoleName?: string, status?: string) => void;
   gameName: string;
   gamePlatforms?: Platform[];
 }
@@ -42,6 +42,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
   // S'assurer qu'on a accès au nom du jeu et platformes
   const [consoles, setConsoles] = useState<Console[]>([]);
   const [selectedConsoleId, setSelectedConsoleId] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('NOT_STARTED');
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchConsoles = async () => {
@@ -139,8 +140,8 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
     if (selectedConsoleId) {
       // Find the selected console to get its name
       const selectedConsole = consoles.find(c => c.id === selectedConsoleId);
-      // Pass both ID and name to the parent component
-      onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée');
+      // Pass both ID, name and status to the parent component
+      onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée', selectedStatus);
     }
   };
 
@@ -214,6 +215,24 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                         {console.name}
                       </SelectItem>
                     ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="status">Statut</Label>
+              <Select
+                value={selectedStatus}
+                onValueChange={setSelectedStatus}
+              >
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Sélectionnez un statut" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NOT_STARTED">Non commencé</SelectItem>
+                  <SelectItem value="IN_PROGRESS">En cours</SelectItem>
+                  <SelectItem value="COMPLETED">Terminé</SelectItem>
+                  <SelectItem value="WISHLIST">Liste de souhaits</SelectItem>
                 </SelectContent>
               </Select>
             </div>

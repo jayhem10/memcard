@@ -12,10 +12,13 @@ import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Types de données
 type ViewMode = 'grid' | 'list';
 type FilterStatus = 'all' | 'playing' | 'completed' | 'backlog' | 'wishlist';
+type CollectionTab = 'collection' | 'wishlist';
 
 type Console = {
   id: string;
@@ -66,10 +69,12 @@ export default function CollectionPage() {
   const [consoles, setConsoles] = useState<Console[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<CollectionTab>('collection');
   
   // Get auth context
   const { user, isLoading: authLoading } = useAuth();
 
+  // Charger les jeux de l'utilisateur
   useEffect(() => {
     async function fetchUserGames() {
       try {
@@ -235,16 +240,24 @@ export default function CollectionPage() {
     play_time: undefined
   }));
   
-  // Filter games based on searchQuery, statusFilter and consoleFilter
+  // Filter games based on searchQuery, statusFilter, consoleFilter and activeTab
   const filteredGames = preparedGames.filter(game => {
+    // Filter by active tab first
+    if (activeTab === 'collection' && ['wishlist', 'WISHLIST'].includes(game.status)) {
+      return false; // Ne pas afficher les jeux wishlist dans l'onglet collection
+    }
+    if (activeTab === 'wishlist' && !['wishlist', 'WISHLIST'].includes(game.status)) {
+      return false; // Afficher uniquement les jeux wishlist dans l'onglet wishlist
+    }
+    
     // Apply text search filter
     const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          game.publisher.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          game.developer.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // Apply status filter
+    // Apply status filter (seulement dans l'onglet collection)
     let matchesStatus = true;
-    if (statusFilter !== 'all') {
+    if (activeTab === 'collection' && statusFilter !== 'all') {
       // Définir le mappage en fonction des valeurs réelles en BDD
       const statusMapping: Record<FilterStatus, string[]> = {
         all: [],
@@ -278,13 +291,28 @@ export default function CollectionPage() {
     { label: 'En cours', value: 'playing' },
     { label: 'Terminés', value: 'completed' },
     { label: 'À faire', value: 'backlog' },
-    { label: 'Souhaits', value: 'wishlist' },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-3xl font-bold">Ma Collection</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold">Ma Collection</h1>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={activeTab === 'collection' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('collection')}
+            >
+              Collection
+            </Button>
+            <Button
+              variant={activeTab === 'wishlist' ? 'default' : 'outline'}
+              onClick={() => setActiveTab('wishlist')}
+            >
+              Liste de souhaits
+            </Button>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
@@ -307,24 +335,26 @@ export default function CollectionPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Rechercher dans ma collection..."
+            placeholder={activeTab === 'collection' ? "Rechercher dans ma collection..." : "Rechercher dans ma liste de souhaits..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-          {filterButtons.map((button) => (
-            <Button
-              key={button.value}
-              variant={statusFilter === button.value ? 'default' : 'outline'}
-              onClick={() => setStatusFilter(button.value)}
-              className="whitespace-nowrap"
-            >
-              {button.label}
-            </Button>
-          ))}
-        </div>
+        {activeTab === 'collection' && (
+          <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+            {filterButtons.map((button) => (
+              <Button
+                key={button.value}
+                variant={statusFilter === button.value ? 'default' : 'outline'}
+                onClick={() => setStatusFilter(button.value)}
+                className="whitespace-nowrap"
+              >
+                {button.label}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Filtrage par consoles */}

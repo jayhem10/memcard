@@ -16,7 +16,8 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { profile, isLoading, fetchProfile } = useProfileStore();
   const { user } = useAuth();
-  
+  console.log(profile);
+
   useEffect(() => {
     if (user && !profile && !isLoading) {
       fetchProfile();
@@ -26,9 +27,14 @@ export function Navbar() {
   const navigation = [
     { name: 'Ma Collection', href: '/collection' },
     { name: 'Rechercher', href: '/search' },
+    { name: 'Récompenses', href: '/achievements' },
     { name: 'Profil', href: '/profile' },
     { name: 'Admin', href: '/admin' },
   ];
+  
+  // Afficher le rang si le quiz est complété, sinon afficher le bouton pour le quiz
+  const showQuizLink = !profile?.quiz_completed;
+  const userRank = profile?.rank_name_fr;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -59,6 +65,19 @@ export function Navbar() {
                 {item.name}
               </Link>
             ))}
+            
+            {showQuizLink ? (
+              <Link
+                href="/quiz"
+                className="px-3 py-2 rounded-md text-sm font-medium bg-accent-foreground text-accent animate-pulse hover:animate-none"
+              >
+                Découvrir mon rang
+              </Link>
+            ) : (
+              <span className="px-3 py-2 rounded-md text-sm font-medium bg-accent-foreground text-accent">
+                {userRank || "Rang non défini"}
+              </span>
+            )}
             <ThemeSelector />
             <Button variant="destructive" onClick={handleSignOut}>
               Déconnexion
@@ -135,6 +154,19 @@ export function Navbar() {
                 {item.name}
               </Link>
             ))}
+            {showQuizLink ? (
+              <Link
+                href="/quiz"
+                className="block px-3 py-2 rounded-md text-base font-medium bg-accent-foreground text-accent animate-pulse hover:animate-none"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Découvrir mon rang
+              </Link>
+            ) : (
+              <span className="block px-3 py-2 rounded-md text-base font-medium bg-accent-foreground text-accent">
+                {userRank || "Rang non défini"}
+              </span>
+            )}
             <Button
               variant="destructive"
               className="w-full mt-2"
