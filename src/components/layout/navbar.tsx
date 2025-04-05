@@ -92,7 +92,7 @@ export function Navbar() {
                   <AvatarFallback>
                     {(profile.full_name || profile.username || profile.email?.split('@')[0] || 'U')
                       .split(' ')
-                      .map(n => n[0])
+                      .map((n: string) => n[0])
                       .slice(0, 2)
                       .join('')
                       .toUpperCase()}
@@ -117,7 +117,7 @@ export function Navbar() {
                   <AvatarFallback>
                     {(profile.full_name || profile.username || profile.email?.split('@')[0] || 'U')
                       .split(' ')
-                      .map(n => n[0])
+                      .map((n: string) => n[0])
                       .slice(0, 2)
                       .join('')
                       .toUpperCase()}

@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
-import { Profile, ProfileUpdateRequest, UserProfile } from '@/types/profile';
+import { ProfileUpdateRequest, UserProfile } from '@/types/profile';
 import toast from 'react-hot-toast';
 
 interface ProfileState {

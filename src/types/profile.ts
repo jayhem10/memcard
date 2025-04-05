@@ -43,7 +43,7 @@ export interface Profile {
   rank?: Rank;
 }
 
-interface UserProfile {
+export interface UserProfile {
   id: string;
   email: string | null;
   username: string | null;
