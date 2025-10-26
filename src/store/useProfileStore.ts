@@ -55,8 +55,16 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       const { data, error } = await supabase
         .from('profiles')
         .select(`
-          *,
+          id,
+          username,
+          full_name,
+          avatar_url,
+          theme,
           rank_id,
+          quiz_completed,
+          is_public,
+          updated_at,
+          created_at,
           ranks (
             id,
             name_fr
@@ -166,12 +174,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       
       if (error) throw error;
       
-      // Mettre à jour le store avec les nouvelles données
-      const currentProfile = get().profile;
-      set({ 
-        profile: currentProfile ? { ...currentProfile, ...profileData } : null,
-        isLoading: false 
-      });
+      // Recharger le profil complet depuis la base pour s'assurer de la cohérence
+      await get().fetchProfile();
       
       toast.success('Profil mis à jour avec succès');
     } catch (error: any) {

@@ -51,10 +51,18 @@ export default function UserRank() {
         const { data: userData } = await supabase.auth.getUser();
         if (!userData.user) return;
         
-        // Get profile data
+        // Get profile data with rank information in one query
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('quiz_completed, rank_id')
+          .select(`
+            quiz_completed,
+            rank_id,
+            ranks (
+              name_fr,
+              description_fr,
+              icon_url
+            )
+          `)
           .eq('id', userData.user.id)
           .single();
         
@@ -65,19 +73,12 @@ export default function UserRank() {
         
         setHasQuizCompleted(!!profileData.quiz_completed);
         
-        // If user has a rank, fetch rank details
-        if (profileData.rank_id) {
-          const { data: rankData, error: rankError } = await supabase
-            .from('ranks')
-            .select('name_fr, description_fr, icon_url')
-            .eq('id', profileData.rank_id)
-            .single();
-          
-          if (!rankError && rankData) {
-            setRankName(rankData.name_fr ? String(rankData.name_fr) : '');
-            setRankDescription(rankData.description_fr ? String(rankData.description_fr) : '');
-            setRankIcon(rankData.icon_url ? String(rankData.icon_url) : null);
-          }
+        // Set rank data if available
+        if (profileData.ranks) {
+          const rankData = profileData.ranks as any;
+          setRankName(rankData.name_fr ? String(rankData.name_fr) : '');
+          setRankDescription(rankData.description_fr ? String(rankData.description_fr) : '');
+          setRankIcon(rankData.icon_url ? String(rankData.icon_url) : null);
         }
       } catch (error) {
         console.error('Error:', error);
