@@ -185,10 +185,11 @@ export default function CollectionPage() {
 
     // Filtrer les jeux selon l'onglet actif
     const tabFilteredGames = games.filter(game => {
+      const status = game.status || '';
       if (activeTab === 'collection') {
-        return !['wishlist', 'WISHLIST'].includes(game.status);
+        return !['wishlist', 'WISHLIST'].includes(status);
       } else {
-        return ['wishlist', 'WISHLIST'].includes(game.status);
+        return ['wishlist', 'WISHLIST'].includes(status);
       }
     });
 
@@ -263,11 +264,12 @@ export default function CollectionPage() {
   
   // Filter games based on searchQuery, statusFilter, consoleFilter and activeTab
   const filteredGames = preparedGames.filter(game => {
+    const status = game.status || '';
     // Filter by active tab first
-    if (activeTab === 'collection' && ['wishlist', 'WISHLIST'].includes(game.status)) {
+    if (activeTab === 'collection' && ['wishlist', 'WISHLIST'].includes(status)) {
       return false; // Ne pas afficher les jeux wishlist dans l'onglet collection
     }
-    if (activeTab === 'wishlist' && !['wishlist', 'WISHLIST'].includes(game.status)) {
+    if (activeTab === 'wishlist' && !['wishlist', 'WISHLIST'].includes(status)) {
       return false; // Afficher uniquement les jeux wishlist dans l'onglet wishlist
     }
     
@@ -289,7 +291,7 @@ export default function CollectionPage() {
       };
       
       // Vérifier si le statut du jeu correspond à l'un des statuts attendus
-      matchesStatus = statusMapping[statusFilter].includes(game.status);
+      matchesStatus = statusMapping[statusFilter].includes(status);
     }
     
     // Apply console filter
