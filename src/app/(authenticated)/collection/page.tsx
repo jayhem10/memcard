@@ -70,6 +70,14 @@ export default function CollectionPage() {
   const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<CollectionTab>('collection');
+
+  // Réinitialiser les filtres quand on change d'onglet
+  useEffect(() => {
+    setConsoleFilter('all');
+    setGenreFilter('all');
+    setStatusFilter('all');
+    setSearchQuery('');
+  }, [activeTab]);
   
   // Get auth context
   const { user, isLoading: authLoading } = useAuth();
@@ -117,6 +125,8 @@ export default function CollectionPage() {
         
         if (!data || data.length === 0) {
           setGames([]);
+          setConsoles([{ id: 'all', name: 'Toutes les consoles', count: 0 }]);
+          setGenres([{ id: 'all', name: 'Tous les genres', count: 0 }]);
           setLoading(false);
           return;
         }
@@ -154,60 +164,6 @@ export default function CollectionPage() {
           };
         }).filter(Boolean) as Game[];
         
-        // Calculer le nombre de jeux par console
-        const consoleMap = new Map<string, { id: string; name: string; count: number }>();
-        // Ajouter l'option "Toutes les consoles" avec le nombre total de jeux
-        consoleMap.set('all', { id: 'all', name: 'Toutes les consoles', count: formattedGames.length });
-        
-        // Comptage par console
-        formattedGames.forEach(game => {
-          if (game.console_id && game.console_name) {
-            const key = game.console_id;
-            if (consoleMap.has(key)) {
-              consoleMap.get(key)!.count++;
-            } else {
-              consoleMap.set(key, { id: game.console_id, name: game.console_name, count: 1 });
-            }
-          }
-        });
-        
-        // Calculer le nombre de jeux par genre
-        const genreMap = new Map<string, { id: string; name: string; count: number }>();
-        // Ajouter l'option "Tous les genres" avec le nombre total de jeux
-        genreMap.set('all', { id: 'all', name: 'Tous les genres', count: formattedGames.length });
-        
-        // Comptage par genre
-        formattedGames.forEach(game => {
-          if (game.genres && game.genres.length > 0) {
-            game.genres.forEach((genre) => {
-              if (genre.id && genre.name) {
-                const key = genre.id;
-                if (genreMap.has(key)) {
-                  genreMap.get(key)!.count++;
-                } else {
-                  genreMap.set(key, { id: genre.id, name: genre.name, count: 1 });
-                }
-              }
-            });
-          }
-        });
-        
-        // Convertir Map en tableau pour l'état
-        const consoleList = Array.from(consoleMap.values());
-        const genreList = Array.from(genreMap.values());
-        
-        // Trier par ordre alphabétique (sauf "Toutes les consoles"/"Tous les genres" qui reste en premier)
-        const sortItems = (a: {id: string, name: string}, b: {id: string, name: string}) => {
-          if (a.id === 'all') return -1;
-          if (b.id === 'all') return 1;
-          return a.name.localeCompare(b.name);
-        };
-        
-        consoleList.sort(sortItems);
-        genreList.sort(sortItems);
-        
-        setConsoles(consoleList);
-        setGenres(genreList);
         setGames(formattedGames);
       } catch (error: any) {
         console.error('Error fetching games:', error);
@@ -222,6 +178,71 @@ export default function CollectionPage() {
       fetchUserGames();
     }
   }, [user, authLoading, supabase]);
+
+  // Recalculer les compteurs quand l'onglet change
+  useEffect(() => {
+    if (games.length === 0) return;
+
+    // Filtrer les jeux selon l'onglet actif
+    const tabFilteredGames = games.filter(game => {
+      if (activeTab === 'collection') {
+        return !['wishlist', 'WISHLIST'].includes(game.status);
+      } else {
+        return ['wishlist', 'WISHLIST'].includes(game.status);
+      }
+    });
+
+    // Calculer le nombre de jeux par console pour l'onglet actif
+    const consoleMap = new Map<string, { id: string; name: string; count: number }>();
+    consoleMap.set('all', { id: 'all', name: 'Toutes les consoles', count: tabFilteredGames.length });
+    
+    tabFilteredGames.forEach(game => {
+      if (game.console_id && game.console_name) {
+        const key = game.console_id;
+        if (consoleMap.has(key)) {
+          consoleMap.get(key)!.count++;
+        } else {
+          consoleMap.set(key, { id: game.console_id, name: game.console_name, count: 1 });
+        }
+      }
+    });
+    
+    // Calculer le nombre de jeux par genre pour l'onglet actif
+    const genreMap = new Map<string, { id: string; name: string; count: number }>();
+    genreMap.set('all', { id: 'all', name: 'Tous les genres', count: tabFilteredGames.length });
+    
+    tabFilteredGames.forEach(game => {
+      if (game.genres && game.genres.length > 0) {
+        game.genres.forEach((genre) => {
+          if (genre.id && genre.name) {
+            const key = genre.id;
+            if (genreMap.has(key)) {
+              genreMap.get(key)!.count++;
+            } else {
+              genreMap.set(key, { id: genre.id, name: genre.name, count: 1 });
+            }
+          }
+        });
+      }
+    });
+    
+    // Convertir Map en tableau pour l'état
+    const consoleList = Array.from(consoleMap.values());
+    const genreList = Array.from(genreMap.values());
+    
+    // Trier par ordre alphabétique (sauf "Toutes les consoles"/"Tous les genres" qui reste en premier)
+    const sortItems = (a: {id: string, name: string}, b: {id: string, name: string}) => {
+      if (a.id === 'all') return -1;
+      if (b.id === 'all') return 1;
+      return a.name.localeCompare(b.name);
+    };
+    
+    consoleList.sort(sortItems);
+    genreList.sort(sortItems);
+    
+    setConsoles(consoleList);
+    setGenres(genreList);
+  }, [games, activeTab]);
 
   // Log des statuts uniques pour le débogage
   useEffect(() => {
