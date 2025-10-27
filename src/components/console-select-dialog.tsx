@@ -150,8 +150,8 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px] max-w-[95vw]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-w-[95vw] p-0">
+        <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
           <DialogTitle>
             Sélectionnez une console
           </DialogTitle>
@@ -171,7 +171,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="py-2 sm:py-4 space-y-3 sm:space-y-4">
+          <div className="py-2 sm:py-4 space-y-3 sm:space-y-4 px-4 sm:px-6 overflow-y-auto max-h-[calc(100dvh-200px)]">
             <div className="space-y-2">
               <Label htmlFor="console">Console</Label>
               <Select
@@ -256,7 +256,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
           </div>
         )}
         
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-2 sm:gap-0 sticky bottom-0 bg-background px-4 pb-4 pt-2 sm:px-6 sm:pb-6 sm:pt-4">
           <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
             Annuler
           </Button>
