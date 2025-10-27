@@ -317,7 +317,7 @@ export default function SearchPage() {
 
   const [selectedConsoleName, setSelectedConsoleName] = useState<string>('');
   
-  const handleAddGame = async (consoleId: string, consoleName?: string, status?: string) => {
+  const handleAddGame = async (consoleId: string, consoleName?: string, status?: string, buyPrice?: number) => {
     // Ne pas convertir le consoleId pour préserver le format UUID
     if (!selectedGame || !user) return;
     
@@ -523,7 +523,8 @@ export default function SearchPage() {
           game_id: gameId,
           status: status || 'NOT_STARTED',
           rating: 0,
-          notes: ''
+          notes: '',
+          buy_price: buyPrice || null
         });
       
       if (userGameError) throw userGameError;

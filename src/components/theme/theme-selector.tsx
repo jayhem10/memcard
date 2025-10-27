@@ -24,13 +24,15 @@ export function ThemeSelector() {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { profile } = useProfileStore();
   const currentTheme = theme || resolvedTheme || 'light';
+  const hasAppliedProfileTheme = React.useRef(false);
   
   // Charger le thème depuis le profil si disponible
   useEffect(() => {
-    if (profile?.theme && profile.theme !== theme) {
+    if (!hasAppliedProfileTheme.current && profile?.theme) {
       setTheme(profile.theme);
+      hasAppliedProfileTheme.current = true;
     }
-  }, [profile, setTheme, theme]);
+  }, [profile, setTheme]);
   
   // Trouver le thème actuel dans la configuration
   const themeConfig = themes.find(t => t.value === currentTheme) || themes[0];
@@ -57,11 +59,8 @@ export function ThemeSelector() {
                 variant={isActive ? "secondary" : "ghost"}
                 className="w-full justify-start gap-2 font-normal"
                 onClick={() => {
+                  // Changement temporaire de thème (juste pour la session)
                   setTheme(t.value);
-                  // Si l'utilisateur est connecté, mettre à jour son thème préféré
-                  if (profile) {
-                    useProfileStore.getState().updateProfile({ theme: t.value });
-                  }
                 }}
               >
                 <ItemIcon className="h-4 w-4" />

@@ -76,7 +76,7 @@ export function GameFormDialog({ isOpen, onClose, gameId, initialBuyPrice }: Gam
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[400px] max-w-[95vw]">
         <DialogHeader>
           <DialogTitle>Prix d'achat</DialogTitle>
           <DialogDescription>
@@ -84,7 +84,7 @@ export function GameFormDialog({ isOpen, onClose, gameId, initialBuyPrice }: Gam
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div className="space-y-2">
             <Label htmlFor="buyPrice">Prix d'achat</Label>
             <Input
@@ -99,16 +99,17 @@ export function GameFormDialog({ isOpen, onClose, gameId, initialBuyPrice }: Gam
             />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
               disabled={isLoading}
+              className="w-full sm:w-auto"
             >
               Annuler
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Enregistrer
             </Button>

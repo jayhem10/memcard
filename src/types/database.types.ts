@@ -40,6 +40,7 @@ export interface UserGame {
   completion_percentage: number | null;
   created_at: string;
   updated_at: string;
+  buy_price: number | null;
 }
 
 export type GameStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'DROPPED' | 'WISHLIST';

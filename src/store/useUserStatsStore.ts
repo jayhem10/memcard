@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 
 interface Platform {
-  consoleId: number;
+  consoleId: string; // UUID string, pas number
   name: string;
   count: number;
   igdb_platform_id: number;
@@ -128,20 +128,25 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
       if (statsError) throw statsError;
 
       if (statsData) {
-        // Calculer les statistiques
-        const total = statsData.length;
-        const completed = statsData.filter(game => game.status === 'COMPLETED').length;
-        const inProgress = statsData.filter(game => game.status === 'IN_PROGRESS').length;
-        const notStarted = statsData.filter(game => game.status === 'NOT_STARTED').length;
-        const wishlist = statsData.filter(game => game.status === 'WISHLIST').length;
+        // Filtrer les jeux pour exclure la wishlist (on ne possède pas ces jeux)
+        const ownedGames = statsData.filter(game => game.status !== 'WISHLIST');
+        
+        // Calculer les statistiques uniquement sur les jeux possédés
+        const total = ownedGames.length;
+        const completed = ownedGames.filter(game => game.status === 'COMPLETED').length;
+        const inProgress = ownedGames.filter(game => game.status === 'IN_PROGRESS').length;
+        const notStarted = ownedGames.filter(game => game.status === 'NOT_STARTED').length;
+        const wishlist = statsData.filter(game => game.status === 'WISHLIST').length; // Garder le compte de la wishlist séparément
 
-        // Récupérer les plateformes par utilisateur
+        // Récupérer les plateformes par utilisateur (exclure la wishlist)
         const { data: platformData, error: platformError } = await supabase
           .from('user_games')
           .select(`
-            game:game_id(console:console_id(id, name, igdb_platform_id))
+            game:game_id(console:console_id(id, name, igdb_platform_id)),
+            status
           `)
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .neq('status', 'WISHLIST'); // Exclure les jeux de la wishlist
 
         if (platformError) throw platformError;
 
@@ -171,14 +176,14 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
         // Convertir en tableau et trier par nombre de jeux
         const platforms = Object.entries(platformCounts)
           .map(([consoleId, data]) => ({
-            consoleId: Number(consoleId),
+            consoleId: consoleId, // Garder comme string car c'est un UUID
             name: data.name,
             count: data.count,
             igdb_platform_id: data.igdb_platform_id
           }))
           .sort((a, b) => b.count - a.count);
 
-        // Récupérer les jeux récents
+        // Récupérer les jeux récents (exclure la wishlist)
         const { data: recentData, error: recentError } = await supabase
           .from('user_games')
           .select(`
@@ -189,6 +194,7 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
             game:game_id(id, title, cover_url, console:console_id(name))
           `)
           .eq('user_id', userId)
+          .neq('status', 'WISHLIST') // Exclure les jeux de la wishlist
           .order('created_at', { ascending: false })
           .limit(5);
 

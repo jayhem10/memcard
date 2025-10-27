@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -33,7 +34,7 @@ interface Platform {
 interface ConsoleSelectDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (consoleId: string, consoleName?: string, status?: string) => void;
+  onSelect: (consoleId: string, consoleName?: string, status?: string, buyPrice?: number) => void;
   gameName: string;
   gamePlatforms?: Platform[];
 }
@@ -43,6 +44,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
   const [consoles, setConsoles] = useState<Console[]>([]);
   const [selectedConsoleId, setSelectedConsoleId] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('NOT_STARTED');
+  const [buyPrice, setBuyPrice] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchConsoles = async () => {
@@ -140,14 +142,15 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
     if (selectedConsoleId) {
       // Find the selected console to get its name
       const selectedConsole = consoles.find(c => c.id === selectedConsoleId);
-      // Pass both ID, name and status to the parent component
-      onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée', selectedStatus);
+      const numericPrice = parseFloat(buyPrice) || undefined;
+      // Pass both ID, name, status and price to the parent component
+      onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée', selectedStatus, numericPrice);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-w-[95vw]">
         <DialogHeader>
           <DialogTitle>
             Sélectionnez une console
@@ -156,7 +159,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
             Choisissez la console pour &quot;{gameName || 'ce jeu'}&quot;
           </DialogDescription>
           {gamePlatforms && gamePlatforms.length > 0 && (
-            <div className="mt-2 text-xs px-6">
+            <div className="mt-2 text-xs px-2 sm:px-6">
               <span className="font-medium">Plateformes disponibles:</span>{' '}
               {gamePlatforms.map(p => p.abbreviation || p.name).join(', ')}
             </div>
@@ -168,14 +171,14 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="py-4 space-y-4">
+          <div className="py-2 sm:py-4 space-y-3 sm:space-y-4">
             <div className="space-y-2">
               <Label htmlFor="console">Console</Label>
               <Select
                 value={selectedConsoleId}
                 onValueChange={setSelectedConsoleId}
               >
-                <SelectTrigger id="console">
+                <SelectTrigger id="console" className="w-full">
                   <SelectValue placeholder="Sélectionnez une console" />
                 </SelectTrigger>
                 <SelectContent>
@@ -236,14 +239,28 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="buyPrice">Prix d'achat (optionnel)</Label>
+              <Input
+                id="buyPrice"
+                type="number"
+                step="0.01"
+                min="0"
+                value={buyPrice}
+                onChange={(e) => setBuyPrice(e.target.value)}
+                placeholder="0.00"
+                className="w-full"
+              />
+            </div>
           </div>
         )}
         
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
             Annuler
           </Button>
-          <Button onClick={handleConfirm} disabled={!selectedConsoleId || isLoading}>
+          <Button onClick={handleConfirm} disabled={!selectedConsoleId || isLoading} className="w-full sm:w-auto">
             Ajouter à la collection
           </Button>
         </DialogFooter>

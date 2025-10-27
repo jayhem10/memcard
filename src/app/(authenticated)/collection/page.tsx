@@ -113,7 +113,8 @@ export default function CollectionPage() {
             completion_percentage,
             games:game_id(id, igdb_id, title, release_date, developer, publisher, description, cover_url, console_id, consoles:console_id(id, name), game_genres(genre_id, genres(id, name)))
           `)
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true });
 
         if (error) {
           console.error('Erreur lors de la récupération des jeux:', error);
@@ -163,6 +164,12 @@ export default function CollectionPage() {
             completion_percentage: item.completion_percentage
           };
         }).filter(Boolean) as Game[];
+        
+        // Trier par ordre alphabétique côté client
+        formattedGames.sort((a, b) => a.title.localeCompare(b.title, 'fr', { 
+          numeric: true, 
+          sensitivity: 'base' 
+        }));
         
         setGames(formattedGames);
       } catch (error: any) {
