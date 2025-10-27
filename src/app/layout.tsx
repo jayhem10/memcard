@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/auth-context";
@@ -20,6 +20,13 @@ export const metadata = {
     { rel: "icon", url: "/favicon.svg", type: "image/svg+xml", media: "(prefers-color-scheme: dark)" },
     { rel: "icon", url: "/favicon-white.svg", type: "image/svg+xml", media: "(prefers-color-scheme: light)" }
   ]
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 interface RootLayoutProps {

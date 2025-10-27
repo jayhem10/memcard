@@ -255,10 +255,14 @@
   }
   body {
     @apply bg-background text-foreground;
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+    overflow-x: hidden; /* Empêche le dépassement horizontal */
+  }
+
+  /* Empêcher le zoom iOS sur les inputs (font-size < 16px) */
+  @media (max-width: 640px) {
+    input, select, textarea, button {
+      font-size: 16px;
+    }
   }
 
   /* Styles spécifiques au thème rétro */
