@@ -43,7 +43,7 @@ export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
             defaultTheme="light" 
             disableTransitionOnChange
             forcedTheme={undefined}
-            themes={["light", "dark", "cyberpunk", "retro", "colorblind", "nintendo", "playstation", "xbox"]}
+            themes={["light", "dark", "cyberpunk", "retro", "fantasy", "nintendo", "playstation", "xbox"]}
           >
             <ReactQueryProvider>
               {children}

@@ -14,6 +14,8 @@ import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ExportButton } from '@/components/ui/export-button';
+import { GameExportData } from '@/lib/excel-export';
 
 // Types de données
 type ViewMode = 'grid' | 'list';
@@ -57,6 +59,7 @@ type Game = {
   purchase_date?: string | null;
   play_time?: number | null;
   completion_percentage?: number | null;
+  buy_price?: number | null;
 };
 
 export default function CollectionPage() {
@@ -111,6 +114,7 @@ export default function CollectionPage() {
             purchase_date,
             play_time,
             completion_percentage,
+            buy_price,
             games:game_id(id, igdb_id, title, release_date, developer, publisher, description, cover_url, console_id, consoles:console_id(id, name), game_genres(genre_id, genres(id, name)))
           `)
           .eq('user_id', user.id)
@@ -161,7 +165,8 @@ export default function CollectionPage() {
             updated_at: item.updated_at,
             purchase_date: item.purchase_date,
             play_time: item.play_time,
-            completion_percentage: item.completion_percentage
+            completion_percentage: item.completion_percentage,
+            buy_price: item.buy_price
           };
         }).filter(Boolean) as Game[];
         
@@ -344,6 +349,12 @@ export default function CollectionPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <ExportButton 
+            games={games as GameExportData[]}
+            activeTab={activeTab}
+            filename="ma_collection"
+            size="sm"
+          />
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="icon"

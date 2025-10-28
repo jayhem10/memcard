@@ -1,11 +1,11 @@
 'use client';
 
-export type Theme = 'light' | 'dark' | 'cyberpunk' | 'retro' | 'colorblind' | 'nintendo' | 'playstation' | 'xbox';
+export type Theme = 'light' | 'dark' | 'cyberpunk' | 'retro' | 'fantasy' | 'nintendo' | 'playstation' | 'xbox';
 
 export interface ThemeConfig {
   name: string;
   value: Theme;
-  icon: 'sun' | 'moon' | 'zap' | 'gamepad' | 'eye' | 'circle' | 'square' | 'x';
+  icon: 'sun' | 'moon' | 'zap' | 'gamepad' | 'sword' | 'circle' | 'square' | 'x';
   description: string;
 }
 
@@ -35,10 +35,10 @@ export const themes: ThemeConfig[] = [
     description: 'Style console rétro'
   },
   {
-    name: 'Daltonien',
-    value: 'colorblind',
-    icon: 'eye',
-    description: 'Thème adapté aux daltoniens'
+    name: 'Fantasy',
+    value: 'fantasy',
+    icon: 'sword',
+    description: 'Thème médiéval et fantastique'
   },
   {
     name: 'Nintendo',

@@ -4,6 +4,7 @@
 import { useEffect } from 'react';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { Navbar } from '@/components/layout/navbar';
+import { Footer } from '@/components/layout/footer';
 import { supabase } from '@/lib/supabase';
 import { useCollectionStore } from '@/store/useCollectionStore';
 import { useProfileStore } from '@/store/useProfileStore';
@@ -68,6 +69,7 @@ export default function AuthenticatedLayout({
         <main className="flex-1 container mx-auto px-4 py-8">
           {children}
         </main>
+        <Footer />
       </div>
     </AuthGuard>
   );

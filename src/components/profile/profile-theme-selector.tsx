@@ -6,15 +6,15 @@ import { themes } from '@/lib/theme';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sun, Moon, Zap, Gamepad, Eye, Circle, Square, X } from 'lucide-react';
-import { useEffect } from 'react';
+import { Sun, Moon, Zap, Gamepad, Sword, Circle, Square, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const icons = {
   sun: Sun,
   moon: Moon,
   zap: Zap,
   gamepad: Gamepad,
-  eye: Eye,
+  sword: Sword,
   circle: Circle,
   square: Square,
   x: X,
@@ -23,6 +23,11 @@ const icons = {
 export function ProfileThemeSelector() {
   const { theme, setTheme } = useTheme();
   const { profile, updateProfile } = useProfileStore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Mettre à jour le thème dans le profil lorsqu'il change
   const handleThemeChange = async (value: string) => {
@@ -38,6 +43,8 @@ export function ProfileThemeSelector() {
       setTheme(profile.theme);
     }
   }, [profile, setTheme, theme]);
+
+  if (!mounted) return null;
 
   return (
     <Card>

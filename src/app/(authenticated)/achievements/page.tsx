@@ -1,34 +1,33 @@
-import { Suspense } from 'react';
 import { Metadata } from 'next';
-import AchievementsList from '@/components/achievements/achievements-list';
-// Import translation utilities based on your project setup
-// If using next-intl
-// import { getTranslations } from 'next-intl/server';
-import { Loader2 } from 'lucide-react';
+import { Lock, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
-  title: 'Récompenses | MemCard',
-  description: 'Découvrez et débloquez des récompenses en fonction de votre collection de jeux',
+  title: 'Accès refusé | MemCard',
+  description: 'Cette fonctionnalité est temporairement indisponible',
 };
-
-// Next.js App Router doesn't use getStaticProps
-// Use generateMetadata or other App Router patterns for i18n
 
 export default function AchievementsPage() {
   return (
-    <main className="container max-w-5xl py-10">
-      <h1 className="text-3xl font-bold mb-6 text-center">Récompenses</h1>
-      <p className="text-center text-muted-foreground mb-8">
-        Débloquez des récompenses en fonction de votre collection de jeux
-      </p>
-      
-      <Suspense fallback={
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <main className="container max-w-2xl py-20">
+      <div className="text-center">
+        <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6">
+          <Lock className="h-12 w-12 text-muted-foreground" />
         </div>
-      }>
-        <AchievementsList />
-      </Suspense>
+        
+        <h1 className="text-4xl font-bold mb-4">Accès refusé</h1>
+        <p className="text-lg text-muted-foreground mb-8">
+          Cette fonctionnalité est temporairement indisponible.
+        </p>
+        
+        <Link href="/">
+          <Button className="inline-flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Retour à l'accueil
+          </Button>
+        </Link>
+      </div>
     </main>
   );
 }

@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { Menu, X } from 'lucide-react';
 import { ThemeSelector } from '@/components/theme/theme-selector';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { SupportButton } from '@/components/ui/support-button';
 import { useProfileStore } from '@/store/useProfileStore';
 import { useAuth } from '@/context/auth-context';
 
@@ -26,7 +27,7 @@ export function Navbar() {
   const navigation = [
     { name: 'Ma Collection', href: '/collection' },
     { name: 'Rechercher', href: '/search' },
-    { name: 'Récompenses', href: '/achievements' },
+    // { name: 'Récompenses', href: '/achievements' }, // Désactivé temporairement
     { name: 'Profil', href: '/profile' },
     { name: 'Admin', href: '/admin' },
   ];
@@ -77,6 +78,7 @@ export function Navbar() {
                 {userRank || "Rang non défini"}
               </span>
             )}
+            <SupportButton size="sm" />
             <ThemeSelector />
             <Button variant="destructive" onClick={handleSignOut}>
               Déconnexion
@@ -166,6 +168,9 @@ export function Navbar() {
                 {userRank || "Rang non défini"}
               </span>
             )}
+            <div className="px-3 py-2">
+              <SupportButton size="sm" className="w-full" />
+            </div>
             <Button
               variant="destructive"
               className="w-full mt-2"

@@ -3,7 +3,7 @@
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { themes } from '@/lib/theme';
-import { Sun, Moon, Zap, Gamepad, Eye, Circle, Square, X } from 'lucide-react';
+import { Sun, Moon, Zap, Gamepad, Sword, Circle, Square, X } from 'lucide-react';
 import * as React from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useProfileStore } from '@/store/useProfileStore';
@@ -14,7 +14,7 @@ const icons = {
   moon: Moon,
   zap: Zap,
   gamepad: Gamepad,
-  eye: Eye,
+  sword: Sword,
   circle: Circle,
   square: Square,
   x: X,
@@ -25,6 +25,11 @@ export function ThemeSelector() {
   const { profile } = useProfileStore();
   const currentTheme = theme || resolvedTheme || 'light';
   const hasAppliedProfileTheme = React.useRef(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Charger le thème depuis le profil si disponible
   useEffect(() => {
@@ -33,6 +38,8 @@ export function ThemeSelector() {
       hasAppliedProfileTheme.current = true;
     }
   }, [profile, setTheme]);
+
+  if (!mounted) return null;
   
   // Trouver le thème actuel dans la configuration
   const themeConfig = themes.find(t => t.value === currentTheme) || themes[0];

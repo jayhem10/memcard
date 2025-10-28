@@ -86,45 +86,167 @@
     );
   }
 
-  /* Thème Daltonien */
-  .colorblind {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 12%;
-    --card: 0 0% 92%;
-    --card-foreground: 0 0% 12%;
-    --popover: 0 0% 92%;
-    --popover-foreground: 0 0% 12%;
-    --primary: 0 0% 20%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 40%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 85%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 0 0% 25%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 0% 15%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 75%;
-    --input: 0 0% 75%;
-    --ring: 0 0% 20%;
+  /* Thème Fantasy */
+  .fantasy {
+    --background: 25 15% 12%;
+    --foreground: 45 30% 85%;
+    --card: 25 20% 8%;
+    --card-foreground: 45 30% 85%;
+    --popover: 25 20% 8%;
+    --popover-foreground: 45 30% 85%;
+    --primary: 45 80% 65%;
+    --primary-foreground: 25 15% 12%;
+    --secondary: 30 25% 20%;
+    --secondary-foreground: 45 30% 85%;
+    --muted: 25 15% 18%;
+    --muted-foreground: 45 20% 60%;
+    --accent: 35 60% 45%;
+    --accent-foreground: 25 15% 12%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 25 15% 12%;
+    --border: 30 25% 25%;
+    --input: 25 20% 15%;
+    --ring: 45 80% 65%;
 
-    /* Haute contraste et motifs */
-    --contrast-border: 3px;
-    --contrast-outline: 2px;
-    --pattern-dots: repeating-linear-gradient(
-      45deg,
-      currentColor 0,
-      currentColor 1px,
-      transparent 0,
-      transparent 50%
-    );
-    --pattern-stripes: repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 8px,
-      currentColor 8px,
-      currentColor 10px
-    );
+    /* Variables fantasy */
+    --fantasy-gold: 45 90% 70%;
+    --fantasy-bronze: 25 70% 55%;
+    --fantasy-silver: 0 0% 80%;
+    --fantasy-forest: 120 50% 25%;
+    --fantasy-stone: 30 15% 35%;
+    --fantasy-ember: 15 80% 50%;
+
+    /* Fond sombre avec texture parchemin vieilli */
+    background: 
+      radial-gradient(circle at 20% 80%, hsl(25 20% 8%) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(30 15% 6%) 0%, transparent 50%),
+      linear-gradient(135deg, hsl(25 15% 12%) 0%, hsl(30 20% 8%) 100%);
+    
+    /* Effet de texture parchemin vieilli */
+    background-image: 
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 3px,
+        hsl(25 10% 15%) 3px,
+        hsl(25 10% 15%) 6px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 2px,
+        hsl(30 8% 18%) 2px,
+        hsl(30 8% 18%) 4px
+      );
+    
+    /* Styles supplémentaires pour l'immersion fantasy */
+    font-family: 'Cinzel', 'Times New Roman', serif;
+  }
+
+  /* Styles spécifiques au thème fantasy */
+  .fantasy .card,
+  .fantasy [data-card] {
+    border: 2px solid hsl(var(--fantasy-bronze)) !important;
+    box-shadow: 
+      0 8px 16px hsl(var(--fantasy-stone) / 0.4),
+      inset 0 1px 0 hsl(var(--fantasy-silver) / 0.3),
+      0 0 20px hsl(var(--fantasy-ember) / 0.1) !important;
+    background: linear-gradient(135deg, 
+      hsl(var(--card)) 0%, 
+      hsl(25 18% 10%) 100%) !important;
+  }
+
+  .fantasy .button {
+    border: 2px solid hsl(var(--fantasy-bronze));
+    text-shadow: 0 2px 4px hsl(var(--fantasy-stone) / 0.8);
+    background: linear-gradient(135deg, 
+      hsl(var(--secondary)) 0%, 
+      hsl(30 20% 15%) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fantasy .button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsl(var(--fantasy-gold) / 0.3), 
+      transparent);
+    transition: left 0.5s;
+  }
+
+  .fantasy .button:hover::before {
+    left: 100%;
+  }
+
+  .fantasy .button:hover {
+    box-shadow: 
+      0 4px 8px hsl(var(--fantasy-gold) / 0.4),
+      0 0 20px hsl(var(--fantasy-ember) / 0.3);
+    border-color: hsl(var(--fantasy-gold));
+  }
+
+  .fantasy .primary {
+    background: linear-gradient(135deg, 
+      hsl(var(--fantasy-bronze)) 0%, 
+      hsl(var(--fantasy-gold)) 50%, 
+      hsl(var(--fantasy-bronze)) 100%);
+    border: 2px solid hsl(var(--fantasy-gold));
+    box-shadow: 
+      0 4px 12px hsl(var(--fantasy-gold) / 0.3),
+      inset 0 1px 0 hsl(var(--fantasy-silver) / 0.6);
+  }
+
+  .fantasy .accent {
+    background: linear-gradient(135deg, 
+      hsl(var(--fantasy-forest)) 0%, 
+      hsl(var(--fantasy-bronze)) 100%);
+    color: hsl(var(--fantasy-silver));
+    border: 1px solid hsl(var(--fantasy-forest));
+  }
+
+  /* Effets de lueur pour les éléments importants */
+  .fantasy .text-primary {
+    color: hsl(var(--fantasy-gold));
+    text-shadow: 0 0 10px hsl(var(--fantasy-gold) / 0.5);
+  }
+
+  .fantasy .border-primary {
+    border-color: hsl(var(--fantasy-gold));
+    box-shadow: 0 0 10px hsl(var(--fantasy-gold) / 0.3);
+  }
+
+  /* Styles généraux pour forcer l'application du thème fantasy */
+  .fantasy {
+    color-scheme: dark;
+  }
+
+  .fantasy * {
+    border-color: hsl(var(--border));
+  }
+
+  .fantasy input,
+  .fantasy textarea,
+  .fantasy select {
+    background-color: hsl(var(--input));
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground));
+  }
+
+  .fantasy button {
+    background-color: hsl(var(--secondary));
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground));
+  }
+
+  .fantasy button:hover {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
   }
 
   /* Thème Rétro */
