@@ -23,10 +23,7 @@ export function useDeleteAccount() {
         throw new Error(errorData.error || 'Erreur lors de la suppression du compte');
       }
 
-      // Déconnexion de l'utilisateur après suppression
-      await signOut();
-      
-      // Redirection vers la page d'accueil
+      // La déconnexion se fait côté serveur, on redirige simplement
       router.push('/');
       
     } catch (error: any) {

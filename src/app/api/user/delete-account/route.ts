@@ -16,8 +16,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Appeler la fonction de suppression des données
-    const { error: deleteError } = await supabase.rpc('delete_user_account');
+    // Récupérer l'ID utilisateur avant suppression
+    const userId = user.id;
+
+    // Supprimer les données utilisateur directement avec l'ID
+    const { error: deleteError } = await supabase.rpc('delete_user_data', {
+      user_id: userId
+    });
 
     if (deleteError) {
       console.error('Erreur lors de la suppression du compte:', deleteError);
@@ -26,6 +31,9 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Déconnexion de l'utilisateur après suppression des données
+    await supabase.auth.signOut();
 
     return NextResponse.json(
       { message: 'Compte supprimé avec succès' },
