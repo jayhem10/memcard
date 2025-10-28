@@ -350,10 +350,16 @@ export default function CollectionPage() {
         </div>
         <div className="flex items-center gap-2">
           <ExportButton 
-            games={games as GameExportData[]}
+            games={filteredGames as GameExportData[]}
             activeTab={activeTab}
             filename="ma_collection"
             size="sm"
+            filters={{
+              console: consoleFilter,
+              genre: genreFilter,
+              status: statusFilter,
+              search: searchQuery
+            }}
           />
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}

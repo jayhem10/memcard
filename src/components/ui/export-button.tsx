@@ -13,6 +13,12 @@ interface ExportButtonProps {
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   className?: string;
+  filters?: {
+    console?: string;
+    genre?: string;
+    status?: string;
+    search?: string;
+  };
 }
 
 export function ExportButton({ 
@@ -21,7 +27,8 @@ export function ExportButton({
   filename = 'ma_collection',
   variant = 'outline',
   size = 'default',
-  className = ''
+  className = '',
+  filters = {}
 }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -49,11 +56,28 @@ export function ExportButton({
         return;
       }
 
-      // Générer un nom de fichier avec timestamp
+      // Générer un nom de fichier avec timestamp et filtres
       const now = new Date();
       const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
       const tabSuffix = activeTab === 'collection' ? 'collection' : 'wishlist';
-      const finalFilename = `${filename}_${tabSuffix}_${timestamp}`;
+      
+      // Ajouter les filtres au nom de fichier
+      const filterParts = [];
+      if (filters.console && filters.console !== 'all') {
+        filterParts.push(filters.console.toLowerCase().replace(/\s+/g, '_'));
+      }
+      if (filters.genre && filters.genre !== 'all') {
+        filterParts.push(filters.genre.toLowerCase().replace(/\s+/g, '_'));
+      }
+      if (filters.status && filters.status !== 'all') {
+        filterParts.push(filters.status.toLowerCase().replace(/\s+/g, '_'));
+      }
+      if (filters.search && filters.search.trim()) {
+        filterParts.push('recherche');
+      }
+      
+      const filterSuffix = filterParts.length > 0 ? `_${filterParts.join('_')}` : '';
+      const finalFilename = `${filename}_${tabSuffix}${filterSuffix}_${timestamp}`;
 
       exportCollectionToExcel(filteredGames, finalFilename);
       toast.success(`${activeTab === 'collection' ? 'Collection' : 'Wishlist'} exportée avec succès !`);
