@@ -52,27 +52,32 @@ export async function POST(request: NextRequest) {
     // Supprimer les données utilisateur dans l'ordre inverse des dépendances
     // Utilisation de requêtes directes pour éviter les problèmes d'authentification
     const deleteOperations = [
-      // 1. Supprimer les tentatives de quiz
-      supabase.from('quiz_attempts').delete().eq('user_id', userId),
+      // 1. Supprimer les réponses de quiz de l'utilisateur
+      { name: 'user_quiz_answers', operation: supabase.from('user_quiz_answers').delete().eq('user_id', userId) },
       
-      // 2. Supprimer les récompenses utilisateur
-      supabase.from('user_rewards').delete().eq('user_id', userId),
+      // 2. Supprimer les achievements de l'utilisateur
+      { name: 'user_achievements', operation: supabase.from('user_achievements').delete().eq('user_id', userId) },
       
-      // 3. Supprimer les statistiques utilisateur
-      supabase.from('user_stats').delete().eq('user_id', userId),
+      // 3. Supprimer les jeux de l'utilisateur
+      { name: 'user_games', operation: supabase.from('user_games').delete().eq('user_id', userId) },
       
-      // 4. Supprimer les jeux de l'utilisateur
-      supabase.from('user_games').delete().eq('user_id', userId),
-      
-      // 5. Supprimer le profil utilisateur
-      supabase.from('profiles').delete().eq('id', userId)
+      // 4. Supprimer le profil utilisateur
+      { name: 'profiles', operation: supabase.from('profiles').delete().eq('id', userId) }
     ];
 
     // Exécuter toutes les suppressions
-    const results = await Promise.all(deleteOperations);
+    console.log('Executing delete operations...');
+    const results = await Promise.all(deleteOperations.map(op => op.operation));
     
     // Vérifier s'il y a des erreurs
-    const errors = results.filter(result => result.error);
+    const errors = results.filter((result, index) => {
+      if (result.error) {
+        console.error(`Error deleting ${deleteOperations[index].name}:`, result.error);
+        return true;
+      }
+      return false;
+    });
+    
     if (errors.length > 0) {
       console.error('Erreurs lors de la suppression:', errors);
       return NextResponse.json(
@@ -80,6 +85,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+    
+    console.log('All data deleted successfully');
 
     // Déconnexion de l'utilisateur après suppression des données
     await supabase.auth.signOut();
