@@ -35,8 +35,8 @@ export function useDeleteAccount() {
       // Déconnexion côté client après suppression réussie
       await signOut();
       
-      // Redirection vers la page d'accueil
-      router.push('/');
+      // Forcer le rechargement de la page pour s'assurer que l'utilisateur est déconnecté
+      window.location.href = '/';
       
     } catch (error: any) {
       console.error('Erreur lors de la suppression:', error);

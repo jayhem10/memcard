@@ -88,8 +88,29 @@ export async function POST(request: NextRequest) {
     
     console.log('All data deleted successfully');
 
-    // Déconnexion de l'utilisateur après suppression des données
-    await supabase.auth.signOut();
+    // Supprimer l'utilisateur de auth.users via l'API Admin avec la clé de service
+    try {
+      const adminSupabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        }
+      );
+      
+      const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(userId);
+      if (deleteUserError) {
+        console.error('Erreur lors de la suppression de l\'utilisateur auth:', deleteUserError);
+        // Ne pas faire échouer la requête car les données sont déjà supprimées
+      } else {
+        console.log('User deleted from auth.users');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression auth:', error);
+    }
 
     return NextResponse.json(
       { message: 'Compte supprimé avec succès' },
