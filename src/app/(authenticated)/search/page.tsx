@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
+import { SearchInput } from '@/components/ui/search-input';
 import { formatIGDBReleaseDate, getIGDBReleaseYear } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Search, Loader2, X, Check, ChevronDown } from 'lucide-react';
@@ -131,6 +132,8 @@ export default function SearchPage() {
   
   // Référence pour le conteneur des résultats de recherche
   const searchResultsRef = useRef<HTMLDivElement>(null);
+  // Référence pour le champ de recherche des plateformes
+  const platformSearchInputRef = useRef<HTMLInputElement>(null);
   
   // Utiliser le contexte d'authentification pour accéder à l'utilisateur
   const { user } = useAuth();
@@ -141,6 +144,16 @@ export default function SearchPage() {
       setIsPlatformSectionExpanded(true);
     }
   }, [platformSearchQuery]);
+
+  // Focaliser le champ de recherche des plateformes quand la section se déplie
+  useEffect(() => {
+    if (isPlatformSectionExpanded && platformSearchInputRef.current) {
+      // Petit délai pour s'assurer que l'élément est rendu
+      setTimeout(() => {
+        platformSearchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isPlatformSectionExpanded]);
 
   // Détecter si l'appareil est mobile
   useEffect(() => {
@@ -577,13 +590,15 @@ export default function SearchPage() {
       </div>
       
       <div className="relative mb-2">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-10 pr-24"
+        <SearchInput
           placeholder="Rechercher un jeu..."
           value={searchQuery}
-          // Input optimisé pour être plus rapide
           onChange={(e) => setSearchQuery(e.target.value)}
+          onClear={() => {
+            setSearchQuery('');
+            setShouldSearch(false);
+          }}
+          hasActionButton={true}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && searchQuery.trim() !== '') {
               e.preventDefault();
@@ -643,13 +658,15 @@ export default function SearchPage() {
               <div className="flex flex-col space-y-2">
                 {/* Champ de recherche pour filtrer les plateformes */}
                 <div className="relative mb-2">
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
+                  <SearchInput 
+                    ref={platformSearchInputRef}
                     className="pl-8 pr-2"
                     type="text" 
                     placeholder="Rechercher une plateforme..."
                     value={platformSearchQuery}
                     onChange={(e) => setPlatformSearchQuery(e.target.value)}
+                    onClear={() => setPlatformSearchQuery('')}
+                    searchIcon={false}
                   />
                 </div>
                 

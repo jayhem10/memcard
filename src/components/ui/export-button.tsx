@@ -19,16 +19,18 @@ interface ExportButtonProps {
     status?: string;
     search?: string;
   };
+  consoleName?: string; // Nom de la console pour l'affichage
 }
 
 export function ExportButton({ 
   games, 
   activeTab = 'collection',
-  filename = 'ma_collection',
+  filename = 'export',
   variant = 'outline',
   size = 'default',
   className = '',
-  filters = {}
+  filters = {},
+  consoleName
 }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -64,7 +66,9 @@ export function ExportButton({
       // Ajouter les filtres au nom de fichier
       const filterParts = [];
       if (filters.console && filters.console !== 'all') {
-        filterParts.push(filters.console.toLowerCase().replace(/\s+/g, '_'));
+        // Utiliser le nom de la console si disponible, sinon l'ID
+        const consoleNameToUse = consoleName || filters.console;
+        filterParts.push(consoleNameToUse.toLowerCase().replace(/\s+/g, '_'));
       }
       if (filters.genre && filters.genre !== 'all') {
         filterParts.push(filters.genre.toLowerCase().replace(/\s+/g, '_'));

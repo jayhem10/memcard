@@ -5,6 +5,7 @@ import { GameGrid } from '@/components/games/game-grid';
 import { GameList } from '@/components/games/game-list';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SearchInput } from '@/components/ui/search-input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Grid2X2, List, Loader2, Search, Database } from 'lucide-react';
@@ -360,6 +361,7 @@ export default function CollectionPage() {
               status: statusFilter,
               search: searchQuery
             }}
+            consoleName={consoleFilter !== 'all' ? consoles.find(c => c.id === consoleFilter)?.name : undefined}
           />
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
@@ -380,12 +382,11 @@ export default function CollectionPage() {
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
+          <SearchInput
             placeholder={activeTab === 'collection' ? "Rechercher dans ma collection..." : "Rechercher dans ma liste de souhaits..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            onClear={() => setSearchQuery('')}
           />
         </div>
         {activeTab === 'collection' && (
