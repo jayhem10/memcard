@@ -63,6 +63,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           rank_id,
           quiz_completed,
           is_public,
+          role,
           updated_at,
           created_at,
           ranks (
@@ -87,7 +88,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           updated_at: new Date().toISOString(),
           quiz_completed: false,
           rank_id: null,
-          rank_name_fr: null
+          rank_name_fr: null,
+          role: 'user' as const
         };
         
         // On essaie d'insérer le profil par défaut si c'est possible
@@ -96,7 +98,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
             .from('profiles')
             .insert([{
               id: user.id,
-              ...defaultProfile
+              username: defaultProfile.username,
+              full_name: defaultProfile.full_name,
+              avatar_url: defaultProfile.avatar_url,
+              theme: defaultProfile.theme,
+              quiz_completed: defaultProfile.quiz_completed,
+              rank_id: defaultProfile.rank_id,
+              role: defaultProfile.role,
+              updated_at: defaultProfile.updated_at
             }]);
             
           if (insertError) {
@@ -120,7 +129,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           last_sign_in_at: user.last_sign_in_at || null,
           quiz_completed: typeof defaultProfile.quiz_completed === 'boolean' ? defaultProfile.quiz_completed : false,
           rank_id: defaultProfile.rank_id,
-          rank_name_fr: defaultProfile.rank_name_fr
+          rank_name_fr: defaultProfile.rank_name_fr,
+          role: defaultProfile.role
         };
         
         set({ profile: userProfile, isLoading: false, error: null });
@@ -141,7 +151,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         last_sign_in_at: user.last_sign_in_at || null,
         quiz_completed: typeof data?.quiz_completed === 'boolean' ? data.quiz_completed : false,
         rank_id: data?.rank_id ? parseInt(data.rank_id.toString()) : null,
-        rank_name_fr: data?.ranks && typeof data.ranks === 'object' && 'name_fr' in data.ranks ? (data.ranks as any).name_fr : null
+        rank_name_fr: data?.ranks && typeof data.ranks === 'object' && 'name_fr' in data.ranks ? (data.ranks as any).name_fr : null,
+        role: (data?.role === 'admin' || data?.role === 'user') ? data.role : 'user'
       };
       
       set({ profile: userProfile, isLoading: false });

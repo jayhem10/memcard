@@ -10,6 +10,8 @@ import { useProfileStore } from '@/store/useProfileStore';
 import { useAuth } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProfileThemeSelector } from '@/components/profile/profile-theme-selector';
+import { DeleteAccountDialog } from '@/components/ui/delete-account-dialog';
+import { useDeleteAccount } from '@/hooks/useDeleteAccount';
 
 interface ProfileFormData {
   username: string;
@@ -27,6 +29,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<ProfileFormData>();
   const newPassword = watch('newPassword');
+  const { deleteAccount, isDeleting } = useDeleteAccount();
 
   // Remplir le formulaire avec les données du profil
   useEffect(() => {
@@ -41,6 +44,16 @@ export default function ProfilePage() {
   const onSubmit = async (data: ProfileFormData) => {
     setIsLoading(true);
     try {
+      // Validation des mots de passe si fournis
+      if (data.newPassword && data.confirmPassword) {
+        if (data.newPassword !== data.confirmPassword) {
+          throw new Error('Les mots de passe ne correspondent pas');
+        }
+        if (data.newPassword.length < 6) {
+          throw new Error('Le mot de passe doit contenir au moins 6 caractères');
+        }
+      }
+
       // 1. Mise à jour du profil dans la table profiles
       await updateProfile({
         username: data.username,
@@ -48,8 +61,19 @@ export default function ProfilePage() {
         avatar_url: data.avatar_url
       });
       
-      // 2. Mise à jour du mot de passe si fourni
-      if (data.currentPassword && data.newPassword) {
+      // 2. Mise à jour du mot de passe si fourni (seulement pour les comptes email)
+      if (profile?.provider === 'email' && data.currentPassword && data.newPassword) {
+        // Vérifier d'abord le mot de passe actuel
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: user?.email || '',
+          password: data.currentPassword
+        });
+        
+        if (signInError) {
+          throw new Error('Mot de passe actuel incorrect');
+        }
+        
+        // Si la vérification réussit, mettre à jour le mot de passe
         const { error } = await supabase.auth.updateUser({
           password: data.newPassword
         });
@@ -57,16 +81,27 @@ export default function ProfilePage() {
         toast.success('Mot de passe mis à jour avec succès');
       }
 
-      // 3. Mise à jour de l'email si modifié
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      // 3. Mise à jour de l'email si modifié (seulement pour les comptes email)
+      if (profile?.provider === 'email') {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
 
-      if (userData.user.email !== data.email) {
-        const { error } = await supabase.auth.updateUser({
-          email: data.email
-        });
-        if (error) throw error;
-        toast.success('Email mis à jour avec succès. Vérifiez votre boîte mail pour confirmer.');
+        if (userData.user.email !== data.email) {
+          // Vérifier que l'email est valide avant de l'envoyer
+          const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+          if (!emailRegex.test(data.email)) {
+            throw new Error('Format d\'email invalide');
+          }
+          
+          const { error } = await supabase.auth.updateUser({
+            email: data.email
+          });
+          if (error) {
+            console.error('Erreur Supabase:', error);
+            throw new Error(`Erreur lors de la mise à jour de l'email: ${error.message}`);
+          }
+          toast.success('Email mis à jour avec succès. Vérifiez votre boîte mail pour confirmer.');
+        }
       }
       
       // 4. Rafraîchir les données du profil
@@ -150,6 +185,11 @@ export default function ProfilePage() {
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 Email
+                {profile?.provider !== 'email' && (
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    (géré par {profile?.provider})
+                  </span>
+                )}
               </label>
               <Input
                 id="email"
@@ -161,66 +201,86 @@ export default function ProfilePage() {
                     message: 'Email invalide',
                   },
                 })}
-                disabled={isLoading || profileLoading}
+                disabled={isLoading || profileLoading || profile?.provider !== 'email'}
+                className={profile?.provider !== 'email' ? 'bg-muted' : ''}
               />
+              {profile?.provider !== 'email' && (
+                <p className="text-xs text-muted-foreground">
+                  L'email ne peut pas être modifié pour les comptes connectés via {profile?.provider}
+                </p>
+              )}
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email.message}</p>
               )}
             </div>
 
-            <div className="pt-4 space-y-4">
-              <h3 className="text-lg font-medium">Changer le mot de passe</h3>
-              
-              <div className="space-y-2">
-                <label htmlFor="currentPassword" className="text-sm font-medium">
-                  Mot de passe actuel
-                </label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  {...register('currentPassword')}
-                  disabled={isLoading || profileLoading}
-                />
-              </div>
+            {profile?.provider === 'email' && (
+              <div className="pt-4 space-y-4">
+                <h3 className="text-lg font-medium">Changer le mot de passe</h3>
+                
+                <div className="space-y-2">
+                  <label htmlFor="currentPassword" className="text-sm font-medium">
+                    Mot de passe actuel
+                  </label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    {...register('currentPassword')}
+                    disabled={isLoading || profileLoading}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <label htmlFor="newPassword" className="text-sm font-medium">
-                  Nouveau mot de passe
-                </label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  {...register('newPassword', {
-                    minLength: {
-                      value: 6,
-                      message: 'Le mot de passe doit contenir au moins 6 caractères',
-                    },
-                  })}
-                  disabled={isLoading || profileLoading}
-                />
-                {errors.newPassword && (
-                  <p className="text-sm text-destructive">{errors.newPassword.message}</p>
-                )}
-              </div>
+                <div className="space-y-2">
+                  <label htmlFor="newPassword" className="text-sm font-medium">
+                    Nouveau mot de passe
+                  </label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    {...register('newPassword', {
+                      minLength: {
+                        value: 6,
+                        message: 'Le mot de passe doit contenir au moins 6 caractères',
+                      },
+                    })}
+                    disabled={isLoading || profileLoading}
+                  />
+                  {errors.newPassword && (
+                    <p className="text-sm text-destructive">{errors.newPassword.message}</p>
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirmer le nouveau mot de passe
-                </label>
+                <div className="space-y-2">
+                  <label htmlFor="confirmPassword" className="text-sm font-medium">
+                    Confirmer le nouveau mot de passe
+                  </label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   {...register('confirmPassword', {
-                    validate: value =>
-                      value === newPassword || 'Les mots de passe ne correspondent pas',
+                    validate: (value) => {
+                      if (!newPassword) return true; // Si pas de nouveau mot de passe, pas de validation
+                      return value === newPassword || 'Les mots de passe ne correspondent pas';
+                    },
                   })}
                   disabled={isLoading || profileLoading}
                 />
-                {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
-                )}
+                  {errors.confirmPassword && (
+                    <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
+
+            {profile?.provider !== 'email' && (
+              <div className="pt-4 p-4 rounded-lg bg-muted/50">
+                <h3 className="text-lg font-medium mb-2">Authentification</h3>
+                <p className="text-sm text-muted-foreground">
+                  Votre compte est connecté via <strong>{profile?.provider}</strong>. 
+                  L'email et le mot de passe sont gérés par ce service et ne peuvent pas être modifiés ici.
+                </p>
+              </div>
+            )}
 
             <Button type="submit" className="w-full" disabled={isLoading || profileLoading}>
               {isLoading || profileLoading ? 'Enregistrement...' : 'Enregistrer les modifications'}
@@ -235,7 +295,7 @@ export default function ProfilePage() {
             {/* Sélecteur de thème */}
             <ProfileThemeSelector />
 
-            <div className="flex items-center justify-between p-4 rounded-lg bg-card">
+            {/* <div className="flex items-center justify-between p-4 rounded-lg bg-card">
               <div>
                 <h3 className="font-medium">Notifications par email</h3>
                 <p className="text-sm text-muted-foreground">
@@ -253,7 +313,7 @@ export default function ProfilePage() {
                 </p>
               </div>
               <Button variant="outline">Configurer</Button>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -265,16 +325,12 @@ export default function ProfilePage() {
             <p className="mt-1 text-sm text-muted-foreground">
               Une fois que vous supprimez votre compte, il n'y a pas de retour en arrière. Soyez certain.
             </p>
-            <Button
-              variant="destructive"
-              className="mt-4"
-              onClick={() => {
-                // Ajouter la logique de suppression du compte
-                toast.error('Fonctionnalité non implémentée');
-              }}
-            >
-              Supprimer le compte
-            </Button>
+            <div className="mt-4">
+              <DeleteAccountDialog 
+                onConfirm={deleteAccount}
+                isLoading={isDeleting}
+              />
+            </div>
           </div>
         </div>
       </div>

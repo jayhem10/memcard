@@ -11,12 +11,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SupportButton } from '@/components/ui/support-button';
 import { useProfileStore } from '@/store/useProfileStore';
 import { useAuth } from '@/context/auth-context';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export function Navbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { profile, isLoading, fetchProfile } = useProfileStore();
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
 
   useEffect(() => {
     if (user && !profile && !isLoading) {
@@ -29,7 +31,7 @@ export function Navbar() {
     { name: 'Rechercher', href: '/search' },
     // { name: 'Récompenses', href: '/achievements' }, // Désactivé temporairement
     { name: 'Profil', href: '/profile' },
-    { name: 'Admin', href: '/admin' },
+    ...(isAdmin ? [{ name: 'Admin', href: '/admin' }] : []),
   ];
   
   // Afficher le rang si le quiz est complété, sinon afficher le bouton pour le quiz

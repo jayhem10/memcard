@@ -40,6 +40,7 @@ export interface Profile {
   theme: string | null;
   rank_id: number | null;
   quiz_completed: boolean;
+  role: 'user' | 'admin';
   rank?: Rank;
 }
 
@@ -55,6 +56,7 @@ export interface UserProfile {
   quiz_completed: boolean;
   rank_id: number | null;
   rank_name_fr: string | null;
+  role: 'user' | 'admin';
 }
 
 export interface ProfileUpdateRequest {

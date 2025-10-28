@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sun, Moon, Zap, Gamepad, Sword, Circle, Square, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 const icons = {
   sun: Sun,
@@ -24,6 +24,7 @@ export function ProfileThemeSelector() {
   const { theme, setTheme } = useTheme();
   const { profile, updateProfile } = useProfileStore();
   const [mounted, setMounted] = useState(false);
+  const hasAppliedProfileTheme = useRef(false);
 
   useEffect(() => {
     setMounted(true);
@@ -31,18 +32,28 @@ export function ProfileThemeSelector() {
   
   // Mettre à jour le thème dans le profil lorsqu'il change
   const handleThemeChange = async (value: string) => {
+    // Mettre à jour le thème local immédiatement pour l'effet visuel
     setTheme(value);
+    
+    // Mettre à jour le profil en base de données
     if (profile) {
-      await updateProfile({ theme: value });
+      try {
+        await updateProfile({ theme: value });
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour du thème:', error);
+        // En cas d'erreur, remettre le thème précédent
+        setTheme(profile.theme || 'system');
+      }
     }
   };
   
-  // Charger le thème depuis le profil au montage du composant
+  // Charger le thème depuis le profil seulement au premier chargement
   useEffect(() => {
-    if (profile?.theme && profile.theme !== theme) {
+    if (mounted && profile?.theme && !hasAppliedProfileTheme.current) {
       setTheme(profile.theme);
+      hasAppliedProfileTheme.current = true;
     }
-  }, [profile, setTheme, theme]);
+  }, [profile?.theme, mounted, setTheme]);
 
   if (!mounted) return null;
 

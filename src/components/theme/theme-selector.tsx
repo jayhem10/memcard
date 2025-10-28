@@ -22,7 +22,7 @@ const icons = {
 
 export function ThemeSelector() {
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const { profile } = useProfileStore();
+  const { profile, updateProfile } = useProfileStore();
   const currentTheme = theme || resolvedTheme || 'light';
   const hasAppliedProfileTheme = React.useRef(false);
   const [mounted, setMounted] = React.useState(false);
@@ -31,13 +31,13 @@ export function ThemeSelector() {
     setMounted(true);
   }, []);
   
-  // Charger le thème depuis le profil si disponible
+  // Charger le thème depuis le profil seulement au premier chargement
   useEffect(() => {
-    if (!hasAppliedProfileTheme.current && profile?.theme) {
+    if (!hasAppliedProfileTheme.current && profile?.theme && mounted) {
       setTheme(profile.theme);
       hasAppliedProfileTheme.current = true;
     }
-  }, [profile, setTheme]);
+  }, [profile?.theme, mounted, setTheme]);
 
   if (!mounted) return null;
   
