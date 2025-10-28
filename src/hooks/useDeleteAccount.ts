@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
+import { supabase } from '@/lib/supabase';
 
 export function useDeleteAccount() {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -11,10 +12,18 @@ export function useDeleteAccount() {
     setIsDeleting(true);
     
     try {
+      // Récupérer le token de session depuis Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('Aucune session active');
+      }
+
       const response = await fetch('/api/user/delete-account', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
       });
 

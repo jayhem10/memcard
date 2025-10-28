@@ -1,24 +1,27 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies();
+    // Récupérer le token d'autorisation depuis les headers
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
     
-    const supabase = createServerClient(
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Token d\'autorisation manquant' },
+        { status: 401 }
+      );
+    }
+
+    // Créer un client Supabase avec le token
+    const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-          set(name: string, value: string, options: any) {
-            cookieStore.set({ name, value, ...options });
-          },
-          remove(name: string, options: any) {
-            cookieStore.set({ name, value: '', ...options });
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
         },
       }
