@@ -584,9 +584,9 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Rechercher un jeu</h1>
+        <h1 className="text-3xl font-bold">Rechercher un jeu</h1>
       </div>
       
       <div className="relative mb-2">

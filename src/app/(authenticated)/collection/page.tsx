@@ -332,18 +332,20 @@ export default function CollectionPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <h1 className="text-3xl font-bold">Ma Collection</h1>
           <div className="flex items-center gap-2">
             <Button
               variant={activeTab === 'collection' ? 'default' : 'outline'}
               onClick={() => setActiveTab('collection')}
+              className="text-sm"
             >
               Collection
             </Button>
             <Button
               variant={activeTab === 'wishlist' ? 'default' : 'outline'}
               onClick={() => setActiveTab('wishlist')}
+              className="text-sm"
             >
               Liste de souhaits
             </Button>

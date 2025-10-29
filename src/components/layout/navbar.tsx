@@ -170,16 +170,21 @@ export function Navbar() {
                 {userRank || "Rang non défini"}
               </span>
             )}
-            <div className="px-3 py-2">
-              <SupportButton size="sm" className="w-full" />
+            <div className="py-2">
+              <SupportButton 
+                size="sm" 
+                className="w-full justify-center" 
+              />
             </div>
-            <Button
-              variant="destructive"
-              className="w-full mt-2"
-              onClick={handleSignOut}
-            >
-              Déconnexion
-            </Button>
+            <div className="">
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={handleSignOut}
+              >
+                Déconnexion
+              </Button>
+            </div>
           </div>
         </div>
       )}

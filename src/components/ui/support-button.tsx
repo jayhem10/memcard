@@ -26,8 +26,7 @@ export function SupportButton({
       className={`bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 ${className}`}
     >
       <Heart className="h-4 w-4 mr-2 fill-current" />
-      <span className="hidden sm:inline">Soutenir</span>
-      <ExternalLink className="h-3 w-3 ml-1" />
+      <span className=" sm:inline">Soutenir</span>
     </Button>
   );
 }
