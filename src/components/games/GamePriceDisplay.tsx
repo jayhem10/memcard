@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, TrendingUp, TrendingDown, Tag } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Loader2, TrendingUp, TrendingDown, Tag, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 interface GamePriceDisplayProps {
   gameId: string;
@@ -23,6 +25,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [priceData, setPriceData] = useState<GamePrice | null>(null);
+  const [disclaimerOpen, setDisclaimerOpen] = useState(false);
   
   useEffect(() => {
     async function fetchPrices() {
@@ -194,6 +197,55 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
               {priceData.max_price.toFixed(2)}€
             </div>
           </motion.div>
+        </div>
+        
+        {/* Disclaimer déroulant */}
+        <div className="mt-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setDisclaimerOpen(!disclaimerOpen)}
+            className="w-full justify-between h-auto py-2 px-3 bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-100/50 dark:hover:bg-blue-950/30 border border-blue-200/50 dark:border-blue-800/50 rounded-lg text-xs text-blue-800 dark:text-blue-300"
+          >
+            <span className="flex items-center gap-2">
+              <Info className="h-3.5 w-3.5" />
+              <strong>Informations sur ces prix (eBay - indicatif)</strong>
+            </span>
+            {disclaimerOpen ? (
+              <ChevronUp className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" />
+            )}
+          </Button>
+          
+          <AnimatePresence>
+            {disclaimerOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <Alert className="mt-2 bg-blue-50/50 dark:bg-blue-950/20 border-blue-200/50 dark:border-blue-800/50">
+                  <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <AlertDescription className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
+                    <p className="mb-2">Ces prix proviennent d'<strong>eBay</strong> et sont à <strong>titre indicatif uniquement</strong>.</p>
+                    <p className="mb-1.5">La côte peut varier selon :</p>
+                    <ul className="list-disc list-inside space-y-0.5 ml-2 text-xs">
+                      <li><strong>État :</strong> Neuf, très bon état, bon état, état correct</li>
+                      <li><strong>Complétude :</strong> Complet (CIB), jeu seul, ou intermédiaire</li>
+                      <li><strong>Région :</strong> PAL/EUR, NTSC/US, ou autres</li>
+                      <li><strong>Rareté :</strong> Édition limitée, promo, ou standard</li>
+                      <li><strong>Boîte :</strong> Parfait état, abîmée, ou manquante</li>
+                      <li><strong>Livraison :</strong> Frais non inclus</li>
+                    </ul>
+                    <p className="mt-1.5 text-xs italic">Les prix réels peuvent différer selon ces critères.</p>
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </CardContent>
     </Card>
