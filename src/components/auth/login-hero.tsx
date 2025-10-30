@@ -8,7 +8,7 @@ interface Shape {
   y: number;
   size: number;
   speed: number;
-  type: 'circle' | 'triangle' | 'square' | 'buttonA' | 'buttonB' | 'buttonX' | 'buttonY';
+  type: 'psCircle' | 'psTriangle' | 'psSquare' | 'psCross';
   opacity: number;
   rotation: number;
   rotationSpeed: number;
@@ -34,16 +34,16 @@ function MatrixShapes() {
     
     // Create shapes
     const shapes: Shape[] = [];
-    const numberOfShapes = 10;
+    const numberOfShapes = 12;
     
     for (let i = 0; i < numberOfShapes; i++) {
       shapes.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height - canvas.height,
-        size: Math.random() * 30 + 15,
+        size: 28,
         speed: Math.random() * 1.5 + 0.5,
-        type: ['circle', 'triangle', 'square', 'buttonA', 'buttonB', 'buttonX', 'buttonY'][Math.floor(Math.random() * 7)] as Shape['type'],
-        opacity: Math.random() * 0.3 + 0.1,
+        type: (['psCircle', 'psTriangle', 'psSquare', 'psCross'][Math.floor(Math.random() * 4)] as Shape['type']),
+        opacity: Math.random() * 0.2 + 0.25,
         rotation: Math.random() * Math.PI * 2,
         rotationSpeed: (Math.random() - 0.5) * 0.02
       });
@@ -55,100 +55,105 @@ function MatrixShapes() {
       ctx.translate(shape.x, shape.y);
       ctx.rotate(shape.rotation);
       ctx.globalAlpha = shape.opacity;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 3;
       
       switch (shape.type) {
-        case 'circle':
+        case 'psCircle': {
+          const color = '#D83C3C'; // Rouge (O)
+          // Anneau blanc externe pour contraste
+          ctx.beginPath();
+          ctx.arc(0, 0, shape.size / 2 + 1.5, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+          ctx.lineWidth = 1.25;
+          ctx.stroke();
+          // Bouton coloré
           ctx.beginPath();
           ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(216, 60, 60, 0.18)';
           ctx.fill();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 3;
           ctx.stroke();
-          break;
-        case 'triangle':
-          ctx.beginPath();
-          ctx.moveTo(0, -shape.size / 2);
-          ctx.lineTo(shape.size / 2, shape.size / 2);
-          ctx.lineTo(-shape.size / 2, shape.size / 2);
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-          break;
-        case 'square':
-          ctx.beginPath();
-          ctx.rect(-shape.size / 2, -shape.size / 2, shape.size, shape.size);
-          ctx.fill();
-          ctx.stroke();
-          break;
-        case 'buttonA':
-          // Dessiner un cercle pour le bouton A
-          ctx.beginPath();
-          ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(76, 175, 80, 0.2)'; // Vert léger
-          ctx.fill();
-          ctx.strokeStyle = '#4CAF50'; // Vert
-          ctx.lineWidth = 2.5;
-          ctx.stroke();
-          
-          // Ajouter la lettre A
-          ctx.fillStyle = '#4CAF50';
-          ctx.font = `bold ${shape.size * 0.5}px Arial`;
+
+          ctx.fillStyle = color;
+          ctx.font = `700 ${shape.size * 0.65}px Arial`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('A', 0, 0);
+          ctx.fillText('◯', 0, 0);
           break;
-        case 'buttonB':
-          // Dessiner un cercle pour le bouton B
+        }
+        case 'psTriangle': {
+          const color = '#22C55E'; // Vert (△)
+          // Anneau blanc externe
+          ctx.beginPath();
+          ctx.arc(0, 0, shape.size / 2 + 1.5, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+          ctx.lineWidth = 1.25;
+          ctx.stroke();
+          // Bouton coloré
           ctx.beginPath();
           ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(244, 67, 54, 0.2)'; // Rouge léger
+          ctx.fillStyle = 'rgba(34, 197, 94, 0.18)';
           ctx.fill();
-          ctx.strokeStyle = '#F44336'; // Rouge
-          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 3;
           ctx.stroke();
-          
-          // Ajouter la lettre B
-          ctx.fillStyle = '#F44336';
-          ctx.font = `bold ${shape.size * 0.5}px Arial`;
+
+          ctx.fillStyle = color;
+          ctx.font = `700 ${shape.size * 0.65}px Arial`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('B', 0, 0);
+          ctx.fillText('△', 0, 0);
           break;
-        case 'buttonX':
-          // Dessiner un cercle pour le bouton X
+        }
+        case 'psSquare': {
+          const color = '#A855F7'; // Violet/rose (□)
+          // Anneau blanc externe
+          ctx.beginPath();
+          ctx.arc(0, 0, shape.size / 2 + 1.5, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+          ctx.lineWidth = 1.25;
+          ctx.stroke();
+          // Bouton coloré
           ctx.beginPath();
           ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(33, 150, 243, 0.2)'; // Bleu léger
+          ctx.fillStyle = 'rgba(168, 85, 247, 0.18)';
           ctx.fill();
-          ctx.strokeStyle = '#2196F3'; // Bleu
-          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 3;
           ctx.stroke();
-          
-          // Ajouter la lettre X
-          ctx.fillStyle = '#2196F3';
-          ctx.font = `bold ${shape.size * 0.5}px Arial`;
+
+          ctx.fillStyle = color;
+          ctx.font = `700 ${shape.size * 0.65}px Arial`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('X', 0, 0);
+          ctx.fillText('□', 0, 0);
           break;
-        case 'buttonY':
-          // Dessiner un cercle pour le bouton Y
+        }
+        case 'psCross': {
+          const color = '#3B82F6'; // Bleu (×)
+          // Anneau blanc externe
+          ctx.beginPath();
+          ctx.arc(0, 0, shape.size / 2 + 1.5, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+          ctx.lineWidth = 1.25;
+          ctx.stroke();
+          // Bouton coloré
           ctx.beginPath();
           ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255, 193, 7, 0.2)'; // Jaune léger
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.18)';
           ctx.fill();
-          ctx.strokeStyle = '#FFC107'; // Jaune
-          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 3;
           ctx.stroke();
-          
-          // Ajouter la lettre Y
-          ctx.fillStyle = '#FFC107';
-          ctx.font = `bold ${shape.size * 0.5}px Arial`;
+
+          ctx.fillStyle = color;
+          ctx.font = `700 ${shape.size * 0.65}px Arial`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('Y', 0, 0);
+          ctx.fillText('×', 0, 0);
           break;
+        }
       }
       
       ctx.restore();
