@@ -71,7 +71,9 @@ export async function POST(_request: NextRequest) {
       const results = await Promise.all(batch.map(async (game: any) => {
         try {
           // Utiliser l'abbreviation si disponible, sinon le nom complet
-          const platformName = game?.console?.abbreviation || game?.console?.name || undefined;
+          // Gérer le cas où console peut être un tableau ou un objet
+          const consoleData = Array.isArray(game?.console) ? game.console[0] : game?.console;
+          const platformName = consoleData?.abbreviation || consoleData?.name || undefined;
           
           const priceData = await fetchEbayPriceSamples({
             title: game.title,

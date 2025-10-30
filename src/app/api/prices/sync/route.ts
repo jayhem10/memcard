@@ -23,7 +23,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Utiliser l'abbreviation si disponible, sinon le nom complet
-    const platformName = game?.console?.abbreviation || game?.console?.name || undefined;
+    // Gérer le cas où console peut être un tableau ou un objet
+    const consoleData = Array.isArray(game?.console) ? game.console[0] : game?.console;
+    const platformName = consoleData?.abbreviation || consoleData?.name || undefined;
 
     // Appel eBay (EUR, PAL, complet/CIB)
     const priceData = await fetchEbayPriceSamples({
