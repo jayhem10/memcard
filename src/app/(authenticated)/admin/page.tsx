@@ -94,16 +94,16 @@ export default function AdminPage() {
             </Button>
 
             {priceResult && (
-              <Alert className="mt-4 bg-green-50">
-                <AlertTitle>Mise à jour réussie</AlertTitle>
-                <AlertDescription>{priceResult.message}</AlertDescription>
+              <Alert className="mt-4 border border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-200">
+                <AlertTitle className="text-green-800 dark:text-green-200">Mise à jour réussie</AlertTitle>
+                <AlertDescription className="text-green-700 dark:text-green-200">{priceResult.message}</AlertDescription>
               </Alert>
             )}
 
             {priceError && (
-              <Alert className="mt-4 bg-red-50">
-                <AlertTitle>Erreur</AlertTitle>
-                <AlertDescription>{priceError}</AlertDescription>
+              <Alert className="mt-4 border border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-200">
+                <AlertTitle className="text-red-800 dark:text-red-200">Erreur</AlertTitle>
+                <AlertDescription className="text-red-700 dark:text-red-200">{priceError}</AlertDescription>
               </Alert>
             )}
           </CardContent>
@@ -132,9 +132,9 @@ export default function AdminPage() {
             </Button>
 
             {result && (
-              <Alert className="mt-4 bg-green-50">
-                <AlertTitle>Synchronisation réussie</AlertTitle>
-                <AlertDescription>
+              <Alert className="mt-4 border border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-200">
+                <AlertTitle className="text-green-800 dark:text-green-200">Synchronisation réussie</AlertTitle>
+                <AlertDescription className="text-green-700 dark:text-green-200">
                   {result.message}<br />
                   {result.added} nouvelles consoles ajoutées.<br />
                   {result.updated} consoles existantes mises à jour.<br />
@@ -144,9 +144,9 @@ export default function AdminPage() {
             )}
 
             {error && (
-              <Alert className="mt-4 bg-red-50">
-                <AlertTitle>Erreur</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
+              <Alert className="mt-4 border border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-200">
+                <AlertTitle className="text-red-800 dark:text-red-200">Erreur</AlertTitle>
+                <AlertDescription className="text-red-700 dark:text-red-200">{error}</AlertDescription>
               </Alert>
             )}
           </CardContent>

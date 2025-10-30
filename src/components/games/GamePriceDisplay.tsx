@@ -134,57 +134,63 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
       <CardContent>
         <div className="grid grid-cols-2 gap-3 lg:gap-4">
           <motion.div 
-            className="bg-gradient-to-br from-green-50 to-green-100 p-3 rounded-lg"
+            className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-3 rounded-lg border border-green-200/50 dark:border-green-800/50"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <div className="text-sm text-green-700 font-medium flex items-center gap-1">
+            <div className="text-sm text-green-700 dark:text-green-300 font-medium flex items-center gap-1">
               <TrendingDown className="h-3 w-3" />
               Minimum
             </div>
-            <div className="text-xl font-bold text-green-800 mt-1 break-all" title={`${priceData.min_price.toFixed(2)}€`}>
+            <div className="text-xl font-bold text-green-800 dark:text-green-200 mt-1 break-all" title={`${priceData.min_price.toFixed(2)}€`}>
               {priceData.min_price.toFixed(2)}€
             </div>
           </motion.div>
           
           <motion.div 
-            className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg"
+            className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-3 rounded-lg border border-blue-200/50 dark:border-blue-800/50"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <div className="text-sm text-blue-700 font-medium flex items-center gap-1">
+            <div className="text-sm text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1">
               <Tag className="h-3 w-3" />
               Moyen
             </div>
-            <div className="text-xl font-bold text-blue-800 mt-1 break-all" title={`${priceData.average_price.toFixed(2)}€`}>
+            <div className="text-xl font-bold text-blue-800 dark:text-blue-200 mt-1 break-all" title={`${priceData.average_price.toFixed(2)}€`}>
               {priceData.average_price.toFixed(2)}€
             </div>
           </motion.div>
           
           <motion.div 
-            className="bg-gradient-to-br from-purple-50 to-purple-100 p-3 rounded-lg"
+            className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-3 rounded-lg border border-purple-200/50 dark:border-purple-800/50"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <div className="text-sm text-purple-700 font-medium flex items-center gap-1">
+            <div className="text-sm text-purple-700 dark:text-purple-300 font-medium flex items-center gap-1">
               <Tag className="h-3 w-3" />
               Neuf
             </div>
-            <div className="text-xl font-bold text-purple-800 mt-1 break-all" title={`${priceData.new_price.toFixed(2)}€`}>
-              {priceData.new_price.toFixed(2)}€
+            <div className="text-xl font-bold text-purple-800 dark:text-purple-200 mt-1 break-all">
+              {priceData.new_price > 0 ? (
+                <span title={`${priceData.new_price.toFixed(2)}€`}>
+                  {priceData.new_price.toFixed(2)}€
+                </span>
+              ) : (
+                <span className="text-muted-foreground text-base font-normal">Pas de données</span>
+              )}
             </div>
           </motion.div>
           
           <motion.div 
-            className="bg-gradient-to-br from-red-50 to-red-100 p-3 rounded-lg"
+            className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-3 rounded-lg border border-red-200/50 dark:border-red-800/50"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            <div className="text-sm text-red-700 font-medium flex items-center gap-1">
+            <div className="text-sm text-red-700 dark:text-red-300 font-medium flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
               Maximum
             </div>
-            <div className="text-xl font-bold text-red-800 mt-1 break-all" title={`${priceData.max_price.toFixed(2)}€`}>
+            <div className="text-xl font-bold text-red-800 dark:text-red-200 mt-1 break-all" title={`${priceData.max_price.toFixed(2)}€`}>
               {priceData.max_price.toFixed(2)}€
             </div>
           </motion.div>

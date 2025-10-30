@@ -12,6 +12,7 @@ import { useAuth } from '@/context/auth-context';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { GameFormDialog } from '@/components/game-form-dialog';
 import Game3DImage from '@/components/games/Game3DImage';
+import GamePriceDisplay from '@/components/games/GamePriceDisplay';
 
 // Définition des types
 type UserGameData = {
@@ -235,6 +236,7 @@ export default function GameDetailPage() {
     updateMutation.mutate(editedData);
   };
 
+
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="grid gap-8 md:grid-cols-[300px_1fr] xl:grid-cols-[300px_1fr_300px] max-w-screen-2xl mx-auto">
@@ -292,6 +294,7 @@ export default function GameDetailPage() {
           <div className="bg-card p-6 rounded-lg shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <h1 className="text-2xl md:text-3xl font-bold">{game.title}</h1>
+              {/* Le rafraîchissement global est réservé à l'admin depuis la page Admin */}
               
               {isEditing ? (
                 <div className="flex items-center gap-2">
@@ -340,6 +343,13 @@ export default function GameDetailPage() {
           </div>
 
           <div className="grid gap-6">
+            {/* Cote (EUR, PAL, Complet) */}
+            <div className="p-4 rounded-lg bg-card shadow-sm">
+              <h2 className="font-semibold border-b pb-2">Cote moyenne (EUR, PAL, complet)</h2>
+              <div className="mt-3">
+                <GamePriceDisplay gameId={gameId || ''} />
+              </div>
+            </div>
             {/* Statut et progression */}
             <div className="grid gap-4 p-4 rounded-lg bg-card shadow-sm">
               <h2 className="font-semibold border-b pb-2">Statut et progression</h2>
