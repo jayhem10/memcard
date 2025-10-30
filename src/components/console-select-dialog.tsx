@@ -34,7 +34,7 @@ interface Platform {
 interface ConsoleSelectDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (consoleId: string, consoleName?: string, status?: string, buyPrice?: number) => void;
+  onSelect: (consoleId: string, consoleName?: string, status?: string, buyPrice?: number, condition?: string) => void;
   gameName: string;
   gamePlatforms?: Platform[];
 }
@@ -45,6 +45,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
   const [selectedConsoleId, setSelectedConsoleId] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('NOT_STARTED');
   const [buyPrice, setBuyPrice] = useState<string>('');
+  const [condition, setCondition] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchConsoles = async () => {
@@ -144,7 +145,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
       const selectedConsole = consoles.find(c => c.id === selectedConsoleId);
       const numericPrice = parseFloat(buyPrice) || undefined;
       // Pass both ID, name, status and price to the parent component
-      onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée', selectedStatus, numericPrice);
+      onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée', selectedStatus, numericPrice, condition || undefined);
     }
   };
 
@@ -236,6 +237,26 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                   <SelectItem value="IN_PROGRESS">En cours</SelectItem>
                   <SelectItem value="COMPLETED">Terminé</SelectItem>
                   <SelectItem value="WISHLIST">Liste de souhaits</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="condition">État (optionnel)</Label>
+              <Select
+                value={condition}
+                onValueChange={setCondition}
+              >
+                <SelectTrigger id="condition">
+                  <SelectValue placeholder="Sélectionnez l'état du jeu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="neuf">Neuf</SelectItem>
+                  <SelectItem value="comme neuf">Comme neuf</SelectItem>
+                  <SelectItem value="très bon état">Très bon état</SelectItem>
+                  <SelectItem value="bon état">Bon état</SelectItem>
+                  <SelectItem value="état moyen">État moyen</SelectItem>
+                  <SelectItem value="mauvais état">Mauvais état</SelectItem>
                 </SelectContent>
               </Select>
             </div>

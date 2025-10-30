@@ -24,6 +24,7 @@ type UserGameData = {
   created_at: string | null;
   updated_at: string | null;
   buy_price: number | null;
+  condition: string | null;
 };
 
 type GameData = {
@@ -55,6 +56,7 @@ export default function GameDetailPage() {
     status: '',
     play_time: 0,
     completion_percentage: 0,
+    condition: '' as string | null,
   });
   
   // Rediriger si l'ID du jeu n'est pas défini
@@ -89,7 +91,7 @@ export default function GameDetailPage() {
       
       const { data: userGameData, error: userGameError } = await supabase
         .from('user_games')
-        .select('id, notes, rating, status, play_time, completion_percentage, created_at, updated_at, buy_price')
+        .select('id, notes, rating, status, play_time, completion_percentage, created_at, updated_at, buy_price, condition')
         .eq('game_id', gameId || '')
         .eq('user_id', user.id)
         .maybeSingle<UserGameData>();
@@ -209,6 +211,14 @@ export default function GameDetailPage() {
 
   const userGame = game.user_games?.[0];
 
+  const statusLabels: Record<string, string> = {
+    NOT_STARTED: 'Pas commencé',
+    IN_PROGRESS: 'En cours',
+    COMPLETED: 'Terminé',
+    DROPPED: 'Abandonné',
+    WISHLIST: 'Liste de souhaits',
+  };
+
   const handleEdit = () => {
     setEditedData({
       notes: typeof userGame?.notes === 'string' ? userGame.notes : '',
@@ -216,6 +226,7 @@ export default function GameDetailPage() {
       status: typeof userGame?.status === 'string' ? userGame.status : '',
       play_time: typeof userGame?.play_time === 'number' ? userGame.play_time : 0,
       completion_percentage: typeof userGame?.completion_percentage === 'number' ? userGame.completion_percentage : 0,
+      condition: typeof userGame?.condition === 'string' ? userGame.condition : '',
     });
     setIsEditing(true);
   };
@@ -351,7 +362,30 @@ export default function GameDetailPage() {
                       <option value="WISHLIST">Liste de souhaits</option>
                     </select>
                   ) : (
-                    <p className="mt-1">{userGame?.status || 'Non défini'}</p>
+                    <p className="mt-1">{userGame?.status ? (statusLabels[userGame.status] || userGame.status) : 'Non défini'}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="text-sm font-medium">État du jeu</label>
+                  {isEditing ? (
+                    <select
+                      className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2"
+                      value={editedData.condition || ''}
+                      onChange={(e) => setEditedData({
+                        ...editedData,
+                        condition: e.target.value || null,
+                      })}
+                    >
+                      <option value="">Non renseigné</option>
+                      <option value="neuf">Neuf</option>
+                      <option value="comme neuf">Comme neuf</option>
+                      <option value="très bon état">Très bon état</option>
+                      <option value="bon état">Bon état</option>
+                      <option value="état moyen">État moyen</option>
+                      <option value="mauvais état">Mauvais état</option>
+                    </select>
+                  ) : (
+                    <p className="mt-1">{userGame?.condition || 'Non renseigné'}</p>
                   )}
                 </div>
                 <div>

@@ -8,7 +8,7 @@ interface Shape {
   y: number;
   size: number;
   speed: number;
-  type: 'psCircle' | 'psTriangle' | 'psSquare' | 'psCross';
+  type: 'psCircle' | 'psTriangle' | 'psSquare' | 'psCross' | 'buttonA' | 'buttonB';
   opacity: number;
   rotation: number;
   rotationSpeed: number;
@@ -41,11 +41,11 @@ function MatrixShapes() {
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height - canvas.height,
         size: 28,
-        speed: Math.random() * 1.5 + 0.5,
-        type: (['psCircle', 'psTriangle', 'psSquare', 'psCross'][Math.floor(Math.random() * 4)] as Shape['type']),
+        speed: Math.random() * 1.0 + 0.15,
+        type: (['psCircle', 'psTriangle', 'psSquare', 'psCross', 'buttonA', 'buttonB'][Math.floor(Math.random() * 6)] as Shape['type']),
         opacity: Math.random() * 0.2 + 0.25,
         rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: (Math.random() - 0.5) * 0.02
+        rotationSpeed: (Math.random() - 0.5) * 0.01
       });
     }
     
@@ -56,102 +56,170 @@ function MatrixShapes() {
       ctx.rotate(shape.rotation);
       ctx.globalAlpha = shape.opacity;
       ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const r = shape.size / 2;
+      const symbolRadius = r * 0.50; // plus de padding interne
+      const symbolStroke = Math.max(2, r * 0.14); // symbole un peu plus fin
       
       switch (shape.type) {
         case 'psCircle': {
           const color = '#D83C3C'; // Rouge (O)
           // Anneau blanc externe pour contraste
           ctx.beginPath();
-          ctx.arc(0, 0, shape.size / 2 + 1.5, 0, Math.PI * 2);
+          ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
           ctx.strokeStyle = 'rgba(255,255,255,0.35)';
           ctx.lineWidth = 1.25;
           ctx.stroke();
           // Bouton coloré
           ctx.beginPath();
-          ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
           ctx.fillStyle = 'rgba(216, 60, 60, 0.18)';
           ctx.fill();
           ctx.strokeStyle = color;
           ctx.lineWidth = 3;
           ctx.stroke();
-
-          ctx.fillStyle = color;
-          ctx.font = `700 ${shape.size * 0.65}px Arial`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('◯', 0, 0);
+          // Symbole: cercle centré avec plus de marge et trait plus fin
+          ctx.beginPath();
+          ctx.arc(0, 0, symbolRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = Math.max(1.5, r * 0.12);
+          ctx.stroke();
           break;
         }
         case 'psTriangle': {
           const color = '#22C55E'; // Vert (△)
           // Anneau blanc externe
           ctx.beginPath();
-          ctx.arc(0, 0, shape.size / 2 + 1.5, 0, Math.PI * 2);
+          ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
           ctx.strokeStyle = 'rgba(255,255,255,0.35)';
           ctx.lineWidth = 1.25;
           ctx.stroke();
           // Bouton coloré
           ctx.beginPath();
-          ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
           ctx.fillStyle = 'rgba(34, 197, 94, 0.18)';
           ctx.fill();
           ctx.strokeStyle = color;
           ctx.lineWidth = 3;
           ctx.stroke();
-
-          ctx.fillStyle = color;
-          ctx.font = `700 ${shape.size * 0.65}px Arial`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('△', 0, 0);
+          // Symbole: triangle équilatéral inscrit (avec léger padding)
+          const triR = symbolRadius * 1.05;
+          const a1 = -Math.PI / 2; // sommet en haut
+          const a2 = a1 + (2 * Math.PI) / 3;
+          const a3 = a1 + (4 * Math.PI) / 3;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(a1) * triR, Math.sin(a1) * triR);
+          ctx.lineTo(Math.cos(a2) * triR, Math.sin(a2) * triR);
+          ctx.lineTo(Math.cos(a3) * triR, Math.sin(a3) * triR);
+          ctx.closePath();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = symbolStroke;
+          ctx.stroke();
           break;
         }
         case 'psSquare': {
           const color = '#A855F7'; // Violet/rose (□)
           // Anneau blanc externe
           ctx.beginPath();
-          ctx.arc(0, 0, shape.size / 2 + 1.5, 0, Math.PI * 2);
+          ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
           ctx.strokeStyle = 'rgba(255,255,255,0.35)';
           ctx.lineWidth = 1.25;
           ctx.stroke();
           // Bouton coloré
           ctx.beginPath();
-          ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
           ctx.fillStyle = 'rgba(168, 85, 247, 0.18)';
           ctx.fill();
           ctx.strokeStyle = color;
           ctx.lineWidth = 3;
           ctx.stroke();
-
-          ctx.fillStyle = color;
-          ctx.font = `700 ${shape.size * 0.65}px Arial`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText('□', 0, 0);
+          // Symbole: carré centré avec padding
+          const side = r * 0.9; // carré plus petit pour un padding net
+          const half = side / 2;
+          ctx.beginPath();
+          ctx.rect(-half, -half, side, side);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = symbolStroke;
+          ctx.stroke();
           break;
         }
         case 'psCross': {
           const color = '#3B82F6'; // Bleu (×)
           // Anneau blanc externe
           ctx.beginPath();
-          ctx.arc(0, 0, shape.size / 2 + 1.5, 0, Math.PI * 2);
+          ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
           ctx.strokeStyle = 'rgba(255,255,255,0.35)';
           ctx.lineWidth = 1.25;
           ctx.stroke();
           // Bouton coloré
           ctx.beginPath();
-          ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
           ctx.fillStyle = 'rgba(59, 130, 246, 0.18)';
           ctx.fill();
           ctx.strokeStyle = color;
           ctx.lineWidth = 3;
           ctx.stroke();
-
+          // Symbole: croix (deux segments diagonaux) centrée
+          const len = symbolRadius * 1.3; // segments plus courts -> plus de padding
+          const h = len / 2;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = symbolStroke;
+          ctx.beginPath();
+          ctx.moveTo(-h, -h);
+          ctx.lineTo(h, h);
+          ctx.moveTo(-h, h);
+          ctx.lineTo(h, -h);
+          ctx.stroke();
+          break;
+        }
+        case 'buttonA': {
+          const color = '#22C55E'; // Vert (A)
+          // Anneau blanc externe
+          ctx.beginPath();
+          ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+          ctx.lineWidth = 1.25;
+          ctx.stroke();
+          // Bouton coloré
+          ctx.beginPath();
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(34, 197, 94, 0.18)';
+          ctx.fill();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          // Lettre centrée
           ctx.fillStyle = color;
-          ctx.font = `700 ${shape.size * 0.65}px Arial`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('×', 0, 0);
+          ctx.font = `700 ${r * 1.1}px Arial`;
+          ctx.fillText('A', 0, 0);
+          break;
+        }
+        case 'buttonB': {
+          const color = '#D83C3C'; // Rouge (B)
+          // Anneau blanc externe
+          ctx.beginPath();
+          ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+          ctx.lineWidth = 1.25;
+          ctx.stroke();
+          // Bouton coloré
+          ctx.beginPath();
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(216, 60, 60, 0.18)';
+          ctx.fill();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          // Lettre centrée
+          ctx.fillStyle = color;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.font = `700 ${r * 1.1}px Arial`;
+          ctx.fillText('B', 0, 0);
           break;
         }
       }
@@ -194,7 +262,7 @@ function MatrixShapes() {
     <canvas 
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 1 }}
     />
   );
 }
@@ -277,6 +345,8 @@ export function LoginHero() {
         
         {/* Formes géométriques animées pour mobile */}
         <MatrixShapes />
+        {/* Overlay thématique en haut (semi-transparente) */}
+        <div className={`${styles.overlay} opacity-60`} />
       </div>
       
       {/* Section hero pour desktop */}
