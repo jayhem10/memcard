@@ -292,51 +292,42 @@ export default function GameDetailPage() {
         {/* Détails et actions */}
         <div className="space-y-6">
           <div className="bg-card p-6 rounded-lg shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-              <h1 className="text-2xl md:text-3xl font-bold">{game.title}</h1>
-              {/* Le rafraîchissement global est réservé à l'admin depuis la page Admin */}
-              
-              {isEditing ? (
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
-                    <X className="h-4 w-4 mr-1" />
-                    Annuler
-                  </Button>
-                  <Button size="sm" onClick={handleSave}>
-                    <Save className="h-4 w-4 mr-1" />
-                    Enregistrer
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Button onClick={handleEdit} size="sm" variant="outline" className="border-primary">
-                    <Pencil className="h-4 w-4 mr-1" />
-                    Modifier
-                  </Button>
-                  
-                  <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4 mr-1" />
+            <div className="mb-4">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <h1 className="text-2xl md:text-3xl font-bold">{game.title}</h1>
+                
+                {/* Bouton Supprimer en haut à droite */}
+                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      className="flex-shrink-0"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Supprimer</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="w-[calc(100vw-2rem)] sm:w-full sm:max-w-[400px] p-0 left-[50%] translate-x-[-50%]">
+                    <AlertDialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
+                      <AlertDialogTitle>Supprimer de la collection</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Êtes-vous sûr de vouloir supprimer "{game.title}" de votre collection ? 
+                        Cette action est irréversible.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2 sm:gap-0 px-4 pb-4 pt-2 sm:px-6 sm:pb-6 sm:pt-4">
+                      <AlertDialogCancel className="w-full sm:w-auto">Annuler</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => deleteMutation.mutate()} 
+                        className="w-full sm:w-auto"
+                      >
                         Supprimer
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Supprimer de la collection</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Êtes-vous sûr de vouloir supprimer "{game.title}" de votre collection ? 
-                          Cette action est irréversible.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Annuler</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => deleteMutation.mutate()}>Supprimer</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
             
             <p className="text-muted-foreground">{game.description}</p>
@@ -350,9 +341,36 @@ export default function GameDetailPage() {
                 <GamePriceDisplay gameId={gameId || ''} />
               </div>
             </div>
-            {/* Statut et progression */}
+            
+            {/* Statut et progression - Section modifiable avec boutons à proximité */}
             <div className="grid gap-4 p-4 rounded-lg bg-card shadow-sm">
-              <h2 className="font-semibold border-b pb-2">Statut et progression</h2>
+              <div className="flex items-center justify-between border-b pb-2">
+                <h2 className="font-semibold">Statut et progression</h2>
+                
+                {/* Boutons Modifier/Enregistrer/Annuler à côté du titre */}
+                {isEditing ? (
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                      <X className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">Annuler</span>
+                    </Button>
+                    <Button size="sm" onClick={handleSave}>
+                      <Save className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">Enregistrer</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <Button 
+                    onClick={handleEdit} 
+                    size="sm" 
+                    variant="outline" 
+                    className="border-primary"
+                  >
+                    <Pencil className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">Modifier</span>
+                  </Button>
+                )}
+              </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="text-sm font-medium">Statut</label>
