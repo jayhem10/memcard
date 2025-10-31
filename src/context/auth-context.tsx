@@ -50,13 +50,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Fonction pour gérer la redirection
   const handleRedirection = (user: User | null, event?: string) => {
+    // Utiliser useEffect pour éviter les redirections pendant le rendu
+    if (typeof window === 'undefined') return;
+    
     const pathname = window.location.pathname;
     
-    if (user && pathname === '/login') {
-      window.location.href = '/';
-    } else if (!user && pathname !== '/login') {
-      window.location.href = '/login';
-    }
+    // Utiliser setTimeout pour éviter les redirections synchrones pendant le rendu
+    setTimeout(() => {
+      if (user && pathname === '/login') {
+        router.push('/');
+      } else if (!user && pathname !== '/login') {
+        router.push('/login');
+      }
+    }, 0);
   };
 
   // Fonction pour nettoyer le localStorage en cas de problème avec les tokens
@@ -115,16 +121,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(currentUser);
       setIsLoading(false);
       
-      // Rediriger dès la vérification initiale
-      setTimeout(() => {
-        handleRedirection(currentUser);
-      }, 100); // Petit délai pour s'assurer que le routeur est initialisé
+      // Rediriger dès la vérification initiale (dans un timeout pour éviter les problèmes d'hydratation)
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          handleRedirection(currentUser);
+        }, 100); // Petit délai pour s'assurer que le routeur est initialisé
+      }
     }).catch(error => {
       console.error('Error getting session:', error);
       setIsLoading(false);
       // En cas d'erreur, nettoyer le localStorage et rediriger vers la page de connexion
-      cleanupLocalStorage();
-      window.location.href = '/login';
+      if (typeof window !== 'undefined') {
+        cleanupLocalStorage();
+        setTimeout(() => {
+          router.push('/login');
+        }, 0);
+      }
     });
 
     // Nettoyer l'abonnement à la déconnexion du composant

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { GameGrid } from '@/components/games/game-grid';
 import { GameList } from '@/components/games/game-list';
 import { Button } from '@/components/ui/button';
@@ -64,7 +64,7 @@ type Game = {
   buy_price?: number | null;
 };
 
-export default function CollectionPage() {
+function CollectionPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -506,5 +506,26 @@ export default function CollectionPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CollectionPage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="h-9 w-48 bg-muted animate-pulse rounded" />
+          <div className="flex gap-2">
+            <div className="h-9 w-24 bg-muted animate-pulse rounded" />
+            <div className="h-9 w-24 bg-muted animate-pulse rounded" />
+          </div>
+        </div>
+        <div className="flex h-[300px] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    }>
+      <CollectionPageContent />
+    </Suspense>
   );
 }
