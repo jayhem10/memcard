@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Grid2X2, List, Loader2, Search, Database } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
@@ -64,6 +65,8 @@ type Game = {
 };
 
 export default function CollectionPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
@@ -74,6 +77,17 @@ export default function CollectionPage() {
   const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<CollectionTab>('collection');
+
+  // Initialiser l'onglet depuis l'URL si présent
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'wishlist') {
+      setActiveTab('wishlist');
+    } else {
+      // Si pas de paramètre ou paramètre différent, on active l'onglet collection
+      setActiveTab('collection');
+    }
+  }, [searchParams]);
 
   // Réinitialiser les filtres quand on change d'onglet
   useEffect(() => {
@@ -337,14 +351,20 @@ export default function CollectionPage() {
           <div className="flex items-center gap-2">
             <Button
               variant={activeTab === 'collection' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('collection')}
+              onClick={() => {
+                setActiveTab('collection');
+                router.push('/collection');
+              }}
               className="text-sm"
             >
               Collection
             </Button>
             <Button
               variant={activeTab === 'wishlist' ? 'default' : 'outline'}
-              onClick={() => setActiveTab('wishlist')}
+              onClick={() => {
+                setActiveTab('wishlist');
+                router.push('/collection?tab=wishlist');
+              }}
               className="text-sm"
             >
               Liste de souhaits

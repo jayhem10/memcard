@@ -37,9 +37,12 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
           .from('game_prices')
           .select('min_price, max_price, average_price, new_price, last_updated')
           .eq('game_id', gameId)
-          .single();
+          .maybeSingle();
           
-        if (error) throw error;
+        // Si l'erreur est "PGRST116" (no rows returned), c'est normal = pas de données
+        if (error && error.code !== 'PGRST116') {
+          throw error;
+        }
         
         // Convertir explicitement les données en objet GamePrice
         if (data) {
@@ -53,8 +56,8 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
           
           setPriceData(gamePriceData);
         } else {
-          console.warn('Aucune donnée de prix trouvée');
-          setError('Aucune donnée de prix disponible');
+          // Pas d'erreur, juste pas de données - on met priceData à null
+          setPriceData(null);
         }
       } catch (err: any) {
         console.error('Erreur lors de la récupération des prix:', err);
@@ -105,7 +108,8 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
     );
   }
 
-  if (error || !priceData) {
+  // Erreur réelle (ex: problème de connexion)
+  if (error) {
     return (
       <Card className={`${className} overflow-hidden`}>
         <CardHeader className="pb-2">
@@ -113,8 +117,33 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-4">
-            {error || 'Aucune donnée de prix disponible'}
+            {error}
           </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Pas d'erreur mais pas de données dans la table
+  if (!priceData) {
+    return (
+      <Card className={`${className} overflow-hidden`}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Tag className="h-4 w-4" />
+            Prix du marché
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <Info className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground text-sm">
+              Aucune donnée de prix disponible pour ce jeu.
+            </p>
+            <p className="text-muted-foreground text-xs mt-2">
+              Les prix seront mis à jour automatiquement depuis eBay.
+            </p>
+          </div>
         </CardContent>
       </Card>
     );

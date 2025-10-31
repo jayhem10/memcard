@@ -9,7 +9,7 @@ interface ProfileState {
   profile: UserProfile | null;
   isLoading: boolean;
   error: string | null;
-  fetchProfile: () => Promise<void>;
+  fetchProfile: (force?: boolean) => Promise<void>;
   updateProfile: (profileData: ProfileUpdateRequest) => Promise<void>;
   resetProfile: () => void;
 }
@@ -19,27 +19,30 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchProfile: async () => {
+  fetchProfile: async (force = false) => {
     const currentProfile = get().profile;
     const isLoading = get().isLoading;
 
-    // Si on a déjà un profil ou si on est en train de charger, ne rien faire
-    if (currentProfile || isLoading) {
-      return;
-    }
+    // Si on force le rechargement, on ignore les vérifications
+    if (!force) {
+      // Si on a déjà un profil ou si on est en train de charger, ne rien faire
+      if (currentProfile || isLoading) {
+        return;
+      }
 
-    // Vérifier le délai entre les requêtes
-    const lastFetchTime = sessionStorage.getItem('lastProfileFetch');
-    const lastFetchTimeMs = lastFetchTime ? parseInt(lastFetchTime) : 0;
-    const now = Date.now();
-    
-    // Si on a déjà fait une requête dans les 5 dernières secondes, ignorer
-    if (now - lastFetchTimeMs < 5000) {
-      return;
+      // Vérifier le délai entre les requêtes
+      const lastFetchTime = sessionStorage.getItem('lastProfileFetch');
+      const lastFetchTimeMs = lastFetchTime ? parseInt(lastFetchTime) : 0;
+      const now = Date.now();
+      
+      // Si on a déjà fait une requête dans les 5 dernières secondes, ignorer
+      if (now - lastFetchTimeMs < 5000) {
+        return;
+      }
     }
     
     // Enregistrer le moment de cette requête
-    sessionStorage.setItem('lastProfileFetch', now.toString());
+    sessionStorage.setItem('lastProfileFetch', Date.now().toString());
     set({ isLoading: true, error: null });
     
     try {

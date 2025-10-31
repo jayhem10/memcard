@@ -46,6 +46,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
   const [selectedStatus, setSelectedStatus] = useState<string>('NOT_STARTED');
   const [buyPrice, setBuyPrice] = useState<string>('');
   const [condition, setCondition] = useState<string>('');
+  const [isWishlist, setIsWishlist] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchConsoles = async () => {
@@ -144,10 +145,25 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
       // Find the selected console to get its name
       const selectedConsole = consoles.find(c => c.id === selectedConsoleId);
       const numericPrice = parseFloat(buyPrice) || undefined;
+      // Si wishlist est coché, le statut sera WISHLIST, sinon on utilise le statut sélectionné
+      const finalStatus = isWishlist ? 'WISHLIST' : selectedStatus;
+      // Si wishlist, pas de prix ni d'état
+      const finalPrice = isWishlist ? undefined : numericPrice;
+      const finalCondition = isWishlist ? undefined : (condition || undefined);
       // Pass both ID, name, status and price to the parent component
-      onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée', selectedStatus, numericPrice, condition || undefined);
+      onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée', finalStatus, finalPrice, finalCondition);
     }
   };
+
+  // Réinitialiser les champs quand le dialog s'ouvre
+  useEffect(() => {
+    if (isOpen) {
+      setIsWishlist(false);
+      setSelectedStatus('NOT_STARTED');
+      setBuyPrice('');
+      setCondition('');
+    }
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
@@ -160,9 +176,11 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
             Choisissez la console pour &quot;{gameName || 'ce jeu'}&quot;
           </DialogDescription>
           {gamePlatforms && gamePlatforms.length > 0 && (
-            <div className="mt-2 text-xs px-2 sm:px-6">
-              <span className="font-medium">Plateformes disponibles:</span>{' '}
-              {gamePlatforms.map(p => p.abbreviation || p.name).join(', ')}
+            <div className="mt-3 pt-3 border-t border-border">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium">Plateformes disponibles:</span>{' '}
+                {gamePlatforms.map(p => p.abbreviation || p.name).join(', ')}
+              </p>
             </div>
           )}
         </DialogHeader>
@@ -223,31 +241,52 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
               </Select>
             </div>
             
+            {/* Case à cocher Wishlist */}
+            <div className="flex items-center space-x-2 py-2">
+              <input
+                type="checkbox"
+                id="wishlist"
+                checked={isWishlist}
+                onChange={(e) => setIsWishlist(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-2"
+              />
+              <Label htmlFor="wishlist" className="text-sm font-medium cursor-pointer">
+                Ajouter à la liste de souhaits
+              </Label>
+            </div>
+
+            {/* Statut - désactivé si wishlist */}
             <div className="space-y-2">
-              <Label htmlFor="status">Statut</Label>
+              <Label htmlFor="status" className={isWishlist ? 'text-muted-foreground' : ''}>
+                Statut {isWishlist && '(non disponible pour la wishlist)'}
+              </Label>
               <Select
                 value={selectedStatus}
                 onValueChange={setSelectedStatus}
+                disabled={isWishlist}
               >
-                <SelectTrigger id="status">
+                <SelectTrigger id="status" className={isWishlist ? 'opacity-50 cursor-not-allowed' : ''}>
                   <SelectValue placeholder="Sélectionnez un statut" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="NOT_STARTED">Non commencé</SelectItem>
                   <SelectItem value="IN_PROGRESS">En cours</SelectItem>
                   <SelectItem value="COMPLETED">Terminé</SelectItem>
-                  <SelectItem value="WISHLIST">Liste de souhaits</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
+            {/* État - désactivé si wishlist */}
             <div className="space-y-2">
-              <Label htmlFor="condition">État (optionnel)</Label>
+              <Label htmlFor="condition" className={isWishlist ? 'text-muted-foreground' : ''}>
+                État (optionnel) {isWishlist && '(non disponible pour la wishlist)'}
+              </Label>
               <Select
                 value={condition}
                 onValueChange={setCondition}
+                disabled={isWishlist}
               >
-                <SelectTrigger id="condition">
+                <SelectTrigger id="condition" className={isWishlist ? 'opacity-50 cursor-not-allowed' : ''}>
                   <SelectValue placeholder="Sélectionnez l'état du jeu" />
                 </SelectTrigger>
                 <SelectContent>
@@ -261,8 +300,11 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
               </Select>
             </div>
 
+            {/* Prix d'achat - désactivé si wishlist */}
             <div className="space-y-2">
-              <Label htmlFor="buyPrice">Prix d'achat (optionnel)</Label>
+              <Label htmlFor="buyPrice" className={isWishlist ? 'text-muted-foreground' : ''}>
+                Prix d'achat (optionnel) {isWishlist && '(non disponible pour la wishlist)'}
+              </Label>
               <Input
                 id="buyPrice"
                 type="number"
@@ -272,6 +314,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                 onChange={(e) => setBuyPrice(e.target.value)}
                 placeholder="0.00"
                 className="w-full"
+                disabled={isWishlist}
               />
             </div>
           </div>

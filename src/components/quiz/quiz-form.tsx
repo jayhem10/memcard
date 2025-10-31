@@ -7,13 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-// Import toast from your UI library
-// If you're using shadcn/ui, you might need to create these components
-const useToast = () => ({
-  toast: ({ title, description, variant }: { title: string; description: string; variant: string }) => {
-    console.error(`${title}: ${description}`);
-  }
-});
+// Suppression du mock useToast, utilisation de react-hot-toast directement
 
 // Mock translation function until you set up i18n
 const useTranslation = () => ({
@@ -37,6 +31,8 @@ const useTranslation = () => ({
 import { Rank } from '@/types/profile';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { useProfileStore } from '@/store/useProfileStore';
 
 interface QuizQuestion {
   id: string;
@@ -53,7 +49,7 @@ interface QuizQuestion {
 export default function QuizForm() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const { toast } = useToast();
+  const { fetchProfile, resetProfile } = useProfileStore();
   const currentLang = i18n.language || 'en';
   
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -104,7 +100,12 @@ export default function QuizForm() {
         .from('quiz_questions')
         .select('*');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching quiz questions:', error);
+        toast.error('Erreur lors de la récupération des questions du quiz');
+        setIsLoading(false);
+        return;
+      }
       
       // Conversion sûre des données
       const typedQuestions: QuizQuestion[] = (data || []).map(item => ({
@@ -124,11 +125,7 @@ export default function QuizForm() {
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching quiz questions:', error);
-      toast({
-        title: t('error'),
-        description: t('errorFetchingQuizQuestions'),
-        variant: 'destructive',
-      });
+      toast.error('Erreur lors de la récupération des questions du quiz');
       setIsLoading(false);
     }
   };
@@ -161,34 +158,38 @@ export default function QuizForm() {
         throw new Error('User not authenticated');
       }
       
-      // Then, save all user answers
+      // Convertir les réponses pour l'API
+      // Convertir optionId en nombre car la fonction SQL attend un entier
       const answers = Object.entries(selectedOptions).map(([questionId, optionId]) => ({
-        user_id: userId,
         question_id: questionId,
-        selected_option: optionId,
+        selected_option: parseInt(optionId, 10), // Convertir en nombre
       }));
       
-      // Utiliser upsert avec onConflict pour gérer la contrainte d'unicité
-      const { error: answersError } = await supabase
-        .from('user_quiz_answers')
-        .upsert(answers, { 
-          onConflict: 'user_id,question_id',
-          ignoreDuplicates: false // Mettre à jour les entrées existantes
-        });
+      // Envoyer toutes les données à l'API (réponses + calcul du rang)
+      const response = await fetch('/api/quiz/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          userId,
+          answers 
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de la soumission du quiz');
+      }
+
+      const { rankId: rankIdFromApi } = await response.json();
       
-      if (answersError) throw answersError;
-      
-      // Call the calculate_user_rank function
-      const { data: rankData, error: rankError } = await supabase
-        .rpc('calculate_user_rank', { p_user_id: userId });
-      
-      if (rankError) throw rankError;
-      
-      // Vérifier et convertir rankData en string pour l'utiliser comme ID
-      const rankId = rankData ? String(rankData) : null;
+      // Vérifier et convertir rankId en string pour l'utiliser comme ID
+      const rankId = rankIdFromApi ? String(rankIdFromApi) : null;
       
       if (!rankId) {
-        throw new Error('Failed to calculate user rank');
+        console.error('No rank ID returned from calculate_user_rank');
+        throw new Error('Échec du calcul du rang. Aucun rang retourné.');
       }
       
       // Fetch the rank details
@@ -198,7 +199,10 @@ export default function QuizForm() {
         .eq('id', rankId)
         .single();
       
-      if (rankDetailsError) throw rankDetailsError;
+      if (rankDetailsError) {
+        console.error('Error fetching rank details:', rankDetailsError);
+        throw rankDetailsError;
+      }
       
       // Conversion sûre des données de rang
       if (rankDetails) {
@@ -213,19 +217,22 @@ export default function QuizForm() {
           created_at: String(rankDetails.created_at)
         };
         setUserRank(typedRank);
+        setShowResult(true);
+        
+        // Rafraîchir le profil pour mettre à jour le store (forcer le rechargement)
+        resetProfile(); // Réinitialiser le cache
+        await fetchProfile(true); // Forcer le rechargement
+        
+        toast.success('Quiz terminé avec succès ! Votre rang a été déterminé.');
+      } else {
+        throw new Error('Aucun détail de rang trouvé');
       }
-      setShowResult(true);
       
-      // Check for new achievements
-      await supabase.rpc('check_achievements', { p_user_id: userId });
+      // Les achievements sont vérifiés automatiquement par l'API
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting quiz:', error);
-      toast({
-        title: t('error'),
-        description: t('errorSubmittingQuiz'),
-        variant: 'destructive',
-      });
+      toast.error(error?.message || 'Erreur lors de la soumission du quiz');
     } finally {
       setIsSubmitting(false);
     }
