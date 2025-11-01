@@ -4,18 +4,16 @@ import { useEffect, useState, Suspense } from 'react';
 import { GameGrid } from '@/components/games/game-grid';
 import { GameList } from '@/components/games/game-list';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { SearchInput } from '@/components/ui/search-input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Grid2X2, List, Loader2, Search, Database } from 'lucide-react';
+import { Grid2X2, List, Loader2, Database } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ExportButton } from '@/components/ui/export-button';
 import { GameExportData } from '@/lib/excel-export';
 
@@ -412,19 +410,29 @@ function CollectionPageContent() {
         </div>
         <ScrollArea className="h-16 whitespace-nowrap">
           <div className="flex flex-wrap gap-2 pb-1">
-            {consoles.map((console) => (
-              <Badge 
-                key={console.id} 
-                variant={consoleFilter === console.id ? "default" : "outline"}
-                className={`cursor-pointer text-sm flex items-center gap-1.5 ${consoleFilter === console.id ? 'hover:bg-primary/90 text-primary-foreground' : 'hover:bg-secondary/60'}`}
-                onClick={() => setConsoleFilter(console.id)}
-              >
-                <span>{console.name}</span>
-                <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${consoleFilter === console.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
-                  {console.count}
-                </span>
-              </Badge>
-            ))}
+            {loading && consoles.length === 0 ? (
+              // Skeletons pendant le chargement
+              Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-7 w-24 bg-muted animate-pulse rounded-full"
+                />
+              ))
+            ) : (
+              consoles.map((console) => (
+                <Badge 
+                  key={console.id} 
+                  variant={consoleFilter === console.id ? "default" : "outline"}
+                  className={`cursor-pointer text-sm flex items-center gap-1.5 ${consoleFilter === console.id ? 'hover:bg-primary/90 text-primary-foreground' : 'hover:bg-secondary/60'}`}
+                  onClick={() => setConsoleFilter(console.id)}
+                >
+                  <span>{console.name}</span>
+                  <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${consoleFilter === console.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
+                    {console.count}
+                  </span>
+                </Badge>
+              ))
+            )}
           </div>
         </ScrollArea>
       </div>
@@ -443,28 +451,66 @@ function CollectionPageContent() {
         </div>
         <ScrollArea className="h-16 whitespace-nowrap">
           <div className="flex flex-wrap gap-2 pb-1">
-            {genres.map((genre) => (
-              <Badge 
-                key={genre.id} 
-                variant={genreFilter === genre.id ? "default" : "outline"}
-                className={`cursor-pointer text-sm flex items-center gap-1.5 ${genreFilter === genre.id ? 'hover:bg-primary/90 text-primary-foreground' : 'hover:bg-secondary/60'}`}
-                onClick={() => setGenreFilter(genre.id)}
-              >
-                <span>{genre.name}</span>
-                <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${genreFilter === genre.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
-                  {genre.count}
-                </span>
-              </Badge>
-            ))}
+            {loading && genres.length === 0 ? (
+              // Skeletons pendant le chargement
+              Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-7 w-20 bg-muted animate-pulse rounded-full"
+                />
+              ))
+            ) : (
+              genres.map((genre) => (
+                <Badge 
+                  key={genre.id} 
+                  variant={genreFilter === genre.id ? "default" : "outline"}
+                  className={`cursor-pointer text-sm flex items-center gap-1.5 ${genreFilter === genre.id ? 'hover:bg-primary/90 text-primary-foreground' : 'hover:bg-secondary/60'}`}
+                  onClick={() => setGenreFilter(genre.id)}
+                >
+                  <span>{genre.name}</span>
+                  <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${genreFilter === genre.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
+                    {genre.count}
+                  </span>
+                </Badge>
+              ))
+            )}
           </div>
         </ScrollArea>
       </div>
 
       <div className="min-h-[300px]">
         {loading ? (
-          <div className="flex h-[300px] items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
+          viewMode === 'grid' ? (
+            // Skeletons pour le mode grille
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted animate-pulse"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/80 to-muted" />
+                  <div className="absolute bottom-0 left-0 right-0 h-8 bg-muted-foreground/20" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Skeletons pour le mode liste
+            <div className="space-y-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center space-x-4 p-4 rounded-lg bg-card animate-pulse"
+                >
+                  <div className="w-20 h-24 bg-muted rounded-md flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-5 bg-muted rounded w-3/4" />
+                    <div className="h-4 bg-muted rounded w-1/2" />
+                    <div className="h-4 bg-muted rounded w-1/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
         ) : filteredGames.length > 0 ? (
           viewMode === 'grid' ? (
             <GameGrid games={filteredGames} />
