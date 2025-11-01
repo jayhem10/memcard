@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,10 +14,19 @@ type AuthFormData = {
 };
 
 export function AuthForm() {
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [oAuthLoading, setOAuthLoading] = useState<'google' | 'discord' | null>(null);
   const { register, handleSubmit, formState: { errors } } = useForm<AuthFormData>();
+
+  // Détecter le paramètre mode=signup dans l'URL
+  useEffect(() => {
+    const mode = searchParams.get('mode');
+    if (mode === 'signup') {
+      setIsSignUp(true);
+    }
+  }, [searchParams]);
 
   const onSubmit = async (data: AuthFormData) => {
     setIsLoading(true);

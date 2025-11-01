@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfileStore } from '@/store/useProfileStore';
 import { useAuth } from '@/context/auth-context';
 import { useUserRole } from '@/hooks/useUserRole';
+import { WishlistNotifications } from '@/components/wishlist/wishlist-notifications';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -106,6 +107,9 @@ function NavbarContent() {
               <PlusCircle className="h-4 w-4" />
               Ajouter un jeu
             </Link>
+            
+            {/* Notifications wishlist */}
+            {user && <WishlistNotifications />}
             
             {/* Sélecteur de thème */}
             <div className="ml-2">
@@ -295,6 +299,9 @@ function NavbarContent() {
             >
               <PlusCircle className="h-5 w-5" />
             </Link>
+            
+            {/* Notifications wishlist */}
+            {user && <WishlistNotifications />}
             
             {/* Sélecteur de thème */}
             <div className="mr-1">

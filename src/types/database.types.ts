@@ -41,6 +41,30 @@ export interface UserGame {
   created_at: string;
   updated_at: string;
   buy_price: number | null;
+  buy: boolean | null;
+}
+
+export interface WishlistShare {
+  id: string;
+  user_id: string;
+  token: string;
+  created_at: string;
+  expires_at: string | null;
+  is_active: boolean;
+}
+
+export interface WishlistNotification {
+  id: string;
+  user_id: string;
+  user_game_id: string;
+  created_at: string;
+  validated_at: string | null;
+  is_validated: boolean;
+  game?: {
+    id: string;
+    title: string;
+    cover_url: string | null;
+  };
 }
 
 export type GameStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'DROPPED' | 'WISHLIST';

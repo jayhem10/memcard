@@ -529,16 +529,23 @@ export default function SearchPage() {
       }
       
       // Ajouter le jeu à la collection de l'utilisateur
+      const finalStatus = status || 'NOT_STARTED';
+      // Si le statut est WISHLIST, réinitialiser condition à NULL
+      // (car un jeu en wishlist n'a pas encore d'état physique)
+      const finalCondition = (finalStatus === 'WISHLIST' || finalStatus === 'wishlist') 
+        ? null 
+        : (condition || null);
+      
       const { error: userGameError } = await supabase
         .from('user_games')
         .insert({
           user_id: user.id,
           game_id: gameId,
-          status: status || 'NOT_STARTED',
+          status: finalStatus,
           rating: 0,
           notes: '',
           buy_price: buyPrice || null,
-          condition: condition || null
+          condition: finalCondition
         });
       
       if (userGameError) throw userGameError;

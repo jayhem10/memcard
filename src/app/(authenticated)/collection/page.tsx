@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/search-input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Grid2X2, List, Loader2, Database } from 'lucide-react';
+import { Grid2X2, List, Loader2, Database, Share2, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
@@ -74,6 +74,8 @@ function CollectionPageContent() {
   const [genres, setGenres] = useState<Genre[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<CollectionTab>('collection');
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Initialiser l'onglet depuis l'URL si présent
   useEffect(() => {
@@ -127,6 +129,7 @@ function CollectionPageContent() {
             play_time,
             completion_percentage,
             buy_price,
+            buy,
             games:game_id(id, igdb_id, title, release_date, developer, publisher, description, cover_url, console_id, consoles:console_id(id, name), game_genres(genre_id, genres(id, name)))
           `)
           .eq('user_id', user.id)
@@ -340,6 +343,111 @@ function CollectionPageContent() {
     { label: 'À faire', value: 'backlog' },
   ];
 
+  const handleGetShareLink = async () => {
+    try {
+      // Récupérer le token de session depuis Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      const response = await fetch('/api/wishlist/share', {
+        method: 'GET',
+        credentials: 'include',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération du lien');
+      }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        console.error('API error:', data.error, data.details);
+        toast.error(data.details || data.error || 'Erreur lors de la génération du lien');
+        return;
+      }
+      
+      setShareUrl(data.shareUrl);
+    } catch (error: any) {
+      console.error('Error getting share link:', error);
+      toast.error(error.message || 'Erreur lors de la génération du lien');
+    }
+  };
+
+  const handleCopyLink = async () => {
+    console.log('handleCopyLink called, shareUrl:', shareUrl);
+    try {
+      // Si pas d'URL, récupérer d'abord
+      let urlToCopy = shareUrl;
+      if (!urlToCopy) {
+        console.log('No shareUrl, fetching from API...');
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+        
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+
+        const response = await fetch('/api/wishlist/share', {
+          method: 'GET',
+          credentials: 'include',
+          headers,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.details || errorData.error || 'Erreur lors de la récupération du lien');
+        }
+
+        const data = await response.json();
+        console.log('API response:', data);
+        
+        if (data.error) {
+          console.error('API error:', data.error, data.details);
+          toast.error(data.details || data.error || 'Erreur lors de la génération du lien');
+          return;
+        }
+        
+        urlToCopy = data.shareUrl;
+        console.log('Setting shareUrl to:', urlToCopy);
+        setShareUrl(urlToCopy);
+      }
+
+      // Vérifier qu'on a bien une URL avant de copier
+      if (!urlToCopy) {
+        console.error('No URL to copy');
+        toast.error('Impossible de récupérer le lien de partage');
+        return;
+      }
+
+      console.log('Copying URL to clipboard:', urlToCopy);
+      // Copier l'URL dans le presse-papiers
+      await navigator.clipboard.writeText(urlToCopy);
+      console.log('URL copied successfully');
+      setCopied(true);
+      toast.success('Lien copié dans le presse-papiers');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error: any) {
+      console.error('Error copying link:', error);
+      toast.error(error.message || 'Erreur lors de la copie du lien');
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'wishlist' && shareUrl === null && user) {
+      handleGetShareLink();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, user]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -347,6 +455,30 @@ function CollectionPageContent() {
           {activeTab === 'wishlist' ? 'Ma Liste de Souhaits' : 'Ma Collection'}
         </h1>
         <div className="flex items-center gap-2">
+          {activeTab === 'wishlist' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleCopyLink();
+              }}
+              className="flex items-center gap-2"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  Copié !
+                </>
+              ) : (
+                <>
+                  <Share2 className="h-4 w-4" />
+                  Partager
+                </>
+              )}
+            </Button>
+          )}
           <ExportButton 
             games={filteredGames as GameExportData[]}
             activeTab={activeTab}

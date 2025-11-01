@@ -130,12 +130,27 @@ export default function GameDetailPage() {
       
       if (findError) throw findError;
       
+      // Préparer les données à mettre à jour
+      const updateData = { ...data };
+      
+      // Si le statut est WISHLIST, réinitialiser condition à NULL
+      // (car un jeu en wishlist n'a pas encore d'état physique)
+      if (updateData.status === 'WISHLIST' || updateData.status === 'wishlist') {
+        updateData.condition = null;
+      } else {
+        // Pour les autres statuts, convertir les chaînes vides en null
+        // condition reste optionnel (peut être null)
+        if (updateData.condition === '' || updateData.condition === undefined) {
+          updateData.condition = null;
+        }
+      }
+      
       let result;
       if (existingUserGame) {
         // Mettre à jour l'entrée existante
         result = await supabase
           .from('user_games')
-          .update(data)
+          .update(updateData)
           .eq('id', existingUserGame.id)
           .select();
       } else {
@@ -145,7 +160,7 @@ export default function GameDetailPage() {
           .insert({
             user_id: user.id,
             game_id: gameId,
-            ...data
+            ...updateData
           })
           .select();
       }
@@ -534,7 +549,9 @@ export default function GameDetailPage() {
                   <div className="text-sm border-l-2 border-primary pl-3 py-1">
                     <p className="font-medium">Ajouté à votre collection</p>
                     <p className="text-muted-foreground text-xs">
-                      {new Date(userGame.created_at || Date.now()).toLocaleDateString()}
+                      {userGame.created_at 
+                        ? new Date(userGame.created_at).toLocaleDateString() 
+                        : 'Date non disponible'}
                     </p>
                   </div>
                   {userGame.updated_at && userGame.updated_at !== userGame.created_at && (
