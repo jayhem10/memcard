@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Grid2X2, List, Loader2, Search, Database } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
@@ -66,7 +66,6 @@ type Game = {
 
 function CollectionPageContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
@@ -346,31 +345,9 @@ function CollectionPageContent() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <h1 className="text-3xl font-bold">Ma Collection</h1>
-          <div className="flex items-center gap-2">
-            <Button
-              variant={activeTab === 'collection' ? 'default' : 'outline'}
-              onClick={() => {
-                setActiveTab('collection');
-                router.push('/collection');
-              }}
-              className="text-sm"
-            >
-              Collection
-            </Button>
-            <Button
-              variant={activeTab === 'wishlist' ? 'default' : 'outline'}
-              onClick={() => {
-                setActiveTab('wishlist');
-                router.push('/collection?tab=wishlist');
-              }}
-              className="text-sm"
-            >
-              Liste de souhaits
-            </Button>
-          </div>
-        </div>
+        <h1 className="text-3xl font-bold">
+          {activeTab === 'wishlist' ? 'Ma Liste de Souhaits' : 'Ma Collection'}
+        </h1>
         <div className="flex items-center gap-2">
           <ExportButton 
             games={filteredGames as GameExportData[]}

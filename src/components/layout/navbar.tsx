@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import { LogOut, User, MoreVertical, Heart, PlusCircle, Library, Shield, Trophy, Sparkles, Mail, Bookmark } from 'lucide-react';
+import { LogOut, User, MoreVertical, Heart, PlusCircle, Library, Shield, Trophy, Sparkles, Mail, Gift } from 'lucide-react';
 import { ThemeSelector } from '@/components/theme/theme-selector';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfileStore } from '@/store/useProfileStore';
@@ -90,7 +90,7 @@ function NavbarContent() {
                   : 'text-foreground hover:bg-accent hover:text-accent-foreground'
               }`}
             >
-              <Bookmark className="h-4 w-4" />
+              <Gift className="h-4 w-4" />
               Wishlist
             </Link>
             
@@ -280,7 +280,7 @@ function NavbarContent() {
               }`}
               title="Wishlist"
             >
-              <Bookmark className="h-5 w-5" />
+              <Gift className="h-5 w-5" />
             </Link>
             
             {/* Bouton Ajouter un jeu */}
