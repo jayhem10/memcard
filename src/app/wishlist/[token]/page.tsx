@@ -156,15 +156,15 @@ export default function WishlistSharePage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-4">
                 {games.map((game) => (
                   <Card
                     key={game.id}
-                    className={`transition-all ${
+                    className={`transition-all flex flex-col ${
                       game.buy ? 'ring-2 ring-primary' : ''
                     }`}
                   >
-                    <CardContent className="p-4">
+                    <CardContent className="p-4 flex flex-col h-full">
                       <div className="relative aspect-[3/4] mb-3 rounded-lg overflow-hidden bg-muted">
                         {game.games.cover_url ? (
                           <Image
@@ -182,16 +182,18 @@ export default function WishlistSharePage() {
                           </div>
                         )}
                       </div>
-                      <div className="space-y-2">
-                        <h3 className="font-medium text-sm line-clamp-2">
-                          {game.games.title}
-                        </h3>
-                        {game.games.consoles && (
-                          <p className="text-xs text-muted-foreground">
-                            {game.games.consoles.name}
-                          </p>
-                        )}
-                        <div className="flex items-center space-x-2 pt-2">
+                      <div className="flex flex-col flex-1">
+                        <div className="space-y-2 flex-1">
+                          <h3 className="font-medium text-sm line-clamp-2">
+                            {game.games.title}
+                          </h3>
+                          {game.games.consoles && (
+                            <p className="text-xs text-muted-foreground">
+                              {game.games.consoles.name}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2 pt-2 mt-auto">
                           <Checkbox
                             id={`buy-${game.id}`}
                             checked={game.buy || false}

@@ -5,6 +5,8 @@ import { cookies } from 'next/headers';
 // une fois la migration appliquée et la fonction RPC testée
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { token: string } }
