@@ -1,12 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getIGDBAccessToken, IGDB_CONFIG } from '@/lib/igdb';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   // Créer un client Supabase authentifié côté serveur
-  const supabaseAuth = createServerComponentClient({ cookies });
+  const cookieStore = await cookies();
+  const supabaseAuth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
   
   try {
     // Get access token
