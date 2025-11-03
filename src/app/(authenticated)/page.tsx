@@ -223,8 +223,16 @@ function RecentGames() {
 
 export default function HomePage() {
   const { user, isLoading: authLoading } = useAuth();
-  const { profile } = useProfileStore();
+  const { profile, isLoading: profileLoading, fetchProfile } = useProfileStore();
   const { fetchUserStats, reset: resetStats } = useUserStatsStore();
+  
+  // Charger le profil si l'utilisateur est authentifié et que le profil n'est pas encore chargé
+  useEffect(() => {
+    if (!authLoading && user && !profile) {
+      // Forcer le chargement même si profileLoading est true (au cas où le layout n'aurait pas encore commencé)
+      fetchProfile();
+    }
+  }, [user, authLoading, profile, fetchProfile]);
   
   // Gérer le chargement des données utilisateur
   useEffect(() => {
@@ -242,15 +250,32 @@ export default function HomePage() {
   // Préparer le nom d'affichage pour personnaliser le message
   const displayName = profile?.full_name || '';
   const greeting = displayName ? `Bienvenue ${displayName}` : 'Bienvenue';
+  // Afficher le skeleton si on charge OU si l'utilisateur existe mais qu'on n'a pas encore le profil
+  const isLoading = profileLoading || authLoading || (user && !profile);
   
   return (
     <div className="space-y-8">
       <section className="mb-6">
         <div className="space-y-2 sm:space-y-4 max-w-2xl">
-          <h1 className="text-3xl sm:text-4xl font-bold">{greeting}</h1>
-          <p className="text-lg sm:text-xl text-muted-foreground">
-            Découvrez vos statistiques et continuez à enrichir votre collection
-          </p>
+          {isLoading ? (
+            <>
+              {/* Skeleton pour le titre */}
+              <div className="relative h-10 sm:h-12 bg-muted rounded overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
+              {/* Skeleton pour la description */}
+              <div className="relative h-6 sm:h-7 bg-muted rounded overflow-hidden w-3/4">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="text-3xl sm:text-4xl font-bold">{greeting}</h1>
+              <p className="text-lg sm:text-xl text-muted-foreground">
+                Découvrez vos statistiques et continuez à enrichir votre collection
+              </p>
+            </>
+          )}
         </div>
       </section>
 
