@@ -20,7 +20,7 @@ Disallow: /reset-password
 Disallow: /update-password
 
 # Sitemap
-Sitemap: https://memcard.app/sitemap.xml
+Sitemap: https://www.memcard.fr/sitemap.xml
 
 # Règles spécifiques pour Googlebot
 User-agent: Googlebot
