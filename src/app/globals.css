@@ -1,0 +1,696 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Support pour les safe areas iOS */
+@supports (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+}
+
+/* Fix pour Chrome mobile - empêcher la barre de flotter au-dessus du bord */
+@media (max-width: 768px) {
+  body {
+    /* Empêcher le scroll de cacher la barre */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* S'assurer que la bottom navbar reste collée au bas */
+  nav[class*="fixed"][class*="bottom-0"] {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+}
+
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+  }
+
+  /* Thème sombre */
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+
+  /* Thème Cyberpunk */
+  .cyberpunk {
+    --background: 230 50% 3%;
+    --foreground: 220 100% 90%;
+    --card: 230 50% 5%;
+    --card-foreground: 220 100% 90%;
+    --popover: 230 50% 5%;
+    --popover-foreground: 220 100% 90%;
+    --primary: 260 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 100% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 230 50% 8%;
+    --muted-foreground: 220 70% 70%;
+    --accent: 250 100% 60%;
+    --accent-foreground: 220 100% 90%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 230 50% 8%;
+    --input: 230 50% 8%;
+    --ring: 260 100% 60%;
+    
+    /* Variables néon */
+    --neon-blue: 220 100% 60%;
+    --neon-purple: 260 100% 60%;
+    --neon-indigo: 250 100% 60%;
+    --neon-violet: 270 100% 60%;
+
+    /* Fond avec gradient */
+    background: linear-gradient(
+      135deg,
+      hsl(230 50% 3%) 0%,
+      hsl(240 50% 2%) 100%
+    );
+  }
+
+  /* Thème Fantasy */
+  .fantasy {
+    --background: 25 15% 12%;
+    --foreground: 45 30% 85%;
+    --card: 25 20% 8%;
+    --card-foreground: 45 30% 85%;
+    --popover: 25 20% 8%;
+    --popover-foreground: 45 30% 85%;
+    --primary: 45 80% 65%;
+    --primary-foreground: 25 15% 12%;
+    --secondary: 30 25% 20%;
+    --secondary-foreground: 45 30% 85%;
+    --muted: 25 15% 18%;
+    --muted-foreground: 45 20% 60%;
+    --accent: 35 60% 45%;
+    --accent-foreground: 25 15% 12%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 25 15% 12%;
+    --border: 30 25% 25%;
+    --input: 25 20% 15%;
+    --ring: 45 80% 65%;
+
+    /* Variables fantasy */
+    --fantasy-gold: 45 90% 70%;
+    --fantasy-bronze: 25 70% 55%;
+    --fantasy-silver: 0 0% 80%;
+    --fantasy-forest: 120 50% 25%;
+    --fantasy-stone: 30 15% 35%;
+    --fantasy-ember: 15 80% 50%;
+
+    /* Fond sombre avec texture parchemin vieilli */
+    background: 
+      radial-gradient(circle at 20% 80%, hsl(25 20% 8%) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(30 15% 6%) 0%, transparent 50%),
+      linear-gradient(135deg, hsl(25 15% 12%) 0%, hsl(30 20% 8%) 100%);
+    
+    /* Effet de texture parchemin vieilli */
+    background-image: 
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 3px,
+        hsl(25 10% 15%) 3px,
+        hsl(25 10% 15%) 6px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 2px,
+        hsl(30 8% 18%) 2px,
+        hsl(30 8% 18%) 4px
+      );
+    
+    /* Styles supplémentaires pour l'immersion fantasy */
+    /* Note: La police fantasy ne s'applique que si Cinzel est disponible */
+  }
+
+  /* Styles spécifiques au thème fantasy */
+  .fantasy .card,
+  .fantasy [data-card] {
+    border: 2px solid hsl(var(--fantasy-bronze)) !important;
+    box-shadow: 
+      0 8px 16px hsl(var(--fantasy-stone) / 0.4),
+      inset 0 1px 0 hsl(var(--fantasy-silver) / 0.3),
+      0 0 20px hsl(var(--fantasy-ember) / 0.1) !important;
+    background: linear-gradient(135deg, 
+      hsl(var(--card)) 0%, 
+      hsl(25 18% 10%) 100%) !important;
+  }
+
+  .fantasy .button {
+    border: 2px solid hsl(var(--fantasy-bronze));
+    text-shadow: 0 2px 4px hsl(var(--fantasy-stone) / 0.8);
+    background: linear-gradient(135deg, 
+      hsl(var(--secondary)) 0%, 
+      hsl(30 20% 15%) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fantasy .button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsl(var(--fantasy-gold) / 0.3), 
+      transparent);
+    transition: left 0.5s;
+  }
+
+  .fantasy .button:hover::before {
+    left: 100%;
+  }
+
+  .fantasy .button:hover {
+    box-shadow: 
+      0 4px 8px hsl(var(--fantasy-gold) / 0.4),
+      0 0 20px hsl(var(--fantasy-ember) / 0.3);
+    border-color: hsl(var(--fantasy-gold));
+  }
+
+  .fantasy .primary {
+    background: linear-gradient(135deg, 
+      hsl(var(--fantasy-bronze)) 0%, 
+      hsl(var(--fantasy-gold)) 50%, 
+      hsl(var(--fantasy-bronze)) 100%);
+    border: 2px solid hsl(var(--fantasy-gold));
+    box-shadow: 
+      0 4px 12px hsl(var(--fantasy-gold) / 0.3),
+      inset 0 1px 0 hsl(var(--fantasy-silver) / 0.6);
+  }
+
+  .fantasy .accent {
+    background: linear-gradient(135deg, 
+      hsl(var(--fantasy-forest)) 0%, 
+      hsl(var(--fantasy-bronze)) 100%);
+    color: hsl(var(--fantasy-silver));
+    border: 1px solid hsl(var(--fantasy-forest));
+  }
+
+  /* Effets de lueur pour les éléments importants */
+  .fantasy .text-primary {
+    color: hsl(var(--fantasy-gold));
+    text-shadow: 0 0 10px hsl(var(--fantasy-gold) / 0.5);
+  }
+
+  .fantasy .border-primary {
+    border-color: hsl(var(--fantasy-gold));
+    box-shadow: 0 0 10px hsl(var(--fantasy-gold) / 0.3);
+  }
+
+  /* Styles généraux pour forcer l'application du thème fantasy */
+  .fantasy {
+    color-scheme: dark;
+    /* La police fantasy s'applique seulement si Cinzel est chargée, sinon Inter reste */
+  }
+
+  .fantasy * {
+    border-color: hsl(var(--border));
+  }
+
+  .fantasy input,
+  .fantasy textarea,
+  .fantasy select {
+    background-color: hsl(var(--input));
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground));
+  }
+
+  .fantasy button {
+    background-color: hsl(var(--secondary));
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground));
+  }
+
+  .fantasy button:hover {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
+
+  /* Thème Rétro */
+  .retro {
+    --background: 45 100% 98%;
+    --foreground: 20 14.3% 4.1%;
+    --card: 60 5% 96%;
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 45 100% 98%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --primary: 47 95% 50%;
+    --primary-foreground: 26 83.3% 14.1%;
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 47 95% 50%;
+    --radius: 0;
+    font-size: 90%;
+  }
+
+  /* Thème Nintendo */
+  .nintendo {
+    --background: 0 100% 97%;
+    --foreground: 0 80% 40%;
+    --card: 0 70% 98%;
+    --card-foreground: 0 80% 40%;
+    --popover: 0 70% 98%;
+    --popover-foreground: 0 80% 40%;
+    --primary: 0 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 60% 96%;
+    --secondary-foreground: 0 80% 40%;
+    --muted: 0 60% 96%;
+    --muted-foreground: 0 60% 50%;
+    --accent: 0 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 60% 90%;
+    --input: 0 60% 90%;
+    --ring: 0 100% 45%;
+    --radius: 1rem;
+
+    /* Style Nintendo */
+    --nintendo-red: 0 100% 45%;
+    background: linear-gradient(
+      135deg,
+      hsl(0 100% 97%) 0%,
+      hsl(0 70% 95%) 100%
+    );
+  }
+
+  /* Thème PlayStation */
+  .playstation {
+    --background: 225 50% 98%;
+    --foreground: 220 80% 40%;
+    --card: 220 30% 98%;
+    --card-foreground: 220 80% 40%;
+    --popover: 220 30% 98%;
+    --popover-foreground: 220 80% 40%;
+    --primary: 220 100% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 60% 96%;
+    --secondary-foreground: 220 80% 40%;
+    --muted: 220 60% 96%;
+    --muted-foreground: 220 60% 50%;
+    --accent: 220 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 60% 90%;
+    --input: 220 60% 90%;
+    --ring: 220 100% 45%;
+    --radius: 0.25rem;
+
+    /* Style PlayStation */
+    background: linear-gradient(
+      135deg,
+      hsl(225 50% 98%) 0%,
+      hsl(220 30% 95%) 100%
+    );
+  }
+
+  /* Thème Xbox */
+  .xbox {
+    --background: 120 50% 98%;
+    --foreground: 120 80% 30%;
+    --card: 120 30% 98%;
+    --card-foreground: 120 80% 30%;
+    --popover: 120 30% 98%;
+    --popover-foreground: 120 80% 30%;
+    --primary: 120 100% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 120 60% 96%;
+    --secondary-foreground: 120 80% 30%;
+    --muted: 120 60% 96%;
+    --muted-foreground: 120 60% 40%;
+    --accent: 120 100% 35%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 120 60% 90%;
+    --input: 120 60% 90%;
+    --ring: 120 100% 35%;
+    --radius: 0.5rem;
+
+    /* Style Xbox */
+    background: linear-gradient(
+      135deg,
+      hsl(120 50% 98%) 0%,
+      hsl(120 30% 95%) 100%
+    );
+  }
+
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden; /* Empêche le dépassement horizontal */
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
+  /* Empêcher le zoom iOS sur les inputs (font-size < 16px) */
+  @media (max-width: 640px) {
+    input, select, textarea, button {
+      font-size: 16px;
+    }
+  }
+
+  /* Styles spécifiques au thème rétro */
+  .retro * {
+    font-family: "Press Start 2P", system-ui, -apple-system, sans-serif !important;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+    line-height: 1.6;
+  }
+
+  .retro h1 {
+    font-size: 1.5rem;
+    line-height: 2;
+  }
+
+  .retro h2 {
+    font-size: 1.25rem;
+    line-height: 1.8;
+  }
+
+  .retro h3 {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+
+  .retro p, .retro span, .retro div {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  /* Style de base pour les cartes de jeux récents */
+  .recent-games-card {
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+  }
+
+  .recent-games-card:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .recent-games-card .game-info {
+    display: grid;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .recent-games-card .game-title {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: var(--foreground);
+  }
+
+  /* Style spécifique pour le thème rétro */
+  .retro .recent-games-card {
+    border-width: 2px;
+    padding: 1rem;
+  }
+
+  .retro .recent-games-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+  }
+
+  .retro .recent-games-card .game-title {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .recent-games-card .game-meta {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .recent-games-card .game-meta-text {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    color: var(--muted-foreground);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .recent-games-card:hover .game-meta-text {
+    color: var(--accent-foreground);
+  }
+
+  .recent-games-card .game-status-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    height: auto;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* Style spécifique pour le thème rétro */
+  .retro .recent-games-card .game-meta-text {
+    font-family: "Press Start 2P", system-ui, sans-serif;
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+
+  .retro .game-status-badge {
+    border: 1px solid currentColor;
+  }
+
+  .nintendo * {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 500;
+  }
+
+  .nintendo .button-primary {
+    background: hsl(var(--nintendo-red));
+    box-shadow: 0 4px 0 hsl(var(--nintendo-red) / 0.7);
+    transform: translateY(-2px);
+  }
+
+  .nintendo .button-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 0 hsl(var(--nintendo-red) / 0.7);
+  }
+
+  .playstation * {
+    font-family: system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  .playstation .card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid hsl(220 60% 90%);
+  }
+
+  .xbox * {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+  }
+
+  .xbox .card {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius);
+    border: 1px solid hsl(120 60% 90%);
+  }
+
+  /* Styles spécifiques au thème cyberpunk */
+  .cyberpunk .card,
+  .cyberpunk .border {
+    background: linear-gradient(
+      45deg,
+      hsla(230, 50%, 5%, 0.8) 0%,
+      hsla(240, 50%, 8%, 0.8) 100%
+    );
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px hsla(var(--neon-purple) / 0.3),
+                inset 0 0 20px hsla(var(--neon-blue) / 0.2);
+    border: 1px solid hsla(var(--neon-indigo) / 0.2);
+  }
+
+  /* Améliorations responsive pour les modales */
+  @media (max-width: 640px) {
+    .dialog-content-mobile {
+      margin: 1rem;
+      max-height: calc(100vh - 2rem);
+      width: calc(100vw - 2rem);
+    }
+    
+    .dialog-footer-mobile {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .dialog-footer-mobile button {
+      width: 100%;
+    }
+  }
+
+  /* Améliorations pour les boutons sur mobile */
+  @media (max-width: 640px) {
+    .button-mobile-full {
+      width: 100%;
+      min-height: 44px; /* Taille minimale recommandée pour les touches tactiles */
+    }
+  }
+
+  .cyberpunk .button-primary {
+    background: linear-gradient(
+      45deg,
+      hsl(var(--neon-purple)) 0%,
+      hsl(var(--neon-indigo)) 100%
+    );
+    text-shadow: 0 0 5px hsla(var(--neon-purple) / 0.8);
+    box-shadow: 0 0 20px hsla(var(--neon-purple) / 0.5);
+  }
+
+  .cyberpunk .button-secondary {
+    background: linear-gradient(
+      45deg,
+      hsl(var(--neon-blue)) 0%,
+      hsl(var(--neon-violet)) 100%
+    );
+    text-shadow: 0 0 5px hsla(var(--neon-blue) / 0.8);
+    box-shadow: 0 0 20px hsla(var(--neon-blue) / 0.5);
+  }
+
+  .cyberpunk h1, 
+  .cyberpunk h2, 
+  .cyberpunk h3 {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--neon-blue)) 0%,
+      hsl(var(--neon-indigo)) 50%,
+      hsl(var(--neon-purple)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px hsla(var(--neon-blue) / 0.5);
+  }
+
+  /* Styles spécifiques pour le thème daltonien */
+  .colorblind .card,
+  .colorblind .border {
+    border: var(--contrast-border) solid hsl(var(--border));
+    outline: var(--contrast-outline) solid transparent;
+    background-image: var(--pattern-dots);
+    background-size: 10px 10px;
+  }
+
+  .colorblind .button-primary {
+    border: var(--contrast-border) solid currentColor;
+    outline: var(--contrast-outline) solid transparent;
+    text-decoration: underline;
+    background-image: var(--pattern-stripes);
+    background-size: 20px 20px;
+  }
+
+  .colorblind .button-secondary {
+    border: var(--contrast-border) solid currentColor;
+    outline: var(--contrast-outline) solid transparent;
+    text-decoration: underline;
+    background-image: var(--pattern-dots);
+    background-size: 5px 5px;
+  }
+
+  .colorblind h1,
+  .colorblind h2,
+  .colorblind h3 {
+    border-bottom: var(--contrast-border) solid currentColor;
+    position: relative;
+    padding-bottom: 0.5em;
+  }
+
+  .colorblind h1::after,
+  .colorblind h2::after,
+  .colorblind h3::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 0;
+    right: 0;
+    border-bottom: 1px solid currentColor;
+  }
+}
+
+/* Animation shimmer pour les skeletons */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-15deg);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
