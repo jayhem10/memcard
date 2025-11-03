@@ -11,19 +11,22 @@ function minifyJson(obj: unknown): string {
 }
 
 export function WebSiteSchema() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.memcard.fr';
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'MemCard',
     alternateName: 'MemCard - Gestion de Collection de Jeux Vidéo',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.memcard.fr',
+    url: siteUrl,
+    logo: `${siteUrl}/icon-512x512.png`,
+    image: `${siteUrl}/icon-512x512.png`,
     description: 'Gérez et suivez votre collection de jeux vidéo avec MemCard. Catalogue complet, suivi des prix, liste de souhaits et bien plus encore.',
     inLanguage: 'fr-FR',
     potentialAction: {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.memcard.fr'}/search?q={search_term_string}`,
+        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
       },
       'query-input': 'required name=search_term_string',
     },
@@ -38,12 +41,19 @@ export function WebSiteSchema() {
 }
 
 export function OrganizationSchema() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.memcard.fr';
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'MemCard',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.memcard.fr',
-    logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.memcard.fr'}/icon-512x512.png`,
+    url: siteUrl,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${siteUrl}/icon-512x512.png`,
+      width: 512,
+      height: 512,
+    },
+    image: `${siteUrl}/icon-512x512.png`,
     description: 'Plateforme de gestion de collection de jeux vidéo',
     sameAs: [
       'https://www.instagram.com/memcard.fr',
@@ -59,11 +69,14 @@ export function OrganizationSchema() {
 }
 
 export function WebApplicationSchema() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.memcard.fr';
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
     name: 'MemCard',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.memcard.fr',
+    url: siteUrl,
+    logo: `${siteUrl}/icon-512x512.png`,
+    image: `${siteUrl}/icon-512x512.png`,
     applicationCategory: 'Entertainment',
     operatingSystem: 'All',
     description: 'Gérez et suivez votre collection de jeux vidéo avec MemCard. Catalogue complet, suivi des prix, liste de souhaits et bien plus encore.',
