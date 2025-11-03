@@ -33,6 +33,7 @@ function CollectionPageContent() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [isShareActive, setIsShareActive] = useState<boolean | null>(null);
+  const [isLoadingShare, setIsLoadingShare] = useState(false);
 
   // Utiliser le hook React Query pour récupérer les jeux
   const { data: games = [], isLoading: loading, error } = useUserGames();
@@ -195,6 +196,7 @@ function CollectionPageContent() {
 
   const handleGetShareLink = async () => {
     try {
+      setIsLoadingShare(true);
       // Récupérer le token de session depuis Supabase
       const { data: { session } } = await supabase.auth.getSession();
       const headers: HeadersInit = {
@@ -228,6 +230,8 @@ function CollectionPageContent() {
     } catch (error: any) {
       console.error('Error getting share link:', error);
       toast.error(error.message || 'Erreur lors de la génération du lien');
+    } finally {
+      setIsLoadingShare(false);
     }
   };
 
@@ -348,59 +352,80 @@ function CollectionPageContent() {
         <div className="flex items-center gap-2 sm:gap-3">
           {activeTab === 'wishlist' && (
             <>
-              <Button
-                variant={isShareActive === false ? "secondary" : "outline"}
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleToggleShare();
-                }}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
-                title={isShareActive ? 'Désactiver le partage' : 'Activer le partage'}
-              >
-                <Power className={`h-4 w-4 ${isShareActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                <span className="hidden sm:inline text-sm">{isShareActive ? 'Partage actif' : 'Partage désactivé'}</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleCopyLink();
-                }}
-                disabled={!isShareActive}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
-                title={!isShareActive ? 'Activez le partage pour copier le lien' : 'Copier le lien de partage'}
-              >
-                {copied ? (
-                  <>
-                    <Check className="h-4 w-4" />
-                    <span className="hidden sm:inline text-sm">Copié !</span>
-                  </>
-                ) : (
-                  <>
-                    <Share2 className="h-4 w-4" />
-                    <span className="hidden sm:inline text-sm">Partager</span>
-                  </>
-                )}
-              </Button>
+              {isLoadingShare ? (
+                // Skeleton pour les boutons de partage pendant le chargement
+                <>
+                  <div className="relative h-9 w-28 sm:w-36 bg-muted rounded-md overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  </div>
+                  <div className="relative h-9 w-24 sm:w-28 bg-muted rounded-md overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant={isShareActive === false ? "secondary" : "outline"}
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleToggleShare();
+                    }}
+                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
+                    title={isShareActive ? 'Désactiver le partage' : 'Activer le partage'}
+                  >
+                    <Power className={`h-4 w-4 ${isShareActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <span className="hidden sm:inline text-sm">{isShareActive ? 'Partage actif' : 'Partage désactivé'}</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleCopyLink();
+                    }}
+                    disabled={!isShareActive}
+                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3"
+                    title={!isShareActive ? 'Activez le partage pour copier le lien' : 'Copier le lien de partage'}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-4 w-4" />
+                        <span className="hidden sm:inline text-sm">Copié !</span>
+                      </>
+                    ) : (
+                      <>
+                        <Share2 className="h-4 w-4" />
+                        <span className="hidden sm:inline text-sm">Partager</span>
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
             </>
           )}
-          <ExportButton 
-            games={filteredGames as GameExportData[]}
-            activeTab={activeTab}
-            filename="ma_collection"
-            size="sm"
-            filters={{
-              console: consoleFilter,
-              genre: genreFilter,
-              status: statusFilter,
-              search: searchQuery
-            }}
-            consoleName={consoleFilter !== 'all' ? consoles.find(c => c.id === consoleFilter)?.name : undefined}
-          />
+          {loading ? (
+            // Skeleton pour le bouton Export pendant le chargement
+            <div className="relative h-9 w-24 sm:w-28 bg-muted rounded-md overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+            </div>
+          ) : (
+            <ExportButton 
+              games={filteredGames as GameExportData[]}
+              activeTab={activeTab}
+              filename="ma_collection"
+              size="sm"
+              filters={{
+                console: consoleFilter,
+                genre: genreFilter,
+                status: statusFilter,
+                search: searchQuery
+              }}
+              consoleName={consoleFilter !== 'all' ? consoles.find(c => c.id === consoleFilter)?.name : undefined}
+            />
+          )}
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="icon"
