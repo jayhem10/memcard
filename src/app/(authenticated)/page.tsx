@@ -240,7 +240,7 @@ export default function HomePage() {
   }, [user, authLoading, fetchUserStats, resetStats]);
   
   // Préparer le nom d'affichage pour personnaliser le message
-  const displayName = profile?.full_name || profile?.username || user?.email?.split('@')[0] || '';
+  const displayName = profile?.full_name || profile?.username || '';
   const greeting = displayName ? `Bienvenue ${displayName}` : 'Bienvenue';
   
   return (
