@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     description: "Gérez et suivez votre collection de jeux vidéo avec MemCard. Catalogue complet, suivi des prix, liste de souhaits et bien plus encore.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/memcard.png",
         width: 1200,
         height: 630,
         alt: "MemCard - Gestion de Collection de Jeux Vidéo",
@@ -81,7 +81,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "MemCard - Votre Bibliothèque de Jeux Vidéo Personnelle",
     description: "Gérez et suivez votre collection de jeux vidéo avec MemCard",
-    images: ["/og-image.png"],
+    images: ["/memcard.png"],
     creator: "@memcard",
   },
   
