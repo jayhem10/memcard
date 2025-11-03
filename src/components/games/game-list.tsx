@@ -16,7 +16,7 @@ interface GameListProps {
 export function GameList({ games }: GameListProps) {
   return (
     <div className="space-y-4">
-      {games.map((game) => (
+      {games.map((game, index) => (
         <Link
           key={game.id}
           href={`/games/${game.id}`}
@@ -32,6 +32,8 @@ export function GameList({ games }: GameListProps) {
                   fill
                   className="object-cover rounded-md"
                   sizes="80px"
+                  priority={index < 4}
+                  quality={90}
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-md">

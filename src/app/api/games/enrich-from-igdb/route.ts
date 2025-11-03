@@ -2,6 +2,7 @@ import { withApi, ApiError } from '@/lib/api-wrapper';
 import { validateBody } from '@/lib/validation';
 import { queryIGDB, IGDB_CONFIG } from '@/lib/igdb';
 import { formatIGDBReleaseDate } from '@/lib/date-utils';
+import { getIGDBImageUrl } from '@/lib/game-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -116,7 +117,7 @@ export const POST = withApi(async (request, { supabase }) => {
               publisher: publisher || 'Unknown',
               description: igdbGame.summary || '',
               cover_url: igdbGame.cover
-                ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${igdbGame.cover.image_id}.jpg`
+                ? getIGDBImageUrl(igdbGame.cover.image_id, '720p')
                 : null,
               console_id: consoleData.id
             })

@@ -89,3 +89,32 @@ export function sortGamesByTitle(games: any[]): any[] {
   );
 }
 
+/**
+ * Génère une URL d'image IGDB avec la taille optimale
+ * @param imageId L'ID de l'image IGDB
+ * @param size La taille souhaitée ('thumb', 'cover_small', 'cover_big', '720p', '1080p')
+ * @returns URL de l'image IGDB
+ * 
+ * Tailles disponibles:
+ * - thumb: 90x128 (micro thumbnail)
+ * - cover_small: 90x128 (petite couverture)
+ * - cover_big: 264x374 (couverture moyenne - ancienne taille par défaut)
+ * - 720p: 720x auto (HD - bon compromis qualité/performance)
+ * - 1080p: 1080x auto (Full HD - meilleure qualité)
+ */
+export function getIGDBImageUrl(
+  imageId: string,
+  size: 'thumb' | 'cover_small' | 'cover_big' | '720p' | '1080p' = '720p'
+): string {
+  const sizeMap = {
+    'thumb': 't_thumb',
+    'cover_small': 't_cover_small',
+    'cover_big': 't_cover_big',
+    '720p': 't_720p',
+    '1080p': 't_1080p'
+  };
+  
+  const sizeParam = sizeMap[size];
+  return `https://images.igdb.com/igdb/image/upload/${sizeParam}/${imageId}.jpg`;
+}
+
