@@ -241,11 +241,8 @@ export const POST = withApi(async (request, { user, supabase }) => {
         const igdbGames = await queryIGDB(IGDB_CONFIG.endpoints.games, igdbQuery);
 
         if (!Array.isArray(igdbGames) || igdbGames.length === 0) {
-          console.log(`Aucun résultat pour le terme "${searchTerm}"`);
           continue;
         }
-
-        console.log(`Trouvé ${igdbGames.length} jeux pour "${searchTerm}"`);
 
         // Traiter chaque jeu IGDB
         for (const igdbGame of igdbGames) {
@@ -387,7 +384,6 @@ export const POST = withApi(async (request, { user, supabase }) => {
 
               totalAdded++;
               gameAdded = true;
-              console.log(`✓ Ajouté: ${igdbGame.name} (${consoleData.name})`);
               // Continuer à traiter les autres plateformes pour ajouter le jeu sur toutes les plateformes disponibles
             }
 

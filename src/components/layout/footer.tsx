@@ -14,10 +14,7 @@ export function Footer() {
             <span className="text-sm text-muted-foreground">
               © {currentYear} Tous droits réservés
             </span>
-          
-
         </div>
-        
         <div className="mt-4 pt-4 border-t border-border/50">
           <p className="text-xs text-muted-foreground text-center">
             MemCard est une plateforme de gestion de collection de jeux vidéo.

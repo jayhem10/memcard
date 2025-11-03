@@ -68,7 +68,6 @@ export async function POST(request: NextRequest) {
     ];
 
     // Exécuter toutes les suppressions
-    console.log('Executing delete operations...');
     const results = await Promise.all(deleteOperations.map(op => op.operation));
     
     // Vérifier s'il y a des erreurs
@@ -88,8 +87,6 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    console.log('All data deleted successfully');
-
     // Supprimer l'utilisateur de auth.users via l'API Admin avec la clé de service
     try {
       const adminSupabase = createClient(
@@ -108,7 +105,6 @@ export async function POST(request: NextRequest) {
         console.error('Erreur lors de la suppression de l\'utilisateur auth:', deleteUserError);
         // Ne pas faire échouer la requête car les données sont déjà supprimées
       } else {
-        console.log('User deleted from auth.users');
       }
     } catch (error) {
       console.error('Erreur lors de la suppression auth:', error);

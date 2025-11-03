@@ -51,7 +51,6 @@ class WishlistNotificationsManager {
   async fetchNotifications(): Promise<void> {
     // Éviter les appels multiples simultanés
     if (this.isFetching) {
-      console.log('[WishlistNotifications] Fetch already in progress, skipping...');
       return;
     }
 

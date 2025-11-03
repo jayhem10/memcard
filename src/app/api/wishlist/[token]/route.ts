@@ -67,16 +67,13 @@ export async function GET(
     let gamesError: any = null;
 
     try {
-      console.log('Calling get_wishlist_by_token with token:', token);
       const rpcResult = await supabase.rpc(
         'get_wishlist_by_token',
         { p_token: token }
       );
       gamesData = rpcResult.data;
       gamesError = rpcResult.error;
-      console.log('RPC response - data:', gamesData, 'error:', gamesError);
     } catch (rpcErr: any) {
-      console.error('RPC call failed:', rpcErr);
       gamesError = rpcErr;
     }
 

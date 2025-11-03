@@ -275,12 +275,10 @@ function CollectionPageContent() {
   };
 
   const handleCopyLink = async () => {
-    console.log('handleCopyLink called, shareUrl:', shareUrl);
     try {
       // Si pas d'URL, récupérer d'abord
       let urlToCopy = shareUrl;
       if (!urlToCopy) {
-        console.log('No shareUrl, fetching from API...');
         const { data: { session } } = await supabase.auth.getSession();
         const headers: HeadersInit = {
           'Content-Type': 'application/json',
@@ -302,7 +300,6 @@ function CollectionPageContent() {
         }
 
         const data = await response.json();
-        console.log('API response:', data);
         
         if (data.error) {
           console.error('API error:', data.error, data.details);
@@ -311,7 +308,6 @@ function CollectionPageContent() {
         }
         
         urlToCopy = data.shareUrl;
-        console.log('Setting shareUrl to:', urlToCopy);
         setShareUrl(urlToCopy);
         setIsShareActive(data.isActive !== undefined ? data.isActive : true);
       }
@@ -323,10 +319,8 @@ function CollectionPageContent() {
         return;
       }
 
-      console.log('Copying URL to clipboard:', urlToCopy);
       // Copier l'URL dans le presse-papiers
       await navigator.clipboard.writeText(urlToCopy);
-      console.log('URL copied successfully');
       setCopied(true);
       toast.success('Lien copié dans le presse-papiers');
       setTimeout(() => setCopied(false), 2000);

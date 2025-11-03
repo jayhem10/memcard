@@ -38,9 +38,7 @@ export default function WishlistSharePage() {
     async function fetchWishlist() {
       try {
         setLoading(true);
-        console.log('Fetching wishlist for token:', token);
         const response = await fetch(`/api/wishlist/${token}`);
-        console.log('Response status:', response.status);
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -56,8 +54,6 @@ export default function WishlistSharePage() {
         }
 
         const data = await response.json();
-        console.log('Wishlist data received:', data);
-        console.log('Number of games:', data.games?.length || 0);
         
         if (!data.games || data.games.length === 0) {
           console.warn('No games returned, but token is valid');
