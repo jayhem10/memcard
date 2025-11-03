@@ -9,7 +9,7 @@ import "@fontsource/press-start-2p";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://memcard.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.memcard.fr'),
   
   title: {
     default: "MemCard - Votre Bibliothèque de Jeux Vidéo Personnelle",
