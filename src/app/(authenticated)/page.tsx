@@ -245,7 +245,8 @@ export default function HomePage() {
         resetStats();
       }
     }
-  }, [user, authLoading, fetchUserStats, resetStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, authLoading]); // Ne dépendre que de user.id et authLoading
   
   // Préparer le nom d'affichage pour personnaliser le message
   const displayName = profile?.full_name || '';

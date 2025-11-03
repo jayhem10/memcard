@@ -46,13 +46,15 @@ function DataInitializer() {
     };
 
     fetchCollectionValue();
-  }, [calculateTotalFromGames, setUserId, reset, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]); // Ne dépendre que de user.id pour éviter les re-exécutions
 
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
-  }, [user, fetchProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]); // Ne dépendre que de user.id
 
   return null;
 }

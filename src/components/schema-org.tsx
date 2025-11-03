@@ -3,6 +3,13 @@
  * Améliore le SEO et l'affichage dans les résultats de recherche Google
  */
 
+/**
+ * Minifie le JSON (JSON.stringify produit déjà du JSON compact)
+ */
+function minifyJson(obj: unknown): string {
+  return JSON.stringify(obj);
+}
+
 export function WebSiteSchema() {
   const schema = {
     '@context': 'https://schema.org',
@@ -25,7 +32,7 @@ export function WebSiteSchema() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: minifyJson(schema) }}
     />
   );
 }
@@ -46,7 +53,7 @@ export function OrganizationSchema() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: minifyJson(schema) }}
     />
   );
 }
@@ -75,7 +82,7 @@ export function WebApplicationSchema() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: minifyJson(schema) }}
     />
   );
 }
@@ -129,7 +136,7 @@ export function VideoGameSchema({
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: minifyJson(schema) }}
     />
   );
 }
@@ -154,7 +161,7 @@ export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: minifyJson(schema) }}
     />
   );
 }

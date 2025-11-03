@@ -31,6 +31,7 @@ interface UserStats {
 }
 
 interface UserStatsStore extends UserStats {
+  lastUserId: string | null;
   fetchUserStats: (userId: string) => Promise<void>;
   reset: () => void;
 }
@@ -75,7 +76,7 @@ interface RecentGameData {
 }
 
 // État initial du store
-const initialState: UserStats = {
+const initialState: UserStats & { lastUserId: string | null } = {
   total: 0,
   completed: 0,
   inProgress: 0,
@@ -84,7 +85,8 @@ const initialState: UserStats = {
   platforms: [],
   recentGames: [],
   isLoading: false,
-  error: null
+  error: null,
+  lastUserId: null
 };
 
 export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
@@ -96,8 +98,15 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
     }
     
     // Vérifier si une requête est déjà en cours
-    const isLoading = get().isLoading;
-    if (isLoading) {
+    const currentState = get();
+    if (currentState.isLoading) {
+      return;
+    }
+    
+    // Vérifier si les données sont déjà chargées pour cet utilisateur
+    // (évite les requêtes inutiles si les données sont déjà présentes)
+    if (currentState.lastUserId === userId && (currentState.total > 0 || currentState.recentGames.length > 0 || currentState.wishlist > 0)) {
+      // Les données sont déjà chargées pour cet utilisateur, pas besoin de recharger
       return;
     }
     
@@ -237,7 +246,8 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
           wishlist,
           platforms,
           recentGames,
-          isLoading: false
+          isLoading: false,
+          lastUserId: userId
         });
       }
     } catch (error) {
@@ -247,6 +257,6 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
   },
 
   reset: () => {
-    set(initialState);
+    set({ ...initialState, lastUserId: null });
   }
 }));
