@@ -285,10 +285,26 @@ export default function HomePage() {
   // Charger le profil si l'utilisateur est authentifié et que le profil n'est pas encore chargé
   useEffect(() => {
     if (!authLoading && user && !profile) {
-      // Forcer le chargement même si profileLoading est true (au cas où le layout n'aurait pas encore commencé)
-      fetchProfile();
+      // Si le profil est en cours de chargement depuis le layout, attendre un peu
+      // Sinon, forcer le chargement immédiatement
+      if (profileLoading) {
+        // Attendre que le chargement du layout se termine
+        const timer = setTimeout(() => {
+          // Si après 1 seconde le profil n'est toujours pas chargé, forcer le chargement
+          // Vérifier à nouveau l'état du profil au moment du timeout
+          fetchProfile(true).catch(() => {
+            // Si le chargement échoue, réessayer une fois
+            fetchProfile(true);
+          });
+        }, 1000);
+        
+        return () => clearTimeout(timer);
+      } else {
+        // Pas de chargement en cours, charger directement
+        fetchProfile(true); // Forcer pour éviter les problèmes de timing
+      }
     }
-  }, [user, authLoading, profile, fetchProfile]);
+  }, [user, authLoading, profile, profileLoading, fetchProfile]);
   
   // Gérer le chargement des données utilisateur
   useEffect(() => {
