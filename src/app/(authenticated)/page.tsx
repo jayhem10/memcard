@@ -9,7 +9,7 @@ import { useAuth } from '@/context/auth-context';
 import { useUserStatsStore } from '@/store/useUserStatsStore';
 import { useCollectionStore } from '@/store/useCollectionStore';
 import { useProfileStore } from '@/store/useProfileStore';
-import { Gamepad, Calendar } from 'lucide-react';
+import { Gamepad, Calendar, TrendingUp, Trophy, Heart, Euro, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Composant pour les statistiques
@@ -22,38 +22,40 @@ function UserStats() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-6">
         {/* Skeletons pour les cartes de statistiques */}
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-muted/50 p-3 rounded-md space-y-2">
-            <div className="relative h-4 bg-muted rounded overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+        <div className="grid grid-cols-2 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="relative overflow-hidden rounded-xl bg-muted/30 border border-border/50 p-4 space-y-2">
+              <div className="relative h-4 bg-muted/50 rounded overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
+              <div className="relative h-8 bg-muted/50 rounded overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
             </div>
-            <div className="relative h-8 bg-muted rounded overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
         {/* Skeleton pour la valeur de la collection */}
-        <div className="col-span-2 bg-muted/50 p-3 rounded-md space-y-2">
-          <div className="relative h-4 bg-muted rounded overflow-hidden">
+        <div className="relative overflow-hidden rounded-2xl bg-muted/30 border border-border/50 p-6 space-y-2">
+          <div className="relative h-4 bg-muted/50 rounded overflow-hidden w-48">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
           </div>
-          <div className="relative h-8 bg-muted rounded overflow-hidden w-1/2">
+          <div className="relative h-10 bg-muted/50 rounded overflow-hidden w-32">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
           </div>
         </div>
         {/* Skeletons pour les top plateformes */}
-        <div className="col-span-2 mt-4 space-y-2">
-          <div className="relative h-4 bg-muted rounded overflow-hidden w-24">
+        <div className="relative overflow-hidden rounded-2xl bg-muted/30 border border-border/50 p-6 space-y-3">
+          <div className="relative h-5 bg-muted/50 rounded overflow-hidden w-32">
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
           </div>
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex justify-between items-center">
-              <div className="relative h-4 bg-muted rounded overflow-hidden" style={{ width: `${80 + i * 20}px` }}>
+            <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-muted/20">
+              <div className="relative h-4 bg-muted/50 rounded overflow-hidden" style={{ width: `${80 + i * 20}px` }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
               </div>
-              <div className="relative h-6 w-16 bg-muted rounded-full overflow-hidden">
+              <div className="relative h-6 w-16 bg-muted/50 rounded-full overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
               </div>
             </div>
@@ -64,38 +66,90 @@ function UserStats() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="bg-muted/50 p-3 rounded-md">
-        <p className="text-sm text-muted-foreground">Total des jeux</p>
-        <p className="text-2xl font-bold">{total}</p>
-      </div>
-      <div className="bg-muted/50 p-3 rounded-md">
-        <p className="text-sm text-muted-foreground">En cours</p>
-        <p className="text-2xl font-bold">{inProgress}</p>
-      </div>
-      <div className="bg-muted/50 p-3 rounded-md">
-        <p className="text-sm text-muted-foreground">Terminés</p>
-        <p className="text-2xl font-bold">{completed}</p>
-      </div>
-      <div className="bg-muted/50 p-3 rounded-md">
-        <p className="text-sm text-muted-foreground">Liste de souhaits</p>
-        <p className="text-2xl font-bold">{wishlist}</p>
-      </div>
-      <div className="col-span-2 bg-muted/50 p-3 rounded-md">
-        <p className="text-sm text-muted-foreground">Valeur de la collection</p>
-        <p className="text-2xl font-bold">{totalValue.toFixed(2)} €</p>
+    <div className="space-y-6">
+      {/* Cards de statistiques avec design moderne */}
+      <div className="grid grid-cols-2 gap-4">
+        <Link href="/collection" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50/50 via-card to-blue-50/30 dark:from-blue-950/20 dark:via-card dark:to-blue-950/10 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-blue-400/10 rounded-full blur-2xl" />
+          <div className="relative p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="h-3.5 w-3.5 text-blue-500" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Total</p>
+            </div>
+            <p className="text-2xl font-bold text-foreground">{total}</p>
+          </div>
+        </Link>
+        
+        <Link href="/collection?status=playing" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-50/50 via-card to-purple-50/30 dark:from-purple-950/20 dark:via-card dark:to-purple-950/10 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-500/10 to-purple-400/10 rounded-full blur-2xl" />
+          <div className="relative p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="h-3.5 w-3.5 text-purple-500" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">En cours</p>
+            </div>
+            <p className="text-2xl font-bold text-foreground">{inProgress}</p>
+          </div>
+        </Link>
+        
+        <Link href="/collection?status=completed" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-50/50 via-card to-green-50/30 dark:from-green-950/20 dark:via-card dark:to-green-950/10 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/10 to-green-400/10 rounded-full blur-2xl" />
+          <div className="relative p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Trophy className="h-3.5 w-3.5 text-green-500" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Terminés</p>
+            </div>
+            <p className="text-2xl font-bold text-foreground">{completed}</p>
+          </div>
+        </Link>
+        
+        <Link href="/collection?tab=wishlist" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-amber-50/50 via-card to-amber-50/30 dark:from-amber-950/20 dark:via-card dark:to-amber-950/10 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-500/10 to-amber-400/10 rounded-full blur-2xl" />
+          <div className="relative p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Heart className="h-3.5 w-3.5 text-amber-500" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Souhaits</p>
+            </div>
+            <p className="text-2xl font-bold text-foreground">{wishlist}</p>
+          </div>
+        </Link>
       </div>
 
+      {/* Card valeur de la collection */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50/50 via-card to-teal-50/50 dark:from-emerald-950/20 dark:via-card dark:to-teal-950/20 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-full blur-3xl" />
+        <div className="relative p-5">
+          <div className="flex items-center gap-2.5 mb-2">
+            <Euro className="h-4 w-4 text-emerald-500" />
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Valeur de la collection</p>
+          </div>
+          <p className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
+            {totalValue.toFixed(2)} €
+          </p>
+        </div>
+      </div>
+
+      {/* Top plateformes */}
       {platforms.length > 0 && (
-        <div className="col-span-2 mt-4">
-          <h3 className="text-sm font-medium mb-2">Top plateformes</h3>
-          <div className="space-y-2">
-            {platforms.slice(0, 3).map(platform => (
-              <div key={`platform-${platform.igdb_platform_id}`} className="flex justify-between items-center">
-                <span className="text-sm">{platform.name}</span>
-                <Badge variant="secondary">{platform.count} jeux</Badge>
-              </div>
-            ))}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+              <h3 className="text-base font-bold">Top plateformes</h3>
+            </div>
+            <div className="space-y-3">
+              {platforms.slice(0, 3).map(platform => (
+                <div 
+                  key={`platform-${platform.igdb_platform_id}`} 
+                  className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300"
+                >
+                  <span className="text-sm font-medium">{platform.name}</span>
+                  <Badge variant="secondary" className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
+                    {platform.count} jeux
+                  </Badge>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -109,32 +163,32 @@ function RecentGames() {
   
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {/* Skeletons pour les jeux récents */}
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="recent-games-card group rounded-md">
+          <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 border border-border/50">
             {/* Skeleton pour l'image */}
-            <div className="relative w-12 h-16 shrink-0 rounded-sm overflow-hidden bg-muted">
+            <div className="relative w-16 h-20 shrink-0 rounded-lg overflow-hidden bg-muted/50">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
             </div>
             
             {/* Skeleton pour les informations */}
-            <div className="game-info min-w-0 space-y-2 flex-1">
-              <div className="relative h-4 bg-muted rounded overflow-hidden" style={{ width: `${60 + i * 20}%` }}>
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="relative h-4 bg-muted/50 rounded overflow-hidden" style={{ width: `${60 + i * 20}%` }}>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
               </div>
-              <div className="space-y-1">
-                <div className="relative h-3 bg-muted rounded overflow-hidden" style={{ width: `${40 + i * 10}%` }}>
+              <div className="space-y-1.5">
+                <div className="relative h-3 bg-muted/50 rounded overflow-hidden" style={{ width: `${40 + i * 10}%` }}>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
                 </div>
-                <div className="relative h-3 bg-muted rounded overflow-hidden" style={{ width: `${35 + i * 10}%` }}>
+                <div className="relative h-3 bg-muted/50 rounded overflow-hidden" style={{ width: `${35 + i * 10}%` }}>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
                 </div>
               </div>
             </div>
             
             {/* Skeleton pour le badge */}
-            <div className="relative h-6 w-20 bg-muted rounded-full shrink-0 overflow-hidden">
+            <div className="relative h-7 w-20 bg-muted/50 rounded-lg shrink-0 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
             </div>
           </div>
@@ -156,41 +210,43 @@ function RecentGames() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3">
+      <div className="space-y-3">
         {recentGames.map(game => (
           <Link 
             href={`/games/${game.game_id}`} 
             key={`recent-game-${game.id}`}
-            className="recent-games-card group hover:bg-muted/50 rounded-md transition-all cursor-pointer"
+            className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300 group shadow-sm hover:shadow-md"
           >
             {/* Image du jeu */}
-            <div className="relative w-12 h-16 shrink-0 rounded-sm overflow-hidden">
+            <div className="relative w-14 h-20 shrink-0 rounded-lg overflow-hidden bg-muted shadow-md group-hover:shadow-lg transition-shadow">
               {game.cover_url ? (
                 <Image 
                   src={game.cover_url}
                   alt={game.title}
                   fill
-                  sizes="(max-width: 640px) 96px, 120px"
-                  className="object-cover group-hover:scale-105 transition-transform"
+                  sizes="(max-width: 640px) 56px, 80px"
+                  className="object-cover group-hover:scale-110 transition-transform duration-300"
                 />
               ) : (
-                <div className="w-full h-full bg-muted flex items-center justify-center">
-                  <span className="text-xs text-muted-foreground">No Cover</span>
+                <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
+                  <span className="text-xs text-muted-foreground font-medium">No Cover</span>
                 </div>
               )}
             </div>
             
             {/* Informations du jeu */}
-            <div className="game-info min-w-0">
-              <p className="game-title font-medium truncate" title={game.title}>{game.title}</p>
-              <div className="game-meta text-muted-foreground">
-                <span className="game-meta-text inline-flex items-center gap-1">
-                  <Gamepad className="h-3 w-3" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors" title={game.title}>
+                {game.title}
+              </p>
+              <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <Gamepad className="h-3.5 w-3.5" />
                   {game.console_name}
                 </span>
-                <span className="game-meta-text inline-flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Ajouté le {game.created_at}
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {game.created_at}
                 </span>
               </div>
             </div>
@@ -198,11 +254,11 @@ function RecentGames() {
             {/* Badge de statut */}
             <Badge 
               className={cn(
-                "game-status-badge shrink-0 transition-colors",
-                game.status === "COMPLETED" && "bg-green-500/20 text-green-700 group-hover:bg-green-500/30",
-                game.status === "IN_PROGRESS" && "bg-blue-500/20 text-blue-700 group-hover:bg-blue-500/30",
-                game.status === "NOT_STARTED" && "bg-gray-500/20 text-gray-700 group-hover:bg-gray-500/30",
-                game.status === "WISHLIST" && "bg-amber-500/20 text-amber-700 group-hover:bg-amber-500/30"
+                "shrink-0 transition-all duration-300 rounded-lg px-2.5 py-1 font-semibold text-xs backdrop-blur-sm",
+                game.status === "COMPLETED" && "bg-gradient-to-r from-green-600/90 to-green-500/90 dark:from-green-500/90 dark:to-green-400/90 text-white border border-green-400/50 dark:border-green-300/50 group-hover:from-green-600 group-hover:to-green-500 dark:group-hover:from-green-500 dark:group-hover:to-green-400 shadow-sm",
+                game.status === "IN_PROGRESS" && "bg-gradient-to-r from-blue-600/90 to-blue-500/90 dark:from-blue-500/90 dark:to-blue-400/90 text-white border border-blue-400/50 dark:border-blue-300/50 group-hover:from-blue-600 group-hover:to-blue-500 dark:group-hover:from-blue-500 dark:group-hover:to-blue-400 shadow-sm",
+                game.status === "NOT_STARTED" && "bg-gradient-to-r from-gray-600/90 to-gray-500/90 dark:from-gray-500/90 dark:to-gray-400/90 text-white border border-gray-400/50 dark:border-gray-300/50 group-hover:from-gray-600 group-hover:to-gray-500 dark:group-hover:from-gray-500 dark:group-hover:to-gray-400 shadow-sm",
+                game.status === "WISHLIST" && "bg-gradient-to-r from-amber-600/90 to-amber-500/90 dark:from-amber-500/90 dark:to-amber-400/90 text-white border border-amber-400/50 dark:border-amber-300/50 group-hover:from-amber-600 group-hover:to-amber-500 dark:group-hover:from-amber-500 dark:group-hover:to-amber-400 shadow-sm"
               )}
             >
               {game.status === "COMPLETED" && "Terminé"}
@@ -214,7 +270,7 @@ function RecentGames() {
         ))}
       </div>
 
-      <Button asChild variant="outline" className="w-full mt-2">
+      <Button asChild variant="outline" className="w-full mt-3 rounded-lg shadow-md hover:shadow-lg transition-all text-sm">
         <Link href="/collection">Voir toute la collection</Link>
       </Button>
     </div>
@@ -255,24 +311,28 @@ export default function HomePage() {
   const isLoading = profileLoading || authLoading || (user && !profile);
   
   return (
-    <div className="space-y-8">
-      <section className="mb-6">
-        <div className="space-y-2 sm:space-y-4 max-w-2xl">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 p-6 md:p-8 shadow-xl">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full blur-3xl" />
+        <div className="relative space-y-2">
           {isLoading ? (
             <>
               {/* Skeleton pour le titre */}
-              <div className="relative h-10 sm:h-12 bg-muted rounded overflow-hidden">
+              <div className="relative h-8 sm:h-10 bg-muted/50 rounded overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
               </div>
               {/* Skeleton pour la description */}
-              <div className="relative h-6 sm:h-7 bg-muted rounded overflow-hidden w-3/4">
+              <div className="relative h-5 sm:h-6 bg-muted/50 rounded overflow-hidden w-3/4">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
               </div>
             </>
           ) : (
             <>
-              <h1 className="text-3xl sm:text-4xl font-bold">{greeting}</h1>
-              <p className="text-lg sm:text-xl text-muted-foreground">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+                {greeting}
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
                 Découvrez vos statistiques et continuez à enrichir votre collection
               </p>
             </>
@@ -282,34 +342,52 @@ export default function HomePage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Statistiques */}
-        <div className="p-6 bg-card rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Statistiques</h3>
-          <Suspense fallback={<div>Chargement...</div>}>
-            <UserStats />
-          </Suspense>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+              <h3 className="text-base font-bold">Statistiques</h3>
+            </div>
+            <Suspense fallback={<div>Chargement...</div>}>
+              <UserStats />
+            </Suspense>
+          </div>
         </div>
 
         {/* Jeux récents */}
-        <div className="p-6 bg-card rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Jeux récents</h3>
-          <Suspense fallback={<div>Chargement...</div>}>
-            <RecentGames />
-          </Suspense>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+              <h3 className="text-base font-bold">Jeux récents</h3>
+            </div>
+            <Suspense fallback={<div>Chargement...</div>}>
+              <RecentGames />
+            </Suspense>
+          </div>
         </div>
 
         {/* Actions rapides */}
-        <div className="p-6 bg-card rounded-lg shadow-sm">
-          <h3 className="text-lg font-semibold mb-4">Actions rapides</h3>
-          <div className="space-y-4">
-            <Button asChild className="w-full">
-              <Link href="/search">Ajouter un jeu</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/collection">Gérer la collection</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/profile">Modifier le profil</Link>
-            </Button>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+              <h3 className="text-base font-bold">Actions rapides</h3>
+            </div>
+            <div className="space-y-3">
+              <Button asChild className="w-full rounded-lg shadow-lg hover:shadow-xl transition-all">
+                <Link href="/search">Ajouter un jeu</Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full rounded-lg border-primary/50 hover:border-primary">
+                <Link href="/collection">Gérer la collection</Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full rounded-lg border-primary/50 hover:border-primary">
+                <Link href="/profile">Modifier le profil</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

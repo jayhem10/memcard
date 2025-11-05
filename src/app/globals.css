@@ -570,9 +570,9 @@
       hsla(240, 50%, 8%, 0.8) 100%
     );
     backdrop-filter: blur(10px);
-    box-shadow: 0 0 20px hsla(var(--neon-purple) / 0.3),
-                inset 0 0 20px hsla(var(--neon-blue) / 0.2);
-    border: 1px solid hsla(var(--neon-indigo) / 0.2);
+    box-shadow: 0 0 8px hsla(var(--neon-purple) / 0.1),
+                inset 0 0 8px hsla(var(--neon-blue) / 0.05);
+    border: 1px solid hsla(var(--neon-indigo) / 0.12);
   }
 
   /* Améliorations responsive pour les modales */
@@ -607,8 +607,8 @@
       hsl(var(--neon-purple)) 0%,
       hsl(var(--neon-indigo)) 100%
     );
-    text-shadow: 0 0 5px hsla(var(--neon-purple) / 0.8);
-    box-shadow: 0 0 20px hsla(var(--neon-purple) / 0.5);
+    text-shadow: 0 0 3px hsla(var(--neon-purple) / 0.4);
+    box-shadow: 0 0 10px hsla(var(--neon-purple) / 0.25);
   }
 
   .cyberpunk .button-secondary {
@@ -617,8 +617,8 @@
       hsl(var(--neon-blue)) 0%,
       hsl(var(--neon-violet)) 100%
     );
-    text-shadow: 0 0 5px hsla(var(--neon-blue) / 0.8);
-    box-shadow: 0 0 20px hsla(var(--neon-blue) / 0.5);
+    text-shadow: 0 0 3px hsla(var(--neon-blue) / 0.4);
+    box-shadow: 0 0 10px hsla(var(--neon-blue) / 0.25);
   }
 
   .cyberpunk h1, 
@@ -633,7 +633,7 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 10px hsla(var(--neon-blue) / 0.5);
+    text-shadow: 0 0 5px hsla(var(--neon-blue) / 0.3);
   }
 
   /* Styles spécifiques pour le thème daltonien */

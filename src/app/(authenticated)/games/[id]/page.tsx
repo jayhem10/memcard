@@ -197,84 +197,117 @@ export default function GameDetailPage() {
 
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="grid gap-8 md:grid-cols-[300px_1fr] xl:grid-cols-[300px_1fr_300px] max-w-screen-2xl mx-auto">
-        {/* Image et informations de base */}
+    <div className="container mx-auto px-4 py-6 max-w-screen-2xl">
+      <div className="grid gap-6 md:gap-8 md:grid-cols-[320px_1fr] xl:grid-cols-[320px_1fr_320px]">
+        {/* Colonne gauche - Image et informations */}
         <div className="space-y-6">
-          {game.cover_url ? (
-            <Game3DImage
-              src={game.cover_url}
-              alt={game.title}
-            />
-          ) : (
-            <div className="relative aspect-[3/4] rounded-lg overflow-hidden shadow-md flex items-center justify-center bg-muted">
-              <span className="text-muted-foreground">Pas d'image</span>
-            </div>
-          )}
-          <div className="space-y-3 bg-card p-4 rounded-lg shadow-sm">
-            <h3 className="font-semibold border-b pb-2">Informations</h3>
-            <div className="grid grid-cols-2 gap-y-2 text-sm">
-              <span className="text-muted-foreground">Développeur</span>
-              <span className="font-medium text-right">{game.developer}</span>
-              
-              <span className="text-muted-foreground">Éditeur</span>
-              <span className="font-medium text-right">{game.publisher}</span>
-              
-              <span className="text-muted-foreground">Date de sortie</span>
-              <span className="font-medium text-right">
-                {game.release_date ? new Date(game.release_date).toLocaleDateString() : 'Non définie'}
-              </span>
-              
-              <span className="text-muted-foreground">Console</span>
-              <span className="font-medium text-right">{game.console?.name || 'Non définie'}</span>
-              
-              <span className="text-muted-foreground">Prix d'achat</span>
-              <div className="flex items-center justify-end gap-2">
-                <span className="font-medium">
-                  {userGame?.buy_price
-                    ? `${userGame.buy_price.toFixed(2)} €`
-                    : 'Non renseigné'}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={() => setIsPriceDialogOpen(true)}
-                >
-                  <Pencil className="h-3 w-3" />
-                </Button>
+          {/* Card Image avec effet glassmorphism */}
+          <div className="relative group">
+            {game.cover_url ? (
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-1 backdrop-blur-sm">
+                <Game3DImage
+                  src={game.cover_url}
+                  alt={game.title}
+                />
               </div>
-            </div>
-            
-            {game.genres && game.genres.length > 0 && (
-              <div className="pt-3 border-t">
-                <span className="text-muted-foreground text-sm block mb-2">Genres</span>
-                <div className="flex flex-col gap-1.5">
-                  {game.genres.map((genreItem) => (
-                    <Badge key={genreItem.genre_id} variant="secondary" className="text-xs w-fit">
-                      {genreItem.genres?.name || 'Genre inconnu'}
-                    </Badge>
-                  ))}
-                </div>
+            ) : (
+              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-xl flex items-center justify-center bg-gradient-to-br from-muted to-muted/50 border border-border/50">
+                <span className="text-muted-foreground">Pas d'image</span>
               </div>
             )}
           </div>
+
+          {/* Card Informations avec design moderne */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative p-6 space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-1 w-8 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+                <h3 className="text-lg font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                  Informations
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-1">
+                  <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Développeur</span>
+                  <p className="font-semibold text-foreground">{game.developer || 'Non défini'}</p>
+                </div>
+                
+                <div className="space-y-1">
+                  <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Éditeur</span>
+                  <p className="font-semibold text-foreground">{game.publisher || 'Non défini'}</p>
+                </div>
+                
+                <div className="space-y-1">
+                  <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Date de sortie</span>
+                  <p className="font-semibold text-foreground">
+                    {game.release_date ? new Date(game.release_date).toLocaleDateString('fr-FR') : 'Non définie'}
+                  </p>
+                </div>
+                
+                <div className="space-y-1">
+                  <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Console</span>
+                  <p className="font-semibold text-foreground">{game.console?.name || 'Non définie'}</p>
+                </div>
+                
+                <div className="space-y-1 col-span-2">
+                  <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Prix d'achat</span>
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-foreground">
+                      {userGame?.buy_price
+                        ? `${userGame.buy_price.toFixed(2)} €`
+                        : 'Non renseigné'}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-lg hover:bg-primary/10 transition-colors"
+                      onClick={() => setIsPriceDialogOpen(true)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              {game.genres && game.genres.length > 0 && (
+                <div className="pt-4 border-t border-border/50">
+                  <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide block mb-3">Genres</span>
+                  <div className="flex flex-wrap gap-2">
+                    {game.genres.map((genreItem) => (
+                      <Badge 
+                        key={genreItem.genre_id} 
+                        variant="secondary" 
+                        className="text-xs px-3 py-1 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 hover:from-primary/20 hover:to-primary/10 transition-all"
+                      >
+                        {genreItem.genres?.name || 'Genre inconnu'}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Détails et actions */}
+        {/* Colonne centrale - Détails et actions */}
         <div className="space-y-6">
-          <div className="bg-card p-6 rounded-lg shadow-sm">
-            <div className="mb-4">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <h1 className="text-2xl md:text-3xl font-bold">{game.title}</h1>
+          {/* Card Titre et description avec gradient moderne */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-50" />
+            <div className="relative p-6 md:p-8">
+              <div className="flex items-start justify-between gap-4 mb-6">
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent leading-tight">
+                  {game.title}
+                </h1>
                 
-                {/* Bouton Supprimer en haut à droite */}
                 <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                   <AlertDialogTrigger asChild>
                     <Button 
                       variant="destructive" 
                       size="sm"
-                      className="flex-shrink-0"
+                      className="flex-shrink-0 rounded-lg shadow-lg hover:shadow-xl transition-all"
                     >
                       <Trash2 className="h-4 w-4 mr-1 sm:mr-2" />
                       <span className="hidden sm:inline">Supprimer</span>
@@ -300,208 +333,264 @@ export default function GameDetailPage() {
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
+              
+              <p className="text-muted-foreground leading-relaxed text-base">{game.description}</p>
             </div>
-            
-            <p className="text-muted-foreground">{game.description}</p>
           </div>
 
           <div className="grid gap-6">
-            {/* Cote (EUR, PAL, Complet) */}
-            <div className="p-4 rounded-lg bg-card shadow-sm">
-              <h2 className="font-semibold border-b pb-2">Cote moyenne (EUR, PAL, complet)</h2>
-              <div className="mt-3">
-                <GamePriceDisplay gameId={gameId || ''} />
+            {/* Card Prix avec design moderne */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50/50 via-card to-purple-50/50 dark:from-blue-950/20 dark:via-card dark:to-purple-950/20 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl" />
+              <div className="relative p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-1 w-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
+                  <h2 className="text-lg font-bold">Cote moyenne</h2>
+                </div>
+                <div className="mt-4">
+                  <GamePriceDisplay gameId={gameId || ''} />
+                </div>
               </div>
             </div>
             
-            {/* Statut et progression - Section modifiable avec boutons à proximité */}
-            <div className="grid gap-4 p-4 rounded-lg bg-card shadow-sm">
-              <div className="flex items-center justify-between border-b pb-2">
-                <h2 className="font-semibold">Statut et progression</h2>
-                
-                {/* Boutons Modifier/Enregistrer/Annuler à côté du titre */}
-                {isEditing ? (
+            {/* Card Statut et progression avec design moderne */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative p-6">
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
-                      <X className="h-4 w-4 mr-1" />
-                      <span className="hidden sm:inline">Annuler</span>
-                    </Button>
-                    <Button size="sm" onClick={handleSave}>
-                      <Save className="h-4 w-4 mr-1" />
-                      <span className="hidden sm:inline">Enregistrer</span>
-                    </Button>
+                    <div className="h-1 w-8 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+                    <h2 className="text-lg font-bold">Statut et progression</h2>
                   </div>
+                  
+                  {isEditing ? (
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setIsEditing(false)}
+                        className="rounded-lg"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        <span className="hidden sm:inline">Annuler</span>
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={handleSave}
+                        className="rounded-lg shadow-lg"
+                      >
+                        <Save className="h-4 w-4 mr-1" />
+                        <span className="hidden sm:inline">Enregistrer</span>
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      onClick={handleEdit} 
+                      size="sm" 
+                      variant="outline" 
+                      className="border-primary/50 hover:border-primary rounded-lg"
+                    >
+                      <Pencil className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">Modifier</span>
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Statut</label>
+                    {isEditing ? (
+                      <select
+                        className="w-full rounded-lg border border-input bg-background px-4 py-2.5 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        value={editedData.status}
+                        onChange={(e) => setEditedData({
+                          ...editedData,
+                          status: e.target.value,
+                        })}
+                      >
+                        <option value="NOT_STARTED">Pas commencé</option>
+                        <option value="IN_PROGRESS">En cours</option>
+                        <option value="COMPLETED">Terminé</option>
+                        <option value="DROPPED">Abandonné</option>
+                        <option value="WISHLIST">Liste de souhaits</option>
+                      </select>
+                    ) : (
+                      <p className="text-lg font-semibold text-foreground">
+                        {userGame?.status ? (STATUS_LABELS[userGame.status] || userGame.status) : 'Non défini'}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">État du jeu</label>
+                    {isEditing ? (
+                      <select
+                        className="w-full rounded-lg border border-input bg-background px-4 py-2.5 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                        value={editedData.condition || ''}
+                        onChange={(e) => setEditedData({
+                          ...editedData,
+                          condition: e.target.value || null,
+                        })}
+                      >
+                        <option value="">Non renseigné</option>
+                        <option value="neuf">Neuf</option>
+                        <option value="comme neuf">Comme neuf</option>
+                        <option value="très bon état">Très bon état</option>
+                        <option value="bon état">Bon état</option>
+                        <option value="état moyen">État moyen</option>
+                        <option value="mauvais état">Mauvais état</option>
+                      </select>
+                    ) : (
+                      <p className="text-lg font-semibold text-foreground">
+                        {userGame?.condition
+                          ? userGame.condition.charAt(0).toUpperCase() + userGame.condition.slice(1).toLowerCase()
+                          : 'Non renseigné'}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2 sm:col-span-2">
+                    <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Progression</label>
+                    {isEditing ? (
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editedData.completion_percentage ?? ''}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? 0 : parseInt(e.target.value);
+                          setEditedData({
+                            ...editedData,
+                            completion_percentage: isNaN(value) ? 0 : value,
+                          });
+                        }}
+                        className="rounded-lg"
+                      />
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-lg font-semibold text-foreground">
+                          {userGame?.completion_percentage ?? 0}%
+                        </p>
+                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
+                            style={{ width: `${userGame?.completion_percentage ?? 0}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Évaluation avec design moderne */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-50/30 via-card to-orange-50/30 dark:from-yellow-950/20 dark:via-card dark:to-orange-950/20 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-full blur-3xl" />
+              <div className="relative p-6">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="h-1 w-8 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full" />
+                  <h2 className="text-lg font-bold">Évaluation</h2>
+                </div>
+                
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide block">Note</label>
+                    {isEditing ? (
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            onClick={() => setEditedData({
+                              ...editedData,
+                              rating: star,
+                            })}
+                            className={`text-3xl transition-transform hover:scale-110 ${
+                              star <= editedData.rating
+                                ? 'text-yellow-400 drop-shadow-lg'
+                                : 'text-gray-300 dark:text-gray-600'
+                            }`}
+                          >
+                            ★
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star 
+                              key={star}
+                              className={`h-6 w-6 ${
+                                userGame?.rating && star <= userGame.rating
+                                  ? 'text-yellow-400 fill-yellow-400'
+                                  : 'text-gray-300 dark:text-gray-600'
+                              }`} 
+                            />
+                          ))}
+                        </div>
+                        <span className="text-lg font-semibold">
+                          {userGame?.rating || 'Non noté'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide block">Temps de jeu</label>
+                    {isEditing ? (
+                      <Input
+                        type="number"
+                        min="0"
+                        value={editedData.play_time ?? ''}
+                        onChange={(e) => {
+                          const value = e.target.value === '' ? 0 : parseInt(e.target.value);
+                          setEditedData({
+                            ...editedData,
+                            play_time: isNaN(value) ? 0 : value,
+                          });
+                        }}
+                        className="rounded-lg"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <Clock className="h-6 w-6 text-primary" />
+                        <span className="text-lg font-semibold">
+                          {userGame?.play_time
+                            ? `${Math.floor(userGame.play_time / 60)}h ${userGame.play_time % 60}m`
+                            : 'Non défini'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Notes personnelles avec design moderne */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-1 w-8 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+                  <label className="text-lg font-bold">Notes personnelles</label>
+                </div>
+                {isEditing ? (
+                  <textarea
+                    value={editedData.notes}
+                    onChange={(e) => setEditedData({
+                      ...editedData,
+                      notes: e.target.value,
+                    })}
+                    className="w-full min-h-[120px] rounded-lg border border-input bg-background px-4 py-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none"
+                    placeholder="Ajoutez vos notes personnelles ici..."
+                  />
                 ) : (
-                  <Button 
-                    onClick={handleEdit} 
-                    size="sm" 
-                    variant="outline" 
-                    className="border-primary"
-                  >
-                    <Pencil className="h-4 w-4 mr-1" />
-                    <span className="hidden sm:inline">Modifier</span>
-                  </Button>
+                  <p className="text-muted-foreground leading-relaxed min-h-[120px] p-4 rounded-lg bg-muted/30 border border-border/50">
+                    {userGame?.notes || 'Aucune note'}
+                  </p>
                 )}
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium">Statut</label>
-                  {isEditing ? (
-                    <select
-                      className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2"
-                      value={editedData.status}
-                      onChange={(e) => setEditedData({
-                        ...editedData,
-                        status: e.target.value,
-                      })}
-                    >
-                      <option value="NOT_STARTED">Pas commencé</option>
-                      <option value="IN_PROGRESS">En cours</option>
-                      <option value="COMPLETED">Terminé</option>
-                      <option value="DROPPED">Abandonné</option>
-                      <option value="WISHLIST">Liste de souhaits</option>
-                    </select>
-                  ) : (
-                    <p className="mt-1">{userGame?.status ? (STATUS_LABELS[userGame.status] || userGame.status) : 'Non défini'}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="text-sm font-medium">État du jeu</label>
-                  {isEditing ? (
-                    <select
-                      className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2"
-                      value={editedData.condition || ''}
-                      onChange={(e) => setEditedData({
-                        ...editedData,
-                        condition: e.target.value || null,
-                      })}
-                    >
-                      <option value="">Non renseigné</option>
-                      <option value="neuf">Neuf</option>
-                      <option value="comme neuf">Comme neuf</option>
-                      <option value="très bon état">Très bon état</option>
-                      <option value="bon état">Bon état</option>
-                      <option value="état moyen">État moyen</option>
-                      <option value="mauvais état">Mauvais état</option>
-                    </select>
-                  ) : (
-                    <p className="mt-1">
-                      {userGame?.condition
-                        ? userGame.condition.charAt(0).toUpperCase() + userGame.condition.slice(1).toLowerCase()
-                        : 'Non renseigné'}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Progression</label>
-                  {isEditing ? (
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={editedData.completion_percentage ?? ''}
-                      onChange={(e) => {
-                        const value = e.target.value === '' ? 0 : parseInt(e.target.value);
-                        setEditedData({
-                          ...editedData,
-                          completion_percentage: isNaN(value) ? 0 : value,
-                        });
-                      }}
-                      className="mt-1"
-                    />
-                  ) : (
-                    <p className="mt-1">
-                      {userGame?.completion_percentage ?? 0}%
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Note et temps de jeu */}
-            <div className="grid gap-4 p-4 rounded-lg bg-card shadow-sm">
-              <h2 className="font-semibold border-b pb-2">Évaluation</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="text-sm font-medium">Note</label>
-                  {isEditing ? (
-                    <div className="flex gap-2 mt-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          onClick={() => setEditedData({
-                            ...editedData,
-                            rating: star,
-                          })}
-                          className={`text-2xl ${
-                            star <= editedData.rating
-                              ? 'text-yellow-400'
-                              : 'text-gray-300'
-                          }`}
-                        >
-                          ★
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex items-center mt-1">
-                      <Star className={`h-5 w-5 ${
-                        userGame?.rating ? 'text-yellow-400' : 'text-gray-300'
-                      }`} />
-                      <span className="ml-2">
-                        {userGame?.rating || 'Non noté'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Temps de jeu</label>
-                  {isEditing ? (
-                    <Input
-                      type="number"
-                      min="0"
-                      value={editedData.play_time ?? ''}
-                      onChange={(e) => {
-                        const value = e.target.value === '' ? 0 : parseInt(e.target.value);
-                        setEditedData({
-                          ...editedData,
-                          play_time: isNaN(value) ? 0 : value,
-                        });
-                      }}
-                      className="mt-1"
-                    />
-                  ) : (
-                    <div className="flex items-center mt-1">
-                      <Clock className="h-5 w-5" />
-                      <span className="ml-2">
-                        {userGame?.play_time
-                          ? `${Math.floor(userGame.play_time / 60)}h ${userGame.play_time % 60}m`
-                          : 'Non défini'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Notes personnelles */}
-            <div className="space-y-2 p-4 rounded-lg bg-card shadow-sm">
-              <label className="font-semibold border-b pb-2 block w-full">Notes personnelles</label>
-              {isEditing ? (
-                <textarea
-                  value={editedData.notes}
-                  onChange={(e) => setEditedData({
-                    ...editedData,
-                    notes: e.target.value,
-                  })}
-                  className="w-full min-h-[100px] mt-1 rounded-md border border-input bg-background px-3 py-2"
-                  placeholder="Ajoutez vos notes personnelles ici..."
-                />
-              ) : (
-                <p className="mt-1 text-muted-foreground">
-                  {userGame?.notes || 'Aucune note'}
-                </p>
-              )}
             </div>
           </div>
 

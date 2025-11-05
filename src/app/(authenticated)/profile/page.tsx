@@ -27,7 +27,7 @@ export default function ProfilePage() {
   const { user, refreshProfile } = useAuth();
   const { profile, isLoading: profileLoading, updateProfile } = useProfileStore();
   const [isLoading, setIsLoading] = useState(false);
-  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<ProfileFormData>();
+  const { register, handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<ProfileFormData>();
   const newPassword = watch('newPassword');
   const { deleteAccount, isDeleting } = useDeleteAccount();
 
@@ -106,6 +106,17 @@ export default function ProfilePage() {
       
       // 4. Rafraîchir les données du profil
       await refreshProfile();
+      
+      // 5. Réinitialiser les champs du formulaire, notamment les mots de passe
+      reset({
+        username: data.username,
+        full_name: data.full_name,
+        email: data.email,
+        avatar_url: data.avatar_url,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
 
     } catch (error: any) {
       toast.error(error.message);
@@ -115,34 +126,47 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Profil</h1>
-          <p className="mt-2 text-muted-foreground">
-            Gérez vos informations personnelles et vos préférences
-          </p>
-        </div>
-        {profile && (
-          <div className="flex flex-col items-center">
-            <Avatar className="h-24 w-24 mb-2">
-              <AvatarImage src={profile.avatar_url || ''} alt={profile.username || ''} />
-              <AvatarFallback>{profile.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
-            </Avatar>
-            <span className="text-sm text-muted-foreground">
-              {profile.provider === 'email' ? 'Compte email' : `Via ${profile.provider}`}
-            </span>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 p-6 md:p-8 shadow-xl">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full blur-3xl"></div>
+        <div className="relative flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+              Profil
+            </h1>
+            <p className="mt-2 text-sm sm:text-base text-muted-foreground">
+              Gérez vos informations personnelles et vos préférences
+            </p>
           </div>
-        )}
-      </div>
+          {profile && (
+            <div className="flex flex-col items-center ml-6">
+              <Avatar className="h-20 w-20 md:h-24 md:w-24 mb-2 ring-4 ring-primary/20">
+                <AvatarImage src={profile.avatar_url || ''} alt={profile.username || ''} />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-2xl font-bold">
+                  {profile.username?.[0]?.toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground px-2 py-1 rounded-full bg-muted/50">
+                {profile.provider === 'email' ? 'Compte email' : `Via ${profile.provider}`}
+              </span>
+            </div>
+          )}
+        </div>
+      </section>
 
-      <div className="grid gap-8">
+      <div className="grid gap-6">
         {/* Informations du profil */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Informations personnelles</h2>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+              <h2 className="text-lg font-bold">Informations personnelles</h2>
+            </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-medium">
+              <label htmlFor="username" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Nom d'utilisateur
               </label>
               <Input
@@ -151,6 +175,7 @@ export default function ProfilePage() {
                   required: 'Le nom d\'utilisateur est requis',
                 })}
                 disabled={isLoading || profileLoading}
+                className="rounded-lg"
               />
               {errors.username && (
                 <p className="text-sm text-destructive">{errors.username.message}</p>
@@ -158,7 +183,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="full_name" className="text-sm font-medium">
+              <label htmlFor="full_name" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Nom complet
               </label>
               <Input
@@ -166,11 +191,12 @@ export default function ProfilePage() {
                 {...register('full_name')}
                 disabled={isLoading || profileLoading}
                 placeholder="Votre nom complet (facultatif)"
+                className="rounded-lg"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="avatar_url" className="text-sm font-medium">
+              <label htmlFor="avatar_url" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 URL de l'avatar
               </label>
               <Input
@@ -178,15 +204,16 @@ export default function ProfilePage() {
                 {...register('avatar_url')}
                 disabled={isLoading || profileLoading}
                 placeholder="https://exemple.com/votre-avatar.jpg"
+                className="rounded-lg"
               />
               <p className="text-xs text-muted-foreground">Laissez vide pour utiliser l'avatar par défaut</p>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Email
                 {profile?.provider !== 'email' && (
-                  <span className="ml-2 text-xs text-muted-foreground">
+                  <span className="ml-2 text-xs font-normal normal-case text-muted-foreground">
                     (géré par {profile?.provider})
                   </span>
                 )}
@@ -202,7 +229,7 @@ export default function ProfilePage() {
                   },
                 })}
                 disabled={isLoading || profileLoading || profile?.provider !== 'email'}
-                className={profile?.provider !== 'email' ? 'bg-muted' : ''}
+                className={`rounded-lg ${profile?.provider !== 'email' ? 'bg-muted' : ''}`}
               />
               {profile?.provider !== 'email' && (
                 <p className="text-xs text-muted-foreground">
@@ -215,11 +242,11 @@ export default function ProfilePage() {
             </div>
 
             {profile?.provider === 'email' && (
-              <div className="pt-4 space-y-4">
-                <h3 className="text-lg font-medium">Changer le mot de passe</h3>
+              <div className="pt-4 space-y-4 border-t border-border/50">
+                <h3 className="text-base font-semibold">Changer le mot de passe</h3>
                 
                 <div className="space-y-2">
-                  <label htmlFor="currentPassword" className="text-sm font-medium">
+                  <label htmlFor="currentPassword" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                     Mot de passe actuel
                   </label>
                   <Input
@@ -227,11 +254,12 @@ export default function ProfilePage() {
                     type="password"
                     {...register('currentPassword')}
                     disabled={isLoading || profileLoading}
+                    className="rounded-lg"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="newPassword" className="text-sm font-medium">
+                  <label htmlFor="newPassword" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                     Nouveau mot de passe
                   </label>
                   <Input
@@ -244,6 +272,7 @@ export default function ProfilePage() {
                       },
                     })}
                     disabled={isLoading || profileLoading}
+                    className="rounded-lg"
                   />
                   {errors.newPassword && (
                     <p className="text-sm text-destructive">{errors.newPassword.message}</p>
@@ -251,7 +280,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="text-sm font-medium">
+                  <label htmlFor="confirmPassword" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                     Confirmer le nouveau mot de passe
                   </label>
                 <Input
@@ -264,6 +293,7 @@ export default function ProfilePage() {
                     },
                   })}
                   disabled={isLoading || profileLoading}
+                  className="rounded-lg"
                 />
                   {errors.confirmPassword && (
                     <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
@@ -273,8 +303,8 @@ export default function ProfilePage() {
             )}
 
             {profile?.provider !== 'email' && (
-              <div className="pt-4 p-4 rounded-lg bg-muted/50">
-                <h3 className="text-lg font-medium mb-2">Authentification</h3>
+              <div className="pt-4 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50">
+                <h3 className="text-base font-semibold mb-2">Authentification</h3>
                 <p className="text-sm text-muted-foreground">
                   Votre compte est connecté via <strong>{profile?.provider}</strong>. 
                   L'email et le mot de passe sont gérés par ce service et ne peuvent pas être modifiés ici.
@@ -282,54 +312,67 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading || profileLoading}>
+            <Button type="submit" className="w-full rounded-lg shadow-lg hover:shadow-xl transition-all" disabled={isLoading || profileLoading}>
               {isLoading || profileLoading ? 'Enregistrement...' : 'Enregistrer les modifications'}
             </Button>
           </form>
+          </div>
         </div>
 
         {/* Préférences */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Préférences</h2>
-          <div className="grid gap-4">
-            {/* Sélecteur de thème */}
-            <ProfileThemeSelector />
-
-            {/* <div className="flex items-center justify-between p-4 rounded-lg bg-card">
-              <div>
-                <h3 className="font-medium">Notifications par email</h3>
-                <p className="text-sm text-muted-foreground">
-                  Recevez des notifications sur les nouveaux jeux et les mises à jour
-                </p>
-              </div>
-              <Button variant="outline">Configurer</Button>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+              <h2 className="text-lg font-bold">Préférences</h2>
             </div>
+            <div className="grid gap-4">
+              {/* Sélecteur de thème */}
+              <ProfileThemeSelector />
 
-            <div className="flex items-center justify-between p-4 rounded-lg bg-card">
-              <div>
-                <h3 className="font-medium">Confidentialité du profil</h3>
-                <p className="text-sm text-muted-foreground">
-                  Gérez qui peut voir votre collection
-                </p>
+              {/* <div className="flex items-center justify-between p-4 rounded-lg bg-card">
+                <div>
+                  <h3 className="font-medium">Notifications par email</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Recevez des notifications sur les nouveaux jeux et les mises à jour
+                  </p>
+                </div>
+                <Button variant="outline">Configurer</Button>
               </div>
-              <Button variant="outline">Configurer</Button>
-            </div> */}
+
+              <div className="flex items-center justify-between p-4 rounded-lg bg-card">
+                <div>
+                  <h3 className="font-medium">Confidentialité du profil</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Gérez qui peut voir votre collection
+                  </p>
+                </div>
+                <Button variant="outline">Configurer</Button>
+              </div> */}
+            </div>
           </div>
         </div>
 
         {/* Zone de danger */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-destructive">Zone de danger</h2>
-          <div className="p-4 rounded-lg bg-destructive/10">
-            <h3 className="font-medium text-destructive">Supprimer le compte</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Une fois que vous supprimez votre compte, il n'y a pas de retour en arrière. Soyez certain.
-            </p>
-            <div className="mt-4">
-              <DeleteAccountDialog 
-                onConfirm={deleteAccount}
-                isLoading={isDeleting}
-              />
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-destructive/10 via-destructive/5 to-destructive/10 border border-destructive/30 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-destructive/20 to-destructive/10 rounded-full blur-3xl"></div>
+          <div className="relative p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="h-1 w-6 bg-gradient-to-r from-destructive to-destructive/50 rounded-full" />
+              <h2 className="text-lg font-bold text-destructive">Zone de danger</h2>
+            </div>
+            <div className="p-4 rounded-lg bg-gradient-to-r from-destructive/10 to-destructive/5 border border-destructive/20">
+              <h3 className="font-semibold text-destructive mb-2">Supprimer le compte</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Une fois que vous supprimez votre compte, il n'y a pas de retour en arrière. Soyez certain.
+              </p>
+              <div>
+                <DeleteAccountDialog 
+                  onConfirm={deleteAccount}
+                  isLoading={isDeleting}
+                />
+              </div>
             </div>
           </div>
         </div>

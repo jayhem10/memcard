@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 import { AdminGuard } from '@/components/auth/admin-guard';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/context/auth-context';
 
 export default function AdminPage() {
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [priceError, setPriceError] = useState<string | null>(null);
   const [randomGamesError, setRandomGamesError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const updatePrices = async () => {
     setLoadingPrices(true);
@@ -25,14 +27,25 @@ export default function AdminPage() {
     setPriceError(null);
 
     try {
+      // Récupérer la session pour obtenir le token d'authentification
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        throw new Error('Vous devez être connecté pour mettre à jour les prix');
+      }
+
       const response = await fetch('/api/admin/update-outdated-prices', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         credentials: 'include',
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la mise à jour des prix');
+        throw new Error(errorData.error || errorData.message || 'Erreur lors de la mise à jour des prix');
       }
 
       const data = await response.json();

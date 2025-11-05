@@ -30,19 +30,23 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         return;
       }
 
-      // Vérifier le délai entre les requêtes
-      const lastFetchTime = sessionStorage.getItem('lastProfileFetch');
-      const lastFetchTimeMs = lastFetchTime ? parseInt(lastFetchTime) : 0;
-      const now = Date.now();
-      
-      // Si on a déjà fait une requête dans les 5 dernières secondes, ignorer
-      if (now - lastFetchTimeMs < 5000) {
-        return;
+      // Vérifier le délai entre les requêtes (uniquement côté client)
+      if (typeof window !== 'undefined') {
+        const lastFetchTime = sessionStorage.getItem('lastProfileFetch');
+        const lastFetchTimeMs = lastFetchTime ? parseInt(lastFetchTime) : 0;
+        const now = Date.now();
+        
+        // Si on a déjà fait une requête dans les 5 dernières secondes, ignorer
+        if (now - lastFetchTimeMs < 5000) {
+          return;
+        }
       }
     }
     
-    // Enregistrer le moment de cette requête
-    sessionStorage.setItem('lastProfileFetch', Date.now().toString());
+    // Enregistrer le moment de cette requête (uniquement côté client)
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('lastProfileFetch', Date.now().toString());
+    }
     set({ isLoading: true, error: null });
     
     try {
@@ -189,7 +193,11 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       if (error) throw error;
       
       // Recharger le profil complet depuis la base pour s'assurer de la cohérence
-      await get().fetchProfile();
+      // Forcer le rechargement même si isLoading est true
+      await get().fetchProfile(true);
+      
+      // S'assurer que isLoading est bien à false après le rechargement
+      set({ isLoading: false });
       
       toast.success('Profil mis à jour avec succès');
     } catch (error: any) {

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { Card, CardContent } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -73,19 +73,26 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Contact</h1>
-        <p className="mt-2 text-muted-foreground">
-          Envoyez-nous un message et nous vous répondrons à l'adresse {user?.email || 'mail de votre compte'}.
-        </p>
-      </div>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 p-6 md:p-8 shadow-xl">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full blur-3xl" />
+        <div className="relative">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+            Contact
+          </h1>
+          <p className="mt-2 text-sm sm:text-base text-muted-foreground">
+            Envoyez-nous un message et nous vous répondrons à l'adresse {user?.email || 'mail de votre compte'}.
+          </p>
+        </div>
+      </section>
 
-      <Card>
-        <CardContent className="pt-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+        <CardContent className="relative p-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="subject">
+              <Label htmlFor="subject" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Sujet <span className="text-destructive">*</span>
               </Label>
               <Input
@@ -102,7 +109,7 @@ export default function ContactPage() {
                     message: 'Le sujet ne peut pas dépasser 200 caractères',
                   },
                 })}
-                className={errors.subject ? 'border-destructive' : ''}
+                className={`rounded-lg ${errors.subject ? 'border-destructive' : ''}`}
               />
               {errors.subject && (
                 <p className="text-sm text-destructive">{errors.subject.message}</p>
@@ -110,7 +117,7 @@ export default function ContactPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="message">
+              <Label htmlFor="message" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Message <span className="text-destructive">*</span>
               </Label>
               <textarea
@@ -128,7 +135,7 @@ export default function ContactPage() {
                     message: 'Le message ne peut pas dépasser 2000 caractères',
                   },
                 })}
-                className={`flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={`flex min-h-[120px] w-full rounded-lg border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none ${
                   errors.message ? 'border-destructive' : ''
                 }`}
               />
@@ -137,16 +144,17 @@ export default function ContactPage() {
               )}
             </div>
 
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end gap-3 pt-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => reset()}
                 disabled={isSubmitting}
+                className="rounded-lg"
               >
                 Réinitialiser
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} className="rounded-lg shadow-lg hover:shadow-xl transition-all">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -162,7 +170,7 @@ export default function ContactPage() {
             </div>
           </form>
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

@@ -32,19 +32,27 @@ export default function HelpPage() {
   const [supportDialogOpen, setSupportDialogOpen] = useState(false);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 py-8 px-4">
-      <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold flex items-center justify-center gap-2">
-          <BookOpen className="h-8 w-8" />
-          Centre d'aide
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          Tout ce que vous devez savoir pour utiliser MemCard au mieux
-        </p>
-      </div>
+    <div className="max-w-4xl mx-auto space-y-6 py-8 px-4">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 p-6 md:p-8 shadow-xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full blur-3xl" />
+        <div className="relative text-center space-y-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold flex items-baseline justify-center gap-3">
+            <BookOpen className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 text-primary flex-shrink-0" />
+            <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+              Centre d'aide
+            </span>
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Tout ce que vous devez savoir pour utiliser MemCard au mieux
+          </p>
+        </div>
+      </section>
 
       {/* Navigation et Onglets */}
-      <Card>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <Card className="border-0 shadow-none bg-transparent">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Library className="h-5 w-5" />
@@ -137,10 +145,13 @@ export default function HelpPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* Ajouter un jeu */}
-      <Card>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <Card className="border-0 shadow-none bg-transparent">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <PlusCircle className="h-5 w-5" />
@@ -174,10 +185,13 @@ export default function HelpPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* Wishlist et Partage */}
-      <Card>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <Card className="border-0 shadow-none bg-transparent">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5" />
@@ -206,10 +220,13 @@ export default function HelpPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* Validation des achats cadeaux */}
-      <Card>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <Card className="border-0 shadow-none bg-transparent">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
@@ -263,10 +280,13 @@ export default function HelpPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* Formulaire de contact */}
-      <Card>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <Card className="border-0 shadow-none bg-transparent">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
@@ -307,10 +327,13 @@ export default function HelpPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* Soutien et Tips */}
-      <Card>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <Card className="border-0 shadow-none bg-transparent">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5" />
@@ -370,10 +393,13 @@ export default function HelpPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* Astuces */}
-      <Card>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <Card className="border-0 shadow-none bg-transparent">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
@@ -385,7 +411,7 @@ export default function HelpPage() {
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
               <div className="p-2 rounded-lg bg-primary/10 mt-0.5">
                 <Filter className="h-5 w-5 text-primary" />
               </div>
@@ -397,7 +423,7 @@ export default function HelpPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
               <div className="p-2 rounded-lg bg-primary/10 mt-0.5">
                 <FileSpreadsheet className="h-5 w-5 text-primary" />
               </div>
@@ -409,7 +435,7 @@ export default function HelpPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
               <div className="p-2 rounded-lg bg-primary/10 mt-0.5">
                 <DollarSign className="h-5 w-5 text-primary" />
               </div>
@@ -421,7 +447,7 @@ export default function HelpPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-lg border bg-card">
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
               <div className="p-2 rounded-lg bg-primary/10 mt-0.5">
                 <TrendingUp className="h-5 w-5 text-primary" />
               </div>
@@ -433,7 +459,7 @@ export default function HelpPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-lg border bg-card md:col-span-2">
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300 md:col-span-2">
               <div className="p-2 rounded-lg bg-primary/10 mt-0.5">
                 <Gift className="h-5 w-5 text-primary" />
               </div>
@@ -446,16 +472,18 @@ export default function HelpPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* Footer */}
-      <div className="text-center text-sm text-muted-foreground pt-8 border-t">
+      <div className="text-center text-sm text-muted-foreground pt-6 border-t border-border/50">
         <p className="mb-4">
           Vous avez une question qui n'est pas couverte ici ?
         </p>
         <Button 
           asChild
           variant="outline"
+          className="rounded-lg"
         >
           <Link href="/contact">
             <Mail className="mr-2 h-4 w-4" />

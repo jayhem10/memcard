@@ -24,7 +24,6 @@ export function ProfileThemeSelector() {
   const { theme, setTheme } = useTheme();
   const { profile, updateProfile } = useProfileStore();
   const [mounted, setMounted] = useState(false);
-  const hasAppliedProfileTheme = useRef(false);
 
   useEffect(() => {
     setMounted(true);
@@ -39,6 +38,10 @@ export function ProfileThemeSelector() {
     if (profile) {
       try {
         await updateProfile({ theme: value });
+        // Marquer que le thème du profil a été appliqué pour cette session
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('profileThemeApplied', 'true');
+        }
       } catch (error) {
         console.error('Erreur lors de la mise à jour du thème:', error);
         // En cas d'erreur, remettre le thème précédent
@@ -47,13 +50,28 @@ export function ProfileThemeSelector() {
     }
   };
   
-  // Charger le thème depuis le profil seulement au premier chargement
+  // Charger le thème depuis le profil UNIQUEMENT au premier chargement de l'application
+  // Ne jamais réappliquer automatiquement pour éviter les changements non désirés
   useEffect(() => {
-    if (mounted && profile?.theme && !hasAppliedProfileTheme.current) {
+    // Ne rien faire si le profil n'est pas encore chargé ou n'a pas de thème défini
+    if (!mounted || !profile || !profile.theme) return;
+    
+    // Vérifier si le thème du profil a déjà été appliqué dans cette session
+    const themeAlreadyApplied = typeof window !== 'undefined' 
+      ? sessionStorage.getItem('profileThemeApplied') === 'true'
+      : false;
+    
+    // Ne réappliquer le thème que si :
+    // 1. Le thème n'a pas encore été appliqué dans cette session
+    // 2. Le thème actuel est différent du thème du profil
+    // 3. Le thème actuel n'est pas déjà celui du profil (pour éviter les changements inutiles)
+    if (!themeAlreadyApplied && theme !== profile.theme) {
       setTheme(profile.theme);
-      hasAppliedProfileTheme.current = true;
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('profileThemeApplied', 'true');
+      }
     }
-  }, [profile?.theme, mounted, setTheme]);
+  }, [profile, profile?.theme, mounted, setTheme, theme]);
 
   if (!mounted) return null;
 
@@ -78,12 +96,12 @@ export function ProfileThemeSelector() {
                 <RadioGroupItem value={t.value} id={`theme-${t.value}`} />
                 <Label 
                   htmlFor={`theme-${t.value}`}
-                  className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-accent"
+                  className="flex items-center gap-2 cursor-pointer p-2 rounded transition-all duration-200 hover:bg-accent hover:text-accent-foreground group"
                 >
-                  <ItemIcon className="h-4 w-4 transition-none" />
+                  <ItemIcon className="h-4 w-4 transition-colors group-hover:text-accent-foreground" />
                   <div>
-                    <div className="font-medium">{t.name}</div>
-                    <div className="text-xs text-muted-foreground">{t.description}</div>
+                    <div className="font-medium transition-colors group-hover:text-accent-foreground">{t.name}</div>
+                    <div className="text-xs text-muted-foreground transition-colors group-hover:text-accent-foreground group-hover:opacity-90">{t.description}</div>
                   </div>
                 </Label>
               </div>

@@ -46,38 +46,61 @@ export async function createAuthenticatedSupabaseClient() {
  * @returns L'utilisateur authentifié, le client Supabase et l'erreur éventuelle
  */
 export async function getAuthenticatedUser(request: NextRequest) {
-  // 1. Essayer avec les cookies (SSR standard)
-  let supabase = await createAuthenticatedSupabaseClient();
-  let { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  // 2. Si échec, essayer avec le token dans les headers (client-side fetch)
-  if (authError || !user) {
-    const authHeader = request.headers.get('authorization');
-    const authToken = authHeader?.replace('Bearer ', '');
-    
-    if (authToken) {
-      const supabaseWithToken = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          global: {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
+  // 1. Essayer d'abord avec le token dans les headers (priorité pour les appels client-side)
+  const authHeader = request.headers.get('authorization');
+  const authToken = authHeader?.replace('Bearer ', '');
+  
+  if (authToken) {
+    const supabaseWithToken = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
           },
-        }
-      );
-      
-      const result = await supabaseWithToken.auth.getUser();
-      user = result.data.user;
-      authError = result.error;
-      
-      // Utiliser le client avec token si l'authentification réussit
-      if (user) {
-        supabase = supabaseWithToken as any;
+        },
       }
+    );
+    
+    const result = await supabaseWithToken.auth.getUser();
+    if (result.data.user && !result.error) {
+      return { user: result.data.user, supabase: supabaseWithToken as any, error: null };
     }
   }
+
+  // 2. Si échec, essayer avec les cookies (SSR standard)
+  // Utiliser createServerClient avec les cookies de la requête HTTP directement
+  const cookieHeader = request.headers.get('cookie') || '';
+  const cookieStore = new Map<string, string>();
+  
+  // Parser les cookies depuis le header
+  cookieHeader.split(';').forEach(cookie => {
+    const [name, ...valueParts] = cookie.trim().split('=');
+    if (name) {
+      cookieStore.set(name, valueParts.join('='));
+    }
+  });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name) || undefined;
+        },
+        set() {
+          // En API routes, on ne peut pas setter les cookies
+        },
+        remove() {
+          // En API routes, on ne peut pas supprimer les cookies
+        },
+      },
+    }
+  );
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
 
   return { user, supabase, error: authError };
 }

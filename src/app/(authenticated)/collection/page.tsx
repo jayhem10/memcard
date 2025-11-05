@@ -38,24 +38,31 @@ function CollectionPageContent() {
   // Utiliser le hook React Query pour récupérer les jeux
   const { data: games = [], isLoading: loading, error } = useUserGames();
 
-  // Initialiser l'onglet depuis l'URL si présent
+  // Initialiser l'onglet et les filtres depuis l'URL si présent
   useEffect(() => {
     const tabParam = searchParams.get('tab');
+    const statusParam = searchParams.get('status') as FilterStatus | null;
+    
+    // Gérer l'onglet
     if (tabParam === 'wishlist') {
       setActiveTab('wishlist');
     } else {
-      // Si pas de paramètre ou paramètre différent, on active l'onglet collection
       setActiveTab('collection');
     }
-  }, [searchParams]);
-
-  // Réinitialiser les filtres quand on change d'onglet
-  useEffect(() => {
+    
+    // Initialiser le filtre de statut depuis l'URL si présent
+    if (statusParam && ['all', 'playing', 'completed', 'backlog', 'wishlist'].includes(statusParam)) {
+      setStatusFilter(statusParam);
+    } else if (!statusParam) {
+      // Réinitialiser seulement si pas de paramètre status dans l'URL
+      setStatusFilter('all');
+    }
+    
+    // Réinitialiser les autres filtres
     setConsoleFilter('all');
     setGenreFilter('all');
-    setStatusFilter('all');
     setSearchQuery('');
-  }, [activeTab]);
+  }, [searchParams]);
   
   // Get auth context
   const { user } = useAuth();

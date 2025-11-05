@@ -25,20 +25,33 @@ export function ThemeSelector() {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { profile, updateProfile } = useProfileStore();
   const currentTheme = theme || resolvedTheme || 'light';
-  const hasAppliedProfileTheme = React.useRef(false);
   const [mounted, setMounted] = React.useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
   
-  // Charger le thème depuis le profil seulement au premier chargement
+  // Charger le thème depuis le profil UNIQUEMENT au premier chargement de l'application
+  // Ne jamais réappliquer automatiquement pour éviter les changements non désirés
   useEffect(() => {
-    if (!hasAppliedProfileTheme.current && profile?.theme && mounted) {
+    // Ne rien faire si le profil n'est pas encore chargé ou n'a pas de thème défini
+    if (!mounted || !profile || !profile.theme) return;
+    
+    // Vérifier si le thème du profil a déjà été appliqué dans cette session
+    const themeAlreadyApplied = typeof window !== 'undefined' 
+      ? sessionStorage.getItem('profileThemeApplied') === 'true'
+      : false;
+    
+    // Ne réappliquer le thème que si :
+    // 1. Le thème n'a pas encore été appliqué dans cette session
+    // 2. Le thème actuel est différent du thème du profil
+    if (!themeAlreadyApplied && theme !== profile.theme) {
       setTheme(profile.theme);
-      hasAppliedProfileTheme.current = true;
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('profileThemeApplied', 'true');
+      }
     }
-  }, [profile?.theme, mounted, setTheme]);
+  }, [profile, profile?.theme, mounted, setTheme, theme]);
 
   if (!mounted) return null;
   
