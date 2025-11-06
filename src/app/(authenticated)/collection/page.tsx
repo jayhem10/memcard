@@ -42,6 +42,7 @@ function CollectionPageContent() {
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     const statusParam = searchParams.get('status') as FilterStatus | null;
+    const consoleParam = searchParams.get('console');
     
     // Gérer l'onglet
     if (tabParam === 'wishlist') {
@@ -58,8 +59,14 @@ function CollectionPageContent() {
       setStatusFilter('all');
     }
     
+    // Initialiser le filtre de console depuis l'URL si présent
+    if (consoleParam) {
+      setConsoleFilter(consoleParam);
+    } else {
+      setConsoleFilter('all');
+    }
+    
     // Réinitialiser les autres filtres
-    setConsoleFilter('all');
     setGenreFilter('all');
     setSearchQuery('');
   }, [searchParams]);
@@ -460,7 +467,11 @@ function CollectionPageContent() {
                 key={button.value}
                 variant={statusFilter === button.value ? 'default' : 'outline'}
                 onClick={() => setStatusFilter(button.value)}
-                className="whitespace-nowrap"
+                className={`whitespace-nowrap transition-all duration-300 ${
+                  statusFilter === button.value
+                    ? 'hover:bg-primary/90'
+                    : 'bg-gradient-to-r from-muted/30 to-muted/10 !border-border/50 hover:!border-primary/50 hover:bg-secondary/60 hover:text-foreground'
+                }`}
               >
                 {button.label}
               </Button>

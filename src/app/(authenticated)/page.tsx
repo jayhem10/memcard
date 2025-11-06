@@ -69,45 +69,45 @@ function UserStats() {
     <div className="space-y-6">
       {/* Cards de statistiques avec design moderne */}
       <div className="grid grid-cols-2 gap-4">
-        <Link href="/collection" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50/50 via-card to-blue-50/30 dark:from-blue-950/20 dark:via-card dark:to-blue-950/10 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-blue-400/10 rounded-full blur-2xl" />
+        <Link href="/collection" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50/50 via-card to-blue-50/30 dark:from-blue-950/20 dark:via-card dark:to-blue-950/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-blue-400/10 rounded-full blur-2xl pointer-events-none" />
           <div className="relative p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Zap className="h-3.5 w-3.5 text-blue-500" />
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Total</p>
+              <Zap className="h-3.5 w-3.5 text-blue-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide group-hover:text-primary transition-colors">Total</p>
             </div>
             <p className="text-2xl font-bold text-foreground">{total}</p>
           </div>
         </Link>
         
-        <Link href="/collection?status=playing" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-50/50 via-card to-purple-50/30 dark:from-purple-950/20 dark:via-card dark:to-purple-950/10 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-500/10 to-purple-400/10 rounded-full blur-2xl" />
+        <Link href="/collection?status=playing" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-50/50 via-card to-purple-50/30 dark:from-purple-950/20 dark:via-card dark:to-purple-950/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-500/10 to-purple-400/10 rounded-full blur-2xl pointer-events-none" />
           <div className="relative p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-3.5 w-3.5 text-purple-500" />
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">En cours</p>
+              <TrendingUp className="h-3.5 w-3.5 text-purple-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide group-hover:text-primary transition-colors">En cours</p>
             </div>
             <p className="text-2xl font-bold text-foreground">{inProgress}</p>
           </div>
         </Link>
         
-        <Link href="/collection?status=completed" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-50/50 via-card to-green-50/30 dark:from-green-950/20 dark:via-card dark:to-green-950/10 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/10 to-green-400/10 rounded-full blur-2xl" />
+        <Link href="/collection?status=completed" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-50/50 via-card to-green-50/30 dark:from-green-950/20 dark:via-card dark:to-green-950/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-500/10 to-green-400/10 rounded-full blur-2xl pointer-events-none" />
           <div className="relative p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Trophy className="h-3.5 w-3.5 text-green-500" />
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Terminés</p>
+              <Trophy className="h-3.5 w-3.5 text-green-500 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide group-hover:text-primary transition-colors">Terminés</p>
             </div>
             <p className="text-2xl font-bold text-foreground">{completed}</p>
           </div>
         </Link>
         
-        <Link href="/collection?tab=wishlist" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-amber-50/50 via-card to-amber-50/30 dark:from-amber-950/20 dark:via-card dark:to-amber-950/10 border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-500/10 to-amber-400/10 rounded-full blur-2xl" />
+        <Link href="/collection?tab=wishlist" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-amber-50/50 via-card to-amber-50/30 dark:from-amber-950/20 dark:via-card dark:to-amber-950/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-500/10 to-amber-400/10 rounded-full blur-2xl pointer-events-none" />
           <div className="relative p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Heart className="h-3.5 w-3.5 text-amber-500" />
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Souhaits</p>
+              <Heart className="h-3.5 w-3.5 text-amber-500 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide group-hover:text-primary transition-colors">Souhaits</p>
             </div>
             <p className="text-2xl font-bold text-foreground">{wishlist}</p>
           </div>
@@ -139,15 +139,16 @@ function UserStats() {
             </div>
             <div className="space-y-3">
               {platforms.slice(0, 3).map(platform => (
-                <div 
-                  key={`platform-${platform.igdb_platform_id}`} 
-                  className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300"
+                <Link
+                  key={`platform-${platform.igdb_platform_id}`}
+                  href={`/collection?console=${platform.consoleId}`}
+                  className="flex justify-between items-center p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300 group cursor-pointer"
                 >
-                  <span className="text-sm font-medium">{platform.name}</span>
+                  <span className="text-sm font-medium group-hover:text-primary transition-colors">{platform.name}</span>
                   <Badge variant="secondary" className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
                     {platform.count} jeux
                   </Badge>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
