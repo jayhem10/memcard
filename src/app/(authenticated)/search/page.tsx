@@ -604,162 +604,175 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-3xl font-bold">Rechercher un jeu</h1>
-      </div>
-      
-      <div className="relative mb-2">
-        <SearchInput
-          placeholder="Rechercher un jeu..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onClear={() => {
-            setSearchQuery('');
-            setShouldSearch(false);
-          }}
-          hasActionButton={true}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && searchQuery.trim() !== '') {
-              e.preventDefault();
-              setShouldSearch(true);
-              // Utiliser directement refetch au lieu de refetchRef.current
-              refetch().then(() => {
-                if (isMobile && searchResultsRef.current) {
-                  setTimeout(() => {
-                    searchResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }, 500);
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 p-6 md:p-8 shadow-xl">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative space-y-4">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+              Rechercher un jeu
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Trouvez et ajoutez des jeux à votre collection depuis la base de données IGDB
+            </p>
+          </div>
+          
+          <div className="relative">
+            <SearchInput
+              placeholder="Rechercher un jeu..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onClear={() => {
+                setSearchQuery('');
+                setShouldSearch(false);
+              }}
+              hasActionButton={true}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim() !== '') {
+                  e.preventDefault();
+                  setShouldSearch(true);
+                  refetch().then(() => {
+                    if (isMobile && searchResultsRef.current) {
+                      setTimeout(() => {
+                        searchResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 500);
+                    }
+                  });
                 }
-              });
-            }
-          }}
-        />
-        <Button 
-          className="absolute right-0 top-0 h-full rounded-l-none"
-          onClick={() => {
-            if (searchQuery.trim() !== '') {
-              setShouldSearch(true);
-              // Utiliser directement refetch au lieu de refetchRef.current
-              refetch().then(() => {
-                if (isMobile && searchResultsRef.current) {
-                  setTimeout(() => {
-                    searchResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }, 500);
+              }}
+            />
+            <Button 
+              className="absolute right-0 top-0 h-full rounded-l-none rounded-lg shadow-md hover:shadow-lg transition-all"
+              onClick={() => {
+                if (searchQuery.trim() !== '') {
+                  setShouldSearch(true);
+                  refetch().then(() => {
+                    if (isMobile && searchResultsRef.current) {
+                      setTimeout(() => {
+                        searchResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 500);
+                    }
+                  });
                 }
-              });
-            }
-          }}
-        >
-          Rechercher
-        </Button>
-      </div>
-      
-      <div className="mb-6 text-xs text-muted-foreground italic text-center">
-        Appuyez sur Entrée ou cliquez sur Rechercher pour lancer la recherche
-      </div>
+              }}
+            >
+              Rechercher
+            </Button>
+          </div>
+          
+          <p className="text-xs text-muted-foreground italic">
+            Appuyez sur Entrée ou cliquez sur Rechercher pour lancer la recherche
+          </p>
+        </div>
+      </section>
       
       {/* Sélecteur de plateforme optimisé pour mobile et bureau avec système de dépliage */}
-      <div className="mb-6 bg-muted/30 rounded-lg overflow-hidden">
-        {/* En-tête cliquable pour déplier/replier */}
-        <div 
-          className="p-4 flex justify-between items-center cursor-pointer"
-          onClick={() => setIsPlatformSectionExpanded(!isPlatformSectionExpanded)}
-        >
-          <div className="flex items-center">
-            <h2 className="text-sm font-medium">Sélectionner une plateforme {selectedPlatform !== null && filteredPlatforms.find(p => p.igdb_platform_id === selectedPlatform)?.name ? `(${filteredPlatforms.find(p => p.igdb_platform_id === selectedPlatform)?.name})` : '(optionnel)'}</h2>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <div className="relative">
+          {/* En-tête cliquable pour déplier/replier */}
+          <div 
+            className="p-5 flex justify-between items-center cursor-pointer hover:bg-muted/30 transition-colors"
+            onClick={() => setIsPlatformSectionExpanded(!isPlatformSectionExpanded)}
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+              <h2 className="text-base font-bold">
+                Sélectionner une plateforme {selectedPlatform !== null && filteredPlatforms.find(p => p.igdb_platform_id === selectedPlatform)?.name ? `(${filteredPlatforms.find(p => p.igdb_platform_id === selectedPlatform)?.name})` : '(optionnel)'}
+              </h2>
+            </div>
+            <ChevronDown className={`h-5 w-5 transition-transform duration-300 ${isPlatformSectionExpanded ? 'rotate-180' : ''}`} />
           </div>
-          <ChevronDown className={`h-5 w-5 transition-transform ${isPlatformSectionExpanded ? 'rotate-180' : ''}`} />
-        </div>
         
-        {/* Contenu dépliable */}
-        {isPlatformSectionExpanded && (
-          <div className="p-4 pt-0">
-            <div className="relative">
-              <div className="flex flex-col space-y-2">
-                {/* Champ de recherche pour filtrer les plateformes */}
-                <div className="relative mb-2">
-                  <SearchInput 
-                    ref={platformSearchInputRef}
-                    className="pl-8 pr-2"
-                    type="text" 
-                    placeholder="Rechercher une plateforme..."
-                    value={platformSearchQuery}
-                    onChange={(e) => setPlatformSearchQuery(e.target.value)}
-                    onClear={() => setPlatformSearchQuery('')}
-                    searchIcon={false}
-                  />
-                </div>
-                
-                {/* Liste de plateformes compatible mobile */}
-                <div 
-                  id="platform-list"
-                  className="w-full border rounded-md bg-background overflow-y-auto"
-                  style={{
-                    maxHeight: '40vh'
-                  }}
-                >
-                  {/* Option "Toutes les plateformes" */}
-                  <div 
-                    className={`p-3 hover:bg-accent cursor-pointer ${selectedPlatform === null ? 'bg-accent/50' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation(); // Empêcher la propagation au parent
-                      setSelectedPlatform(null);
-                      if (searchQuery) {
-                        setShouldSearch(true);
-                        refetchRef.current();
-                      }
-                      // Replier la section après sélection sur mobile
-                      if (isMobile) {
-                        setIsPlatformSectionExpanded(false);
-                      }
-                    }}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-4 h-4 rounded-full border ${selectedPlatform === null ? 'bg-primary border-primary' : 'border-muted-foreground'} mr-2`}></div>
-                      <span>Toutes les plateformes</span>
-                    </div>
+          {/* Contenu dépliable */}
+          {isPlatformSectionExpanded && (
+            <div className="px-5 pb-5 pt-0">
+              <div className="relative">
+                <div className="flex flex-col space-y-3">
+                  {/* Champ de recherche pour filtrer les plateformes */}
+                  <div className="relative">
+                    <SearchInput 
+                      ref={platformSearchInputRef}
+                      className="pl-8 pr-2 rounded-lg"
+                      type="text" 
+                      placeholder="Rechercher une plateforme..."
+                      value={platformSearchQuery}
+                      onChange={(e) => setPlatformSearchQuery(e.target.value)}
+                      onClear={() => setPlatformSearchQuery('')}
+                      searchIcon={false}
+                    />
                   </div>
                   
-                  {/* Liste des plateformes */}
-                  {filteredPlatforms
-                    .filter(p => p.id !== 'all')
-                    .map((platform, index) => (
-                      <div 
-                        key={`platform-${platform.igdb_platform_id || index}`}
-                        className={`p-3 hover:bg-accent cursor-pointer ${selectedPlatform === platform.igdb_platform_id ? 'bg-accent/50' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation(); // Empêcher la propagation au parent
-                          setSelectedPlatform(platform.igdb_platform_id);
-                          if (searchQuery) {
-                            setShouldSearch(true);
-                            refetchRef.current();
-                          } else {
-                            setShouldSearch(false);
-                          }
-                          // Replier la section après sélection sur mobile
-                          if (isMobile) {
-                            setIsPlatformSectionExpanded(false);
-                          }
-                        }}
-                      >
-                        <div className="flex items-center">
-                          <div className={`w-4 h-4 rounded-full border ${selectedPlatform === platform.igdb_platform_id ? 'bg-primary border-primary' : 'border-muted-foreground'} mr-2`}></div>
-                          <span>{platform.name} {platform.abbreviation ? `(${platform.abbreviation})` : ''}</span>
-                        </div>
+                  {/* Liste de plateformes compatible mobile */}
+                  <div 
+                    id="platform-list"
+                    className="w-full border border-border/50 rounded-lg bg-background overflow-y-auto shadow-sm"
+                    style={{
+                      maxHeight: '40vh'
+                    }}
+                  >
+                    {/* Option "Toutes les plateformes" */}
+                    <div 
+                      className={`p-3 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/50 last:border-b-0 ${selectedPlatform === null ? 'bg-primary/10 border-l-4 border-l-primary' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPlatform(null);
+                        if (searchQuery) {
+                          setShouldSearch(true);
+                          refetchRef.current();
+                        }
+                        if (isMobile) {
+                          setIsPlatformSectionExpanded(false);
+                        }
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <div className={`w-4 h-4 rounded-full border-2 transition-all ${selectedPlatform === null ? 'bg-primary border-primary' : 'border-muted-foreground'} mr-3`}></div>
+                        <span className="font-medium">Toutes les plateformes</span>
                       </div>
-                    ))}
+                    </div>
+                    
+                    {/* Liste des plateformes */}
+                    {filteredPlatforms
+                      .filter(p => p.id !== 'all')
+                      .map((platform, index) => (
+                        <div 
+                          key={`platform-${platform.igdb_platform_id || index}`}
+                          className={`p-3 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/50 last:border-b-0 ${selectedPlatform === platform.igdb_platform_id ? 'bg-primary/10 border-l-4 border-l-primary' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedPlatform(platform.igdb_platform_id);
+                            if (searchQuery) {
+                              setShouldSearch(true);
+                              refetchRef.current();
+                            } else {
+                              setShouldSearch(false);
+                            }
+                            if (isMobile) {
+                              setIsPlatformSectionExpanded(false);
+                            }
+                          }}
+                        >
+                          <div className="flex items-center">
+                            <div className={`w-4 h-4 rounded-full border-2 transition-all ${selectedPlatform === platform.igdb_platform_id ? 'bg-primary border-primary' : 'border-muted-foreground'} mr-3`}></div>
+                            <span className="font-medium">{platform.name} {platform.abbreviation ? <span className="text-muted-foreground">({platform.abbreviation})</span> : ''}</span>
+                          </div>
+                        </div>
+                      ))}
                 </div>
               </div>
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {selectedPlatform && selectedPlatform > 0 && (
-        <div className="flex flex-wrap items-center mt-3">
-          <span className="text-sm text-muted-foreground mr-2">Plateforme sélectionnée :</span>
-          <div className="flex items-center mt-1 sm:mt-0">
-            <Badge className="mr-2">
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground">Plateforme sélectionnée :</span>
+            <Badge className="bg-primary/20 text-primary border-primary/30">
               {(() => {
                 const platform = platforms.find(p => Number(p.igdb_platform_id) === Number(selectedPlatform));
                 return platform ? 
@@ -770,47 +783,58 @@ export default function SearchPage() {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-5 w-5 p-0" 
+              className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive" 
               onClick={() => {
                 setSelectedPlatform(null);
-                // Si une recherche existe déjà, relancer la recherche
                 if (searchQuery && shouldSearch) {
                   refetchRef.current();
                 }
               }}
             >
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4" />
             </Button>
           </div>
         </div>
       )}
 
       {isError ? (
-        <div className="text-center py-12">
-          <p className="text-destructive">Une erreur est survenue lors de la recherche</p>
-          <Button onClick={() => {
-            setShouldSearch(true);
-            refetchRef.current();
-          }} className="mt-4">
-            Réessayer
-          </Button>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-destructive/10 via-card to-card/95 border border-destructive/20 shadow-xl backdrop-blur-sm p-12">
+          <div className="absolute inset-0 bg-gradient-to-br from-destructive/5 via-transparent to-destructive/5 opacity-50" />
+          <div className="relative flex flex-col items-center justify-center gap-4 text-center">
+            <p className="text-destructive font-medium text-lg">Une erreur est survenue lors de la recherche</p>
+            <Button 
+              onClick={() => {
+                setShouldSearch(true);
+                refetchRef.current();
+              }} 
+              className="rounded-lg shadow-md hover:shadow-lg transition-all"
+            >
+              Réessayer
+            </Button>
+          </div>
         </div>
       ) : (
         <>
           {/* Message quand aucune recherche n'est effectuée */}
           {!searchQuery && (
-            <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
-              <p className="text-muted-foreground">
-                {selectedPlatform !== null && selectedPlatform > 0 
-                  ? `Sélectionnez un jeu sur ${platforms.find(p => p.igdb_platform_id === selectedPlatform)?.name || 'la plateforme'} ou tapez un nom de jeu` 
-                  : "Tapez un nom de jeu et appuyez sur Rechercher"}
-              </p>
-              
-              {selectedConsoleName && (
-                <div className="mt-4 rounded-md bg-primary/20 p-2 mx-auto inline-block">
-                  <p className="text-sm">Dernière console sélectionnée: <span className="font-medium">{selectedConsoleName}</span></p>
-                </div>
-              )}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-12">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
+              <div className="relative flex flex-col items-center justify-center gap-4 text-center">
+                <Search className="h-12 w-12 text-muted-foreground/50" />
+                <p className="text-muted-foreground text-lg">
+                  {selectedPlatform !== null && selectedPlatform > 0 
+                    ? `Sélectionnez un jeu sur ${platforms.find(p => p.igdb_platform_id === selectedPlatform)?.name || 'la plateforme'} ou tapez un nom de jeu` 
+                    : "Tapez un nom de jeu et appuyez sur Rechercher"}
+                </p>
+                
+                {selectedConsoleName && (
+                  <div className="mt-2 rounded-lg bg-primary/20 border border-primary/30 p-3">
+                    <p className="text-sm text-muted-foreground">
+                      Dernière console sélectionnée: <span className="font-semibold text-primary">{selectedConsoleName}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
           
@@ -866,7 +890,11 @@ export default function SearchPage() {
           {/* Bouton charger plus */}
           {searchQuery && !isLoading && !isFetchingNextPage && hasMore && data?.pages && data.pages[0] && data.pages[0].games && data.pages[0].games.length > 0 && (
             <div className="flex justify-center my-6">
-              <Button onClick={() => fetchNextPage()} variant="outline">
+              <Button 
+                onClick={() => fetchNextPage()} 
+                variant="outline"
+                className="rounded-lg shadow-md hover:shadow-lg transition-all bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5"
+              >
                 Charger plus de jeux
               </Button>
             </div>
@@ -879,8 +907,13 @@ export default function SearchPage() {
           )}
           
           {searchQuery && data?.pages && data.pages[0] && data.pages[0].games && data.pages[0].games.length === 0 && !isLoading && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Aucun résultat trouvé</p>
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-12">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
+              <div className="relative flex flex-col items-center justify-center gap-4 text-center">
+                <Search className="h-12 w-12 text-muted-foreground/50" />
+                <p className="text-muted-foreground text-lg">Aucun résultat trouvé</p>
+                <p className="text-sm text-muted-foreground/70">Essayez avec d'autres mots-clés ou une autre plateforme</p>
+              </div>
             </div>
           )}
         </>

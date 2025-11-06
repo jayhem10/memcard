@@ -22,7 +22,7 @@ export function GameList({ games }: GameListProps) {
           href={`/games/${game.id}`}
           className="block group"
         >
-          <div className="flex items-center space-x-4 p-4 rounded-lg bg-card hover:bg-accent transition-colors">
+          <div className="flex items-center space-x-4 p-4 rounded-lg bg-card border border-border/50 hover:bg-accent/50 hover:border-primary/30 transition-all duration-200">
             {/* Game cover */}
             <div className="relative w-20 h-24 flex-shrink-0">
               {game.cover_url ? (

@@ -392,6 +392,79 @@
     );
   }
 
+  /* Styles hover pour thèmes rétro - teinte plus claire */
+  /* Exclure les éléments avec hover:text-accent-foreground pour préserver leur style */
+  .retro [class*="bg-card"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(60 5% 98%) !important;
+  }
+
+  .retro [class*="bg-accent"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(60 4.8% 97.5%) !important;
+  }
+
+  .retro [class*="bg-muted"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(60 4.8% 97.5%) !important;
+  }
+
+  /* Styles hover pour thème Nintendo - teinte plus claire */
+  .nintendo [class*="bg-card"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(0 70% 99%) !important;
+  }
+
+  .nintendo [class*="bg-accent"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(0 60% 98%) !important;
+  }
+
+  .nintendo [class*="bg-muted"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(0 60% 98%) !important;
+  }
+
+  .nintendo [class*="bg-secondary"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(0 60% 98%) !important;
+  }
+
+  /* Styles hover pour thème PlayStation - teinte plus claire */
+  .playstation [class*="bg-card"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(220 30% 99%) !important;
+  }
+
+  .playstation [class*="bg-accent"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(220 60% 98%) !important;
+  }
+
+  .playstation [class*="bg-muted"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(220 60% 98%) !important;
+  }
+
+  .playstation [class*="bg-secondary"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(220 60% 98%) !important;
+  }
+
+  /* Styles hover pour thème Xbox - teinte plus claire */
+  .xbox [class*="bg-card"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(120 30% 99%) !important;
+  }
+
+  .xbox [class*="bg-accent"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(120 60% 98%) !important;
+  }
+
+  .xbox [class*="bg-muted"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(120 60% 98%) !important;
+  }
+
+  .xbox [class*="bg-secondary"]:hover:not([class*="hover:text-accent-foreground"]) {
+    background-color: hsl(120 60% 98%) !important;
+  }
+
+  /* Garantir la visibilité du texte pour les éléments avec hover:text-accent-foreground */
+  .retro [class*="hover:text-accent-foreground"]:hover,
+  .nintendo [class*="hover:text-accent-foreground"]:hover,
+  .playstation [class*="hover:text-accent-foreground"]:hover,
+  .xbox [class*="hover:text-accent-foreground"]:hover {
+    color: hsl(var(--accent-foreground)) !important;
+  }
+
 }
 
 @layer base {
@@ -634,6 +707,142 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 0 0 5px hsla(var(--neon-blue) / 0.3);
+  }
+
+  /* Badges cyberpunk - style moins flashy */
+  .cyberpunk [class*="bg-gradient-to-r"][class*="from-muted"] {
+    background: linear-gradient(
+      90deg,
+      hsla(var(--neon-indigo) / 0.12) 0%,
+      hsla(var(--neon-indigo) / 0.08) 100%
+    ) !important;
+    border-color: hsla(var(--neon-indigo) / 0.2) !important;
+    box-shadow: 0 0 2px hsla(var(--neon-indigo) / 0.1) !important;
+  }
+
+  .cyberpunk [class*="bg-gradient-to-r"][class*="from-muted"]:hover {
+    background: hsla(var(--neon-indigo) / 0.25) !important;
+    border-color: hsla(var(--neon-purple) / 0.4) !important;
+    box-shadow: 0 0 4px hsla(var(--neon-indigo) / 0.25) !important;
+  }
+
+  /* Badge sélectionné cyberpunk */
+  .cyberpunk [class*="text-primary-foreground"]:not(span[class*="bg-primary"]) {
+    background: linear-gradient(
+      90deg,
+      hsla(var(--neon-purple) / 0.35) 0%,
+      hsla(var(--neon-indigo) / 0.35) 100%
+    ) !important;
+    border-color: hsla(var(--neon-purple) / 0.5) !important;
+    box-shadow: 
+      0 0 6px hsla(var(--neon-purple) / 0.4),
+      inset 0 0 3px hsla(var(--neon-blue) / 0.15) !important;
+    color: hsl(var(--neon-blue)) !important;
+  }
+
+  /* Badge de compteur cyberpunk - moins flashy */
+  .cyberpunk span[class*="bg-primary-foreground/20"] {
+    background: linear-gradient(
+      135deg,
+      hsla(var(--neon-purple) / 0.35) 0%,
+      hsla(var(--neon-indigo) / 0.35) 100%
+    ) !important;
+    border: 1px solid hsla(var(--neon-purple) / 0.5) !important;
+    box-shadow: 
+      0 0 4px hsla(var(--neon-purple) / 0.4),
+      inset 0 0 2px hsla(var(--neon-blue) / 0.15) !important;
+    color: hsl(var(--neon-blue)) !important;
+    text-shadow: 0 0 2px hsla(var(--neon-blue) / 0.6) !important;
+    font-weight: 600 !important;
+  }
+
+  .cyberpunk span[class*="bg-primary/20"]:not([class*="bg-primary-foreground"]) {
+    background: hsla(var(--neon-indigo) / 0.12) !important;
+    border: 1px solid hsla(var(--neon-indigo) / 0.25) !important;
+    box-shadow: 0 0 2px hsla(var(--neon-indigo) / 0.15) !important;
+    color: hsl(var(--neon-blue) / 0.75) !important;
+    text-shadow: none !important;
+    font-weight: 500 !important;
+  }
+
+  /* Badge destructive en général pour cyberpunk */
+  .cyberpunk [class*="bg-destructive"] {
+    background: hsl(var(--neon-purple)) !important;
+    border: 2px solid hsl(var(--neon-blue)) !important;
+    box-shadow: 
+      0 0 15px hsla(var(--neon-purple) / 1),
+      0 0 8px hsla(var(--neon-indigo) / 0.9),
+      inset 0 0 6px hsla(var(--neon-blue) / 0.5) !important;
+    color: hsl(var(--neon-blue)) !important;
+    text-shadow: 
+      0 0 8px hsla(var(--neon-blue) / 1),
+      0 0 4px hsla(var(--neon-blue) / 1),
+      0 0 2px hsl(var(--neon-blue)) !important;
+    font-weight: 800 !important;
+  }
+
+  /* Badge de notification spécifique (petit badge sur le bouton) - moins flashy et lisible */
+  .cyberpunk button[class*="relative"] [class*="absolute"][class*="bg-destructive"],
+  .cyberpunk button[class*="relative"] [class*="absolute"][class*="h-5"][class*="w-5"] {
+    background: hsl(var(--neon-purple) / 0.9) !important;
+    border: 1px solid hsl(var(--neon-blue) / 0.6) !important;
+    box-shadow: 
+      0 0 3px hsla(var(--neon-purple) / 0.3),
+      inset 0 0 1px hsla(var(--neon-blue) / 0.15) !important;
+    color: hsl(var(--neon-blue)) !important;
+    text-shadow: none !important;
+    font-weight: 700 !important;
+    font-size: 0.7rem !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    line-height: 1 !important;
+  }
+
+  /* Amélioration de la lisibilité en mode liste pour cyberpunk */
+  .cyberpunk [class*="hover:bg-accent"]:hover {
+    background: hsla(var(--neon-indigo) / 0.12) !important;
+    border-color: hsla(var(--neon-indigo) / 0.25) !important;
+  }
+
+  .cyberpunk [class*="hover:bg-accent"]:hover h3,
+  .cyberpunk [class*="hover:bg-accent"]:hover [class*="text-base"] {
+    color: hsl(var(--neon-blue)) !important;
+    text-shadow: none !important;
+  }
+
+  .cyberpunk [class*="hover:bg-accent"]:hover [class*="text-muted-foreground"] {
+    color: hsl(var(--neon-blue) / 0.85) !important;
+    text-shadow: none !important;
+  }
+
+  .cyberpunk [class*="hover:bg-accent"]:hover [class*="text-sm"][class*="text-muted-foreground"] {
+    color: hsl(var(--neon-blue) / 0.8) !important;
+  }
+
+  .cyberpunk [class*="hover:bg-accent"]:hover [class*="bg-secondary"] {
+    background: hsla(var(--neon-indigo) / 0.25) !important;
+    color: hsl(var(--neon-blue)) !important;
+    border-color: hsla(var(--neon-indigo) / 0.4) !important;
+  }
+
+  .cyberpunk [class*="hover:bg-accent"]:hover [class*="bg-primary"] {
+    background: hsla(var(--neon-purple) / 0.3) !important;
+    color: hsl(var(--neon-blue)) !important;
+    border-color: hsla(var(--neon-purple) / 0.5) !important;
+  }
+
+  .cyberpunk [class*="hover:bg-accent"]:hover [class*="bg-primary/10"] {
+    background: hsla(var(--neon-purple) / 0.25) !important;
+    color: hsl(var(--neon-blue)) !important;
+    border-color: hsla(var(--neon-purple) / 0.4) !important;
+  }
+
+  .cyberpunk [class*="hover:bg-accent"]:hover svg {
+    color: hsl(var(--neon-blue)) !important;
+  }
+
+  .cyberpunk [class*="hover:bg-accent"]:hover [class*="text-yellow-400"] {
+    color: hsl(var(--neon-blue)) !important;
   }
 
   /* Styles spécifiques pour le thème daltonien */

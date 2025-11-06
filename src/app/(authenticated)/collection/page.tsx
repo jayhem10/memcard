@@ -352,12 +352,23 @@ function CollectionPageContent() {
   }, [activeTab, user]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-3xl font-bold">
-          {activeTab === 'wishlist' ? 'Ma Liste de Souhaits' : 'Ma Collection'}
-        </h1>
-        <div className="flex items-center gap-2 sm:gap-3">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 p-6 md:p-8 shadow-xl">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+              {activeTab === 'wishlist' ? 'Ma Liste de Souhaits' : 'Ma Collection'}
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              {activeTab === 'wishlist' 
+                ? 'Gérez vos jeux souhaités et partagez votre liste'
+                : `Gérez et explorez votre collection de ${filteredGames.length} jeu${filteredGames.length > 1 ? 'x' : ''}`
+              }
+            </p>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3">
           {activeTab === 'wishlist' && (
             <>
               {isLoadingShare ? (
@@ -448,9 +459,11 @@ function CollectionPageContent() {
           >
             <List className="h-5 w-5" />
           </Button>
+          </div>
         </div>
-      </div>
+      </section>
 
+      {/* Barre de recherche et filtres */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <div className="relative flex-1">
           <SearchInput
@@ -481,13 +494,18 @@ function CollectionPageContent() {
       </div>
 
       {/* Filtrage par consoles */}
-      <div className="mt-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Database className="h-4 w-4 text-muted-foreground" />
-          <h3 className="font-medium">Plateformes</h3>
-        </div>
-        <ScrollArea className="h-16 whitespace-nowrap">
-          <div className="flex flex-wrap gap-2 pb-1">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-5">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+            <div className="flex items-center gap-2">
+              <Database className="h-4 w-4 text-muted-foreground" />
+              <h3 className="font-bold text-base">Plateformes</h3>
+            </div>
+          </div>
+          <ScrollArea className="h-16 whitespace-nowrap">
+            <div className="flex flex-wrap gap-2 pb-1">
             {loading ? (
               // Skeletons avec effet shimmer pendant le chargement
               Array.from({ length: 5 }).map((_, i) => (
@@ -504,34 +522,44 @@ function CollectionPageContent() {
                 <Badge 
                   key={console.id} 
                   variant={consoleFilter === console.id ? "default" : "outline"}
-                  className={`cursor-pointer text-sm flex items-center gap-1.5 ${consoleFilter === console.id ? 'hover:bg-primary/90 text-primary-foreground' : 'hover:bg-secondary/60'}`}
+                  className={`group cursor-pointer text-sm flex items-center gap-1.5 transition-all duration-300 ${
+                    consoleFilter === console.id 
+                      ? 'hover:bg-primary/90 text-primary-foreground' 
+                      : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:bg-secondary/60 hover:from-primary/10 hover:to-primary/5'
+                  }`}
                   onClick={() => setConsoleFilter(console.id)}
                 >
-                  <span>{console.name}</span>
+                  <span className={consoleFilter !== console.id ? 'group-hover:text-primary transition-colors' : ''}>{console.name}</span>
                   <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${consoleFilter === console.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
                     {console.count}
                   </span>
                 </Badge>
               ))
             )}
-          </div>
-        </ScrollArea>
+            </div>
+          </ScrollArea>
+        </div>
       </div>
 
       {/* Filtrage par genres */}
-      <div className="mt-4">
-        <div className="flex items-center gap-2 mb-2">
-          <svg className="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-            <path d="M5 3v4" />
-            <path d="M19 17v4" />
-            <path d="M3 5h4" />
-            <path d="M17 19h4" />
-          </svg>
-          <h3 className="font-medium">Genres</h3>
-        </div>
-        <ScrollArea className="h-16 whitespace-nowrap">
-          <div className="flex flex-wrap gap-2 pb-1">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-5">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+            <div className="flex items-center gap-2">
+              <svg className="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                <path d="M5 3v4" />
+                <path d="M19 17v4" />
+                <path d="M3 5h4" />
+                <path d="M17 19h4" />
+              </svg>
+              <h3 className="font-bold text-base">Genres</h3>
+            </div>
+          </div>
+          <ScrollArea className="h-16 whitespace-nowrap">
+            <div className="flex flex-wrap gap-2 pb-1">
             {loading ? (
               // Skeletons avec effet shimmer pendant le chargement
               Array.from({ length: 6 }).map((_, i) => (
@@ -548,20 +576,26 @@ function CollectionPageContent() {
                 <Badge 
                   key={genre.id} 
                   variant={genreFilter === genre.id ? "default" : "outline"}
-                  className={`cursor-pointer text-sm flex items-center gap-1.5 ${genreFilter === genre.id ? 'hover:bg-primary/90 text-primary-foreground' : 'hover:bg-secondary/60'}`}
+                  className={`group cursor-pointer text-sm flex items-center gap-1.5 transition-all duration-300 ${
+                    genreFilter === genre.id 
+                      ? 'hover:bg-primary/90 text-primary-foreground' 
+                      : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:bg-secondary/60 hover:from-primary/10 hover:to-primary/5'
+                  }`}
                   onClick={() => setGenreFilter(genre.id)}
                 >
-                  <span>{genre.name}</span>
+                  <span className={genreFilter !== genre.id ? 'group-hover:text-primary transition-colors' : ''}>{genre.name}</span>
                   <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${genreFilter === genre.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
                     {genre.count}
                   </span>
                 </Badge>
               ))
             )}
-          </div>
-        </ScrollArea>
+            </div>
+          </ScrollArea>
+        </div>
       </div>
 
+      {/* Liste des jeux */}
       <div className="min-h-[300px]">
         {loading ? (
           viewMode === 'grid' ? (
@@ -602,13 +636,21 @@ function CollectionPageContent() {
             <GameList games={filteredGames} />
           )
         ) : (
-          <div className="flex h-[300px] flex-col items-center justify-center gap-4 rounded-lg border border-dashed p-8 text-center">
-            <p className="text-muted-foreground">Aucun jeu dans votre collection</p>
-            <Link href="/search" className="inline-block">
-              <Button variant="outline">
-                Ajouter un jeu
-              </Button>
-            </Link>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-12">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
+            <div className="relative flex flex-col items-center justify-center gap-4 text-center">
+              <p className="text-muted-foreground text-lg">
+                {activeTab === 'wishlist' 
+                  ? 'Aucun jeu dans votre liste de souhaits'
+                  : 'Aucun jeu dans votre collection'
+                }
+              </p>
+              <Link href="/search" className="inline-block">
+                <Button variant="outline" className="rounded-lg shadow-md hover:shadow-lg transition-all">
+                  Ajouter un jeu
+                </Button>
+              </Link>
+            </div>
           </div>
         )}
       </div>
