@@ -467,7 +467,7 @@ function CollectionPageContent() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <div className="relative flex-1">
           <SearchInput
-            placeholder={activeTab === 'collection' ? "Rechercher dans ma collection..." : "Rechercher dans ma liste de souhaits..."}
+            placeholder={activeTab === 'collection' ? "Rechercher par titre, éditeur ou développeur..." : "Rechercher par titre, éditeur ou développeur..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onClear={() => setSearchQuery('')}
