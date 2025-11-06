@@ -134,11 +134,24 @@ export default function AdminPage() {
 
   return (
     <AdminGuard>
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Administration</h1>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 p-6 md:p-8 shadow-xl">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative space-y-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+            Administration
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Gestion et maintenance de la base de données
+          </p>
+        </div>
+      </section>
 
-      <div className="grid gap-8">
-        <Card>
+      <div className="grid gap-6">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <Card className="border-0 shadow-none bg-transparent">
           <CardHeader>
             <CardTitle>Mise à jour des prix</CardTitle>
             <CardDescription>
@@ -175,8 +188,11 @@ export default function AdminPage() {
               </Alert>
             )}
           </CardContent>
-        </Card>
-        <Card>
+          </Card>
+        </div>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <Card className="border-0 shadow-none bg-transparent">
           <CardHeader>
             <CardTitle>Synchronisation des consoles</CardTitle>
             <CardDescription>
@@ -218,8 +234,11 @@ export default function AdminPage() {
               </Alert>
             )}
           </CardContent>
-        </Card>
-        <Card>
+          </Card>
+        </div>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <Card className="border-0 shadow-none bg-transparent">
           <CardHeader>
             <CardTitle>Enrichir la librairie</CardTitle>
             <CardDescription>
@@ -261,7 +280,8 @@ export default function AdminPage() {
               </Alert>
             )}
           </CardContent>
-        </Card>
+          </Card>
+        </div>
       </div>
     </div>
     </AdminGuard>

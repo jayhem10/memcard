@@ -16,7 +16,6 @@ import {
   List,
   Database,
   Sparkles,
-  BookOpen,
   Filter,
   FileSpreadsheet,
   DollarSign,
@@ -35,13 +34,10 @@ export default function HelpPage() {
     <div className="max-w-4xl mx-auto space-y-6 py-8 px-4">
       {/* Hero Section */}
       <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 p-6 md:p-8 shadow-xl">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full blur-3xl" />
-        <div className="relative text-center space-y-2">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold flex items-baseline justify-center gap-3">
-            <BookOpen className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 text-primary flex-shrink-0" />
-            <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-              Centre d'aide
-            </span>
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative space-y-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+            Centre d'aide
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
             Tout ce que vous devez savoir pour utiliser MemCard au mieux
