@@ -19,7 +19,11 @@ import {
   Filter,
   FileSpreadsheet,
   DollarSign,
-  TrendingUp
+  TrendingUp,
+  Users,
+  User,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -213,6 +217,80 @@ export default function HelpPage() {
                 <strong className="text-foreground">Note de sécurité :</strong> Vous pouvez activer ou désactiver 
                 le partage à tout moment. Le lien ne fonctionne que lorsque le partage est actif.
               </p>
+            </div>
+          </div>
+        </CardContent>
+        </Card>
+      </div>
+
+      {/* Profils publics et collectionneurs */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <Card className="border-0 shadow-none bg-transparent">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Profils publics et collectionneurs
+          </CardTitle>
+          <CardDescription>
+            Partagez votre collection et découvrez celles des autres
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <div>
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <User className="h-5 w-5 text-primary" />
+                Rendre votre profil public
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Vous pouvez rendre votre profil public pour permettre aux autres collectionneurs de voir votre collection.
+              </p>
+              <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside ml-2">
+                <li>Allez dans votre <Link href="/profile" className="text-primary hover:underline font-medium">profil</Link></li>
+                <li>Dans la section <strong>"Préférences"</strong>, trouvez l'option <strong>"Profil public"</strong></li>
+                <li>Cochez la case pour rendre votre profil public</li>
+                <li>Votre collection sera maintenant visible par tous les autres collectionneurs</li>
+              </ol>
+              <div className="mt-3 bg-muted/50 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">Note :</strong> Vous pouvez à tout moment rendre votre profil privé en décochant cette option. 
+                  Seuls les jeux de votre collection (hors wishlist) seront visibles par les autres.
+                </p>
+              </div>
+            </div>
+            <div className="pt-3 border-t">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <Eye className="h-5 w-5 text-primary" />
+                Explorer d'autres collections
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Découvrez les collections des autres collectionneurs.
+              </p>
+              <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside ml-2">
+                <li>Cliquez sur <strong>"Collectionneurs"</strong> dans la barre de navigation</li>
+                <li>Vous verrez la liste de tous les collectionneurs disponibles</li>
+                <li>Utilisez la barre de recherche pour trouver un collectionneur par son nom d'utilisateur</li>
+                <li>Cliquez sur un collectionneur pour voir sa collection complète</li>
+              </ol>
+              <div className="mt-3 space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">Fonctionnalités disponibles :</strong>
+                </p>
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside ml-2">
+                  <li>Voir tous les jeux de la collection (en mode lecture seule)</li>
+                  <li>Filtrer par statut, plateforme et genre</li>
+                  <li>Rechercher dans la collection</li>
+                  <li>Voir les notes et évaluations des jeux</li>
+                </ul>
+              </div>
+              <div className="mt-3 bg-muted/50 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <EyeOff className="h-4 w-4 inline mr-1" />
+                  <strong className="text-foreground">Important :</strong> Vous ne pouvez pas modifier ou supprimer les jeux des autres collectionneurs. 
+                  Ces collections sont en lecture seule.
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>

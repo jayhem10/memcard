@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProfileThemeSelector } from '@/components/profile/profile-theme-selector';
 import { DeleteAccountDialog } from '@/components/ui/delete-account-dialog';
 import { useDeleteAccount } from '@/hooks/useDeleteAccount';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface ProfileFormData {
   username: string;
@@ -331,25 +333,42 @@ export default function ProfilePage() {
               {/* Sélecteur de thème */}
               <ProfileThemeSelector />
 
-              {/* <div className="flex items-center justify-between p-4 rounded-lg bg-card">
-                <div>
-                  <h3 className="font-medium">Notifications par email</h3>
+              {/* Confidentialité du profil */}
+              <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-card to-card/95 border border-border/50">
+                <div className="flex-1">
+                  <h3 className="font-medium mb-1">Profil public</h3>
                   <p className="text-sm text-muted-foreground">
-                    Recevez des notifications sur les nouveaux jeux et les mises à jour
+                    {profile?.is_public 
+                      ? 'Votre profil est visible par tous les utilisateurs authentifiés'
+                      : 'Votre profil est privé et visible uniquement par vous'}
                   </p>
                 </div>
-                <Button variant="outline">Configurer</Button>
+                <div className="flex items-center space-x-2 ml-4">
+                  <Checkbox
+                    id="is_public"
+                    checked={profile?.is_public || false}
+                    onCheckedChange={async (checked) => {
+                      try {
+                        await updateProfile({ is_public: checked === true });
+                        toast.success(
+                          checked 
+                            ? 'Votre profil est maintenant public' 
+                            : 'Votre profil est maintenant privé'
+                        );
+                      } catch (error: any) {
+                        toast.error(error.message || 'Erreur lors de la mise à jour de la visibilité');
+                      }
+                    }}
+                    disabled={isLoading || profileLoading}
+                  />
+                  <Label 
+                    htmlFor="is_public" 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    {profile?.is_public ? 'Public' : 'Privé'}
+                  </Label>
+                </div>
               </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg bg-card">
-                <div>
-                  <h3 className="font-medium">Confidentialité du profil</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Gérez qui peut voir votre collection
-                  </p>
-                </div>
-                <Button variant="outline">Configurer</Button>
-              </div> */}
             </div>
           </div>
         </div>

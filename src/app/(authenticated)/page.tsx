@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, Suspense, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { useAuth } from '@/context/auth-context';
 import { useUserStatsStore } from '@/store/useUserStatsStore';
 import { useCollectionStore } from '@/store/useCollectionStore';
 import { useProfileStore } from '@/store/useProfileStore';
+import { supabase } from '@/lib/supabase';
 import { Gamepad, Calendar, TrendingUp, Trophy, Heart, Euro, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -282,7 +283,63 @@ export default function HomePage() {
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading, fetchProfile } = useProfileStore();
   const { fetchUserStats, reset: resetStats } = useUserStatsStore();
+  const { calculateTotalFromGames, setUserId, reset: resetCollection } = useCollectionStore();
+  const lastFetchedUserIdRef = useRef<string | null>(null);
   
+  // Charger la valeur de la collection (uniquement sur la page d'accueil)
+  useEffect(() => {
+    const fetchCollectionValue = async () => {
+      if (!user) {
+        resetCollection();
+        lastFetchedUserIdRef.current = null;
+        return;
+      }
+
+      // Éviter les appels multiples pour le même utilisateur (React StrictMode en développement)
+      if (lastFetchedUserIdRef.current === user.id) {
+        return;
+      }
+
+      // Vérifier que la session Supabase est bien initialisée avant de faire la requête
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.warn('Session non disponible pour calculer la valeur de la collection');
+        return;
+      }
+
+      lastFetchedUserIdRef.current = user.id;
+
+      setUserId(user.id);
+      // Définir le type pour les données de jeux
+      type GameWithPrice = {
+        buy_price: number | null;
+      };
+      
+      const { data: games, error } = await supabase
+        .from('user_games')
+        .select('buy_price')
+        .eq('user_id', user.id)
+        .returns<GameWithPrice[]>();
+
+      if (error) {
+        console.error('Erreur lors de la récupération de la valeur de la collection:', error);
+        return;
+      }
+
+      if (games) {
+        // Transformer les données pour s'assurer que buy_price est toujours un nombre
+        const gamesWithValidPrices = games.map(game => ({
+          buy_price: typeof game.buy_price === 'number' ? game.buy_price : 0
+        }));
+        
+        calculateTotalFromGames(gamesWithValidPrices);
+      }
+    };
+
+    fetchCollectionValue();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   // Charger le profil si l'utilisateur est authentifié et que le profil n'est pas encore chargé
   useEffect(() => {
     if (!authLoading && user && !profile) {

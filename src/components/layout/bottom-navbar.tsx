@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { PlusCircle, Library, Gift, User } from 'lucide-react';
+import { PlusCircle, Library, Gift, User, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfileStore } from '@/store/useProfileStore';
 import { useAuth } from '@/context/auth-context';
@@ -64,6 +64,20 @@ export function BottomNavbar() {
           >
             <Gift className={`h-5 w-5 ${isWishlistActive ? 'text-primary' : ''}`} />
             <span className="text-xs font-medium">Wishlist</span>
+          </Link>
+
+          {/* Collectionneurs */}
+          <Link
+            href="/collectors"
+            className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+              pathname?.startsWith('/collectors')
+                ? 'text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+            title="Collectionneurs"
+          >
+            <Users className={`h-5 w-5 ${pathname?.startsWith('/collectors') ? 'text-primary' : ''}`} />
+            <span className="text-xs font-medium">Collect.</span>
           </Link>
 
           {/* Ajouter un jeu */}

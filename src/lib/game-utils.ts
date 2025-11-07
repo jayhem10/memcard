@@ -66,7 +66,7 @@ export function transformUserGameItem(item: any): any | null {
       name: g.genres?.name
     })) || [],
     status: item.status,
-    rating: item.rating,
+    rating: item.rating !== null && item.rating !== undefined ? Number(item.rating) : null,
     notes: item.notes,
     created_at: item.created_at,
     updated_at: item.updated_at,

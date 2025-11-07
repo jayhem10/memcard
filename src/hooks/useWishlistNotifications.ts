@@ -16,6 +16,8 @@ type Notification = {
 class WishlistNotificationsManager {
   private static instance: WishlistNotificationsManager;
   private isFetching = false;
+  private isCreating = false;
+  private lastCreateTime = 0;
   private fetchTimeout: NodeJS.Timeout | null = null;
   private interval: NodeJS.Timeout | null = null;
   private focusHandler: (() => void) | null = null;
@@ -85,22 +87,40 @@ class WishlistNotificationsManager {
   }
 
   async createNotifications(): Promise<void> {
-    const { data: { session } } = await supabase.auth.getSession();
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (session?.access_token) {
-      headers['Authorization'] = `Bearer ${session.access_token}`;
+    // Éviter les appels multiples simultanés
+    if (this.isCreating) {
+      return;
     }
 
-    fetch('/api/wishlist/notifications/create', {
-      method: 'POST',
-      credentials: 'include',
-      headers,
-    }).catch((error) => {
+    // Éviter les appels trop fréquents (max 1 fois par minute)
+    const now = Date.now();
+    if (now - this.lastCreateTime < 60000) {
+      return;
+    }
+
+    this.isCreating = true;
+    this.lastCreateTime = now;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      await fetch('/api/wishlist/notifications/create', {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+      });
+    } catch (error) {
       console.error('[WishlistNotifications] Error creating notifications:', error);
-    });
+    } finally {
+      this.isCreating = false;
+    }
   }
 
   startPolling(userId: string | null) {
@@ -111,7 +131,9 @@ class WishlistNotificationsManager {
       return;
     }
 
-    // Créer les notifications puis récupérer après un court délai
+    // Créer les notifications une seule fois (protection contre les appels multiples)
+    // Cette méthode peut être appelée plusieurs fois si plusieurs composants utilisent le hook
+    // mais createNotifications() a sa propre protection interne
     this.createNotifications();
     
     // Annuler le timeout précédent s'il existe

@@ -41,6 +41,7 @@ export interface Profile {
   rank_id: number | null;
   quiz_completed: boolean;
   role: 'user' | 'admin';
+  is_public: boolean;
   rank?: Rank;
 }
 
@@ -57,6 +58,7 @@ export interface UserProfile {
   rank_id: number | null;
   rank_name_fr: string | null;
   role: 'user' | 'admin';
+  is_public: boolean;
 }
 
 export interface ProfileUpdateRequest {
@@ -66,4 +68,5 @@ export interface ProfileUpdateRequest {
   theme?: string;
   rank_id?: number;
   quiz_completed?: boolean;
+  is_public?: boolean;
 }

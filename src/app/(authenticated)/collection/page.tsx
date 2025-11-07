@@ -131,15 +131,15 @@ function CollectionPageContent() {
     const consoleList = Array.from(consoleMap.values());
     const genreList = Array.from(genreMap.values());
     
-    // Trier par ordre alphabétique (sauf "Toutes les consoles"/"Tous les genres" qui reste en premier)
-    const sortItems = (a: {id: string, name: string}, b: {id: string, name: string}) => {
+    // Trier par nombre de jeux décroissant (sauf "Toutes les consoles"/"Tous les genres" qui reste en premier)
+    const sortByCount = (a: {id: string, count: number}, b: {id: string, count: number}) => {
       if (a.id === 'all') return -1;
       if (b.id === 'all') return 1;
-      return a.name.localeCompare(b.name);
+      return b.count - a.count; // Tri décroissant par nombre de jeux
     };
     
-    consoleList.sort(sortItems);
-    genreList.sort(sortItems);
+    consoleList.sort(sortByCount);
+    genreList.sort(sortByCount);
     
     return { consoles: consoleList, genres: genreList };
   }, [games, activeTab]);

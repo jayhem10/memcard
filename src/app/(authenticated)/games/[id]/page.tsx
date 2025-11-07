@@ -307,7 +307,7 @@ export default function GameDetailPage() {
                     <Button 
                       variant="destructive" 
                       size="sm"
-                      className="flex-shrink-0 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                      className="flex-shrink-0 rounded-lg shadow-lg hover:shadow-xl transition-all border-2 border-destructive/50 dark:border-destructive/80 font-semibold"
                     >
                       <Trash2 className="h-4 w-4 mr-1 sm:mr-2" />
                       <span className="hidden sm:inline">Supprimer</span>

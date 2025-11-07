@@ -765,6 +765,24 @@
     font-weight: 500 !important;
   }
 
+  /* Bouton de suppression amélioré pour cyberpunk */
+  .cyberpunk button[class*="bg-destructive"],
+  .cyberpunk button[class*="variant-destructive"] {
+    background-color: rgba(220, 38, 38, 0.95) !important;
+    color: white !important;
+    border: 2px solid rgba(255, 0, 0, 0.8) !important;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(255, 0, 0, 0.3) !important;
+    font-weight: 600 !important;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5) !important;
+  }
+  
+  .cyberpunk button[class*="bg-destructive"]:hover,
+  .cyberpunk button[class*="variant-destructive"]:hover {
+    background-color: rgba(239, 68, 68, 1) !important;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.5) !important;
+    border-color: rgba(255, 0, 0, 1) !important;
+  }
+
   /* Badge destructive en général pour cyberpunk */
   .cyberpunk [class*="bg-destructive"] {
     background: hsl(var(--neon-purple)) !important;
@@ -779,6 +797,24 @@
       0 0 4px hsla(var(--neon-blue) / 1),
       0 0 2px hsl(var(--neon-blue)) !important;
     font-weight: 800 !important;
+  }
+
+  /* Bouton de suppression amélioré pour cyberpunk - plus spécifique que le style général */
+  .cyberpunk button[class*="bg-destructive"],
+  .cyberpunk button[class*="variant-destructive"] {
+    background-color: rgba(220, 38, 38, 0.95) !important;
+    color: white !important;
+    border: 2px solid rgba(255, 0, 0, 0.8) !important;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(255, 0, 0, 0.3) !important;
+    font-weight: 600 !important;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5) !important;
+  }
+  
+  .cyberpunk button[class*="bg-destructive"]:hover,
+  .cyberpunk button[class*="variant-destructive"]:hover {
+    background-color: rgba(239, 68, 68, 1) !important;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.5) !important;
+    border-color: rgba(255, 0, 0, 1) !important;
   }
 
   /* Badge de notification spécifique (petit badge sur le bouton) - moins flashy et lisible */

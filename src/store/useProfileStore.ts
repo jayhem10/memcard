@@ -96,7 +96,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           quiz_completed: false,
           rank_id: null,
           rank_name_fr: null,
-          role: 'user' as const
+          role: 'user' as const,
+          is_public: false
         };
         
         // On essaie d'insérer le profil par défaut si c'est possible
@@ -112,6 +113,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
               quiz_completed: defaultProfile.quiz_completed,
               rank_id: defaultProfile.rank_id,
               role: defaultProfile.role,
+              is_public: defaultProfile.is_public,
               updated_at: defaultProfile.updated_at
             }]);
             
@@ -137,7 +139,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           quiz_completed: typeof defaultProfile.quiz_completed === 'boolean' ? defaultProfile.quiz_completed : false,
           rank_id: defaultProfile.rank_id,
           rank_name_fr: defaultProfile.rank_name_fr,
-          role: defaultProfile.role
+          role: defaultProfile.role,
+          is_public: defaultProfile.is_public
         };
         
         set({ profile: userProfile, isLoading: false, error: null });
@@ -159,7 +162,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         quiz_completed: typeof data?.quiz_completed === 'boolean' ? data.quiz_completed : false,
         rank_id: data?.rank_id ? parseInt(data.rank_id.toString()) : null,
         rank_name_fr: data?.ranks && typeof data.ranks === 'object' && 'name_fr' in data.ranks ? (data.ranks as any).name_fr : null,
-        role: (data?.role === 'admin' || data?.role === 'user') ? data.role : 'user'
+        role: (data?.role === 'admin' || data?.role === 'user') ? data.role : 'user',
+        is_public: typeof data?.is_public === 'boolean' ? data.is_public : false
       };
       
       set({ profile: userProfile, isLoading: false });

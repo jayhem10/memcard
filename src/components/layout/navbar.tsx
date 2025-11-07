@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import { LogOut, User, MoreVertical, Heart, PlusCircle, Library, Shield, Trophy, Sparkles, Mail, Gift, HelpCircle, Gamepad2 } from 'lucide-react';
+import { LogOut, User, MoreVertical, Heart, PlusCircle, Library, Shield, Trophy, Sparkles, Mail, Gift, HelpCircle, Gamepad2, Users } from 'lucide-react';
 import { ThemeSelector } from '@/components/theme/theme-selector';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfileStore } from '@/store/useProfileStore';
@@ -43,6 +43,7 @@ function NavbarContent() {
 
   const navigation = [
     { name: 'Collection', href: '/collection', icon: Library },
+    { name: 'Collectionneurs', href: '/collectors', icon: Users },
   ];
   
   // Afficher le rang si le quiz est complété, sinon afficher le bouton pour le quiz
