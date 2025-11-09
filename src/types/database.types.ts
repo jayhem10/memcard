@@ -13,7 +13,8 @@ export interface Game {
   release_date: string | null;
   developer: string;
   publisher: string;
-  description: string;
+  description_en: string;
+  description_fr: string | null;
   cover_url: string | null;
   console_id: string;
 }
@@ -42,6 +43,7 @@ export interface UserGame {
   updated_at: string;
   buy_price: number | null;
   buy: boolean | null;
+  review: string | null;
 }
 
 export interface WishlistShare {

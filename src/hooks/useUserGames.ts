@@ -10,7 +10,8 @@ export type CollectionGame = {
   release_date: string | null;
   developer: string;
   publisher: string;
-  description: string;
+  description_en: string;
+  description_fr: string | null;
   cover_url: string | null;
   console_id: string;
   console_name?: string;
@@ -52,7 +53,7 @@ export function useUserGames() {
           completion_percentage,
           buy_price,
           buy,
-          games:game_id(id, igdb_id, title, release_date, developer, publisher, description, cover_url, console_id, consoles:console_id(id, name), game_genres(genre_id, genres(id, name)))
+          games:game_id(id, igdb_id, title, release_date, developer, publisher, description_en, description_fr, cover_url, console_id, consoles:console_id(id, name), game_genres(genre_id, genres(id, name)))
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: true });

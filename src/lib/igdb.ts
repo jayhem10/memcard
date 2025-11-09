@@ -96,3 +96,30 @@ export async function queryIGDB(endpoint: string, query: string) {
 
   return response.json();
 }
+
+/**
+ * Extrait le nom d'un jeu IGDB en priorisant le français depuis alternative_names, avec fallback sur l'anglais
+ */
+export function getIGDBGameName(game: any): string {
+  // Chercher un nom alternatif français dans alternative_names
+  if (game.alternative_names && Array.isArray(game.alternative_names)) {
+    const frenchName = game.alternative_names.find((alt: any) => 
+      alt.comment && (alt.comment.toLowerCase().includes('french') || 
+                      alt.comment.toLowerCase().includes('français') ||
+                      alt.comment.toLowerCase().includes('france'))
+    );
+    if (frenchName && frenchName.name) {
+      return frenchName.name;
+    }
+  }
+  // Fallback sur le nom par défaut (généralement en anglais)
+  return game.name || '';
+}
+
+/**
+ * Extrait la description d'un jeu IGDB
+ * Note: Les descriptions IGDB sont en anglais uniquement.
+ */
+export function getIGDBGameSummary(game: any): string {
+  return game.summary || '';
+}

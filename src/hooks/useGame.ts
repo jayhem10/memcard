@@ -33,7 +33,7 @@ export function useGame(gameId: string | undefined) {
       // 2. Récupérer les données spécifiques à l'utilisateur pour ce jeu
       const { data: userGameData, error: userGameError } = await supabase
         .from('user_games')
-        .select('id, notes, rating, status, play_time, completion_percentage, created_at, updated_at, buy_price, condition')
+        .select('id, notes, rating, status, play_time, completion_percentage, created_at, updated_at, buy_price, condition, review')
         .eq('game_id', gameId)
         .eq('user_id', user.id)
         .maybeSingle<UserGameData>();

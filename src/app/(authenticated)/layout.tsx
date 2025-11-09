@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/footer';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
 import { useProfileStore } from '@/store/useProfileStore';
 import { useAuth } from '@/context/auth-context';
+import { AchievementNotifications } from '@/components/achievements/achievement-notifications';
 
 function DataInitializer() {
   const { fetchProfile } = useProfileStore();
@@ -32,6 +33,7 @@ export default function AuthenticatedLayout({
     <AuthGuard>
       <div className="min-h-screen flex flex-col">
         <DataInitializer />
+        <AchievementNotifications />
         <Navbar />
         <main className="flex-1 container mx-auto px-4 py-8 pb-20 md:pb-8">
           {children}

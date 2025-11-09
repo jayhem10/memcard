@@ -7,7 +7,8 @@ export interface GameExportData {
   release_date: string | null;
   developer: string;
   publisher: string;
-  description: string;
+  description_en: string | null;
+  description_fr: string | null;
   console_name?: string;
   genres: Array<{ id: string; name: string }>;
   status?: string;
@@ -47,7 +48,7 @@ export function exportCollectionToExcel(games: GameExportData[], filename: strin
     'Date d\'achat': game.purchase_date ? new Date(game.purchase_date).toLocaleDateString('fr-FR') : '',
     'Prix d\'achat (€)': game.buy_price || '',
     'Notes': game.notes || '',
-    'Description': game.description || ''
+    'Description': (game.description_fr || game.description_en || '')
   });
 
   // Ajouter la feuille des jeux possédés

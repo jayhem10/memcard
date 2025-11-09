@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import { ExportButton } from '@/components/ui/export-button';
 import { GameExportData } from '@/lib/excel-export';
 import { useUserGames } from '@/hooks/useUserGames';
+import { MobileFilterSelector } from '@/components/filters/mobile-filter-selector';
 
 // Types de données
 type ViewMode = 'grid' | 'list';
@@ -504,40 +505,59 @@ function CollectionPageContent() {
               <h3 className="font-bold text-base">Plateformes</h3>
             </div>
           </div>
-          <ScrollArea className="h-16 whitespace-nowrap">
-            <div className="flex flex-wrap gap-2 pb-1">
+          
+          {/* Mode mobile : sélecteur optimisé */}
+          <div className="md:hidden">
             {loading ? (
-              // Skeletons avec effet shimmer pendant le chargement
-              Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="relative h-7 bg-muted rounded-full overflow-hidden"
-                  style={{ width: `${80 + i * 20}px` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                </div>
-              ))
+              <div className="h-10 bg-muted rounded-md animate-pulse" />
             ) : (
-              consoles.map((console) => (
-                <Badge 
-                  key={console.id} 
-                  variant={consoleFilter === console.id ? "default" : "outline"}
-                  className={`group cursor-pointer text-sm flex items-center gap-1.5 transition-all duration-300 ${
-                    consoleFilter === console.id 
-                      ? 'hover:bg-primary/90 text-primary-foreground' 
-                      : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:bg-secondary/60 hover:from-primary/10 hover:to-primary/5'
-                  }`}
-                  onClick={() => setConsoleFilter(console.id)}
-                >
-                  <span className={consoleFilter !== console.id ? 'group-hover:text-primary transition-colors' : ''}>{console.name}</span>
-                  <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${consoleFilter === console.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
-                    {console.count}
-                  </span>
-                </Badge>
-              ))
+              <MobileFilterSelector
+                label="Plateforme"
+                options={consoles.map(c => ({ id: c.id, name: c.name, count: c.count }))}
+                selectedId={consoleFilter}
+                onSelect={setConsoleFilter}
+                placeholder="Sélectionner une plateforme..."
+              />
             )}
-            </div>
-          </ScrollArea>
+          </div>
+
+          {/* Mode desktop : badges horizontaux */}
+          <div className="hidden md:block">
+            <ScrollArea className="h-16 whitespace-nowrap">
+              <div className="flex flex-wrap gap-2 pb-1">
+              {loading ? (
+                // Skeletons avec effet shimmer pendant le chargement
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="relative h-7 bg-muted rounded-full overflow-hidden"
+                    style={{ width: `${80 + i * 20}px` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  </div>
+                ))
+              ) : (
+                consoles.map((console) => (
+                  <Badge 
+                    key={console.id} 
+                    variant={consoleFilter === console.id ? "default" : "outline"}
+                    className={`group cursor-pointer text-sm flex items-center gap-1.5 transition-all duration-300 ${
+                      consoleFilter === console.id 
+                        ? 'hover:bg-primary/90 text-primary-foreground' 
+                        : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:bg-secondary/60 hover:from-primary/10 hover:to-primary/5'
+                    }`}
+                    onClick={() => setConsoleFilter(console.id)}
+                  >
+                    <span className={consoleFilter !== console.id ? 'group-hover:text-primary transition-colors' : ''}>{console.name}</span>
+                    <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${consoleFilter === console.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
+                      {console.count}
+                    </span>
+                  </Badge>
+                ))
+              )}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
       </div>
 
@@ -558,40 +578,59 @@ function CollectionPageContent() {
               <h3 className="font-bold text-base">Genres</h3>
             </div>
           </div>
-          <ScrollArea className="h-16 whitespace-nowrap">
-            <div className="flex flex-wrap gap-2 pb-1">
+          
+          {/* Mode mobile : sélecteur optimisé */}
+          <div className="md:hidden">
             {loading ? (
-              // Skeletons avec effet shimmer pendant le chargement
-              Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="relative h-7 bg-muted rounded-full overflow-hidden"
-                  style={{ width: `${60 + i * 15}px` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                </div>
-              ))
+              <div className="h-10 bg-muted rounded-md animate-pulse" />
             ) : (
-              genres.map((genre) => (
-                <Badge 
-                  key={genre.id} 
-                  variant={genreFilter === genre.id ? "default" : "outline"}
-                  className={`group cursor-pointer text-sm flex items-center gap-1.5 transition-all duration-300 ${
-                    genreFilter === genre.id 
-                      ? 'hover:bg-primary/90 text-primary-foreground' 
-                      : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:bg-secondary/60 hover:from-primary/10 hover:to-primary/5'
-                  }`}
-                  onClick={() => setGenreFilter(genre.id)}
-                >
-                  <span className={genreFilter !== genre.id ? 'group-hover:text-primary transition-colors' : ''}>{genre.name}</span>
-                  <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${genreFilter === genre.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
-                    {genre.count}
-                  </span>
-                </Badge>
-              ))
+              <MobileFilterSelector
+                label="Genre"
+                options={genres.map(g => ({ id: g.id, name: g.name, count: g.count }))}
+                selectedId={genreFilter}
+                onSelect={setGenreFilter}
+                placeholder="Sélectionner un genre..."
+              />
             )}
-            </div>
-          </ScrollArea>
+          </div>
+
+          {/* Mode desktop : badges horizontaux */}
+          <div className="hidden md:block">
+            <ScrollArea className="h-16 whitespace-nowrap">
+              <div className="flex flex-wrap gap-2 pb-1">
+              {loading ? (
+                // Skeletons avec effet shimmer pendant le chargement
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="relative h-7 bg-muted rounded-full overflow-hidden"
+                    style={{ width: `${60 + i * 15}px` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  </div>
+                ))
+              ) : (
+                genres.map((genre) => (
+                  <Badge 
+                    key={genre.id} 
+                    variant={genreFilter === genre.id ? "default" : "outline"}
+                    className={`group cursor-pointer text-sm flex items-center gap-1.5 transition-all duration-300 ${
+                      genreFilter === genre.id 
+                        ? 'hover:bg-primary/90 text-primary-foreground' 
+                        : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:bg-secondary/60 hover:from-primary/10 hover:to-primary/5'
+                    }`}
+                    onClick={() => setGenreFilter(genre.id)}
+                  >
+                    <span className={genreFilter !== genre.id ? 'group-hover:text-primary transition-colors' : ''}>{genre.name}</span>
+                    <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${genreFilter === genre.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
+                      {genre.count}
+                    </span>
+                  </Badge>
+                ))
+              )}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
       </div>
 

@@ -35,6 +35,7 @@ export default function GameDetailPage() {
     play_time: number;
     completion_percentage: number;
     condition: string | null;
+    review: string | null;
   }>({
     notes: '',
     rating: 0,
@@ -42,6 +43,7 @@ export default function GameDetailPage() {
     play_time: 0,
     completion_percentage: 0,
     condition: null,
+    review: null,
   });
   
   // Rediriger si l'ID du jeu n'est pas défini
@@ -87,6 +89,11 @@ export default function GameDetailPage() {
         if (updateData.condition === '' || updateData.condition === undefined) {
           updateData.condition = null;
         }
+      }
+      
+      // Convertir les chaînes vides en null pour review
+      if (updateData.review === '' || updateData.review === undefined) {
+        updateData.review = null;
       }
       
       let result;
@@ -186,7 +193,8 @@ export default function GameDetailPage() {
       status: typeof userGame?.status === 'string' ? userGame.status : '',
       play_time: typeof userGame?.play_time === 'number' ? userGame.play_time : 0,
       completion_percentage: typeof userGame?.completion_percentage === 'number' ? userGame.completion_percentage : 0,
-      condition: typeof userGame?.condition === 'string' ? userGame.condition : '',
+      condition: typeof userGame?.condition === 'string' ? userGame.condition : null,
+      review: typeof userGame?.review === 'string' ? userGame.review : null,
     });
     setIsEditing(true);
   };
@@ -334,7 +342,7 @@ export default function GameDetailPage() {
                 </AlertDialog>
               </div>
               
-              <p className="text-muted-foreground leading-relaxed text-base">{game.description}</p>
+              <p className="text-muted-foreground leading-relaxed text-base">{game.description_fr || game.description_en || ''}</p>
             </div>
           </div>
 
@@ -588,6 +596,32 @@ export default function GameDetailPage() {
                 ) : (
                   <p className="text-muted-foreground leading-relaxed min-h-[120px] p-4 rounded-lg bg-muted/30 border border-border/50">
                     {userGame?.notes || 'Aucune note'}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Card Avis avec design moderne */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50/50 via-card to-pink-50/50 dark:from-purple-950/20 dark:via-card dark:to-pink-950/20 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-full blur-3xl" />
+              <div className="relative p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-1 w-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
+                  <label className="text-lg font-bold">Mon avis</label>
+                </div>
+                {isEditing ? (
+                  <textarea
+                    value={editedData.review || ''}
+                    onChange={(e) => setEditedData({
+                      ...editedData,
+                      review: e.target.value || null,
+                    })}
+                    className="w-full min-h-[150px] rounded-lg border border-input bg-background px-4 py-3 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none"
+                    placeholder="Partagez votre avis sur ce jeu... Que pensez-vous de l'histoire, du gameplay, des graphismes ?"
+                  />
+                ) : (
+                  <p className="text-foreground leading-relaxed min-h-[150px] p-4 rounded-lg bg-muted/30 border border-border/50 whitespace-pre-wrap">
+                    {userGame?.review || 'Aucun avis pour le moment'}
                   </p>
                 )}
               </div>

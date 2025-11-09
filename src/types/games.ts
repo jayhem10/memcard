@@ -11,12 +11,14 @@ export type UserGameData = {
   updated_at: string | null;
   buy_price: number | null;
   condition: string | null;
+  review: string | null;
 };
 
 export type GameData = {
   id: string;
   title: string;
-  description: string | null;
+  description_en: string | null;
+  description_fr: string | null;
   cover_url: string | null;
   developer: string | null;
   publisher: string | null;

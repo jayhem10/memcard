@@ -881,6 +881,18 @@
     color: hsl(var(--neon-blue)) !important;
   }
 
+  /* Amélioration de la visibilité des boutons de suppression dans les notifications */
+  .cyberpunk button[class*="hover:text-foreground"][class*="text-muted-foreground"] svg,
+  .cyberpunk button[class*="hover:bg-muted"] svg {
+    color: hsl(var(--neon-blue) / 0.7) !important;
+  }
+
+  .cyberpunk button[class*="hover:text-foreground"][class*="text-muted-foreground"]:hover svg,
+  .cyberpunk button[class*="hover:bg-muted"]:hover svg {
+    color: hsl(var(--neon-blue) / 1) !important;
+    filter: drop-shadow(0 0 2px hsla(var(--neon-blue) / 0.4));
+  }
+
   /* Styles spécifiques pour le thème daltonien */
   .colorblind .card,
   .colorblind .border {

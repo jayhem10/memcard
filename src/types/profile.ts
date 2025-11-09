@@ -9,27 +9,6 @@ export interface Rank {
   created_at: string;
 }
 
-export interface Achievement {
-  id: string;
-  name_en: string;
-  name_fr: string;
-  description_en: string;
-  description_fr: string;
-  category: string;
-  requirement_type: string;
-  requirement_value: Record<string, any>;
-  icon_url: string | null;
-  created_at: string;
-}
-
-export interface UserAchievement {
-  id: string;
-  user_id: string;
-  achievement_id: string;
-  unlocked_at: string;
-  achievement?: Achievement;
-}
-
 export interface Profile {
   id: string;
   username: string | null;
@@ -69,4 +48,27 @@ export interface ProfileUpdateRequest {
   rank_id?: number;
   quiz_completed?: boolean;
   is_public?: boolean;
+}
+
+export interface Achievement {
+  id: string;
+  name_en: string;
+  name_fr: string;
+  description_en: string;
+  description_fr: string;
+  category: string;
+  requirement_type: string;
+  requirement_value: Record<string, any>;
+  icon_url: string | null;
+  created_at: string;
+  rank?: string | null;
+  points?: number | null;
+}
+
+export interface UserAchievement {
+  id: string;
+  user_id: string;
+  achievement_id: string;
+  unlocked_at: string;
+  achievement?: Achievement;
 }

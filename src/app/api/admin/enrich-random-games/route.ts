@@ -1,6 +1,6 @@
 import { withApi, ApiError } from '@/lib/api-wrapper';
 import { validateBody } from '@/lib/validation';
-import { queryIGDB, IGDB_CONFIG } from '@/lib/igdb';
+import { queryIGDB, IGDB_CONFIG, getIGDBGameName, getIGDBGameSummary } from '@/lib/igdb';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 import { formatIGDBReleaseDate } from '@/lib/date-utils';
@@ -231,7 +231,8 @@ export const POST = withApi(async (request, { user, supabase }) => {
           fields name, cover.image_id, first_release_date, summary, 
             involved_companies.company.name, involved_companies.developer, 
             involved_companies.publisher, platforms.id, platforms.name, genres.name,
-            rating, total_rating, rating_count;
+            rating, total_rating, rating_count,
+            alternative_names.name, alternative_names.comment;
           search "${searchTerm}";
           where version_parent = null & (rating_count > 5 | rating > 40);
           sort rating desc;
@@ -306,15 +307,21 @@ export const POST = withApi(async (request, { user, supabase }) => {
               // S'assurer que release_date n'est jamais null
               const releaseDate = formatIGDBReleaseDate(igdbGame.first_release_date);
               
+              // Extraire le nom (français si disponible via alternative_names, sinon anglais)
+              // et la description (anglais uniquement)
+              const gameName = getIGDBGameName(igdbGame);
+              const gameSummary = getIGDBGameSummary(igdbGame);
+              
               const { data: newGame, error: gameError } = await supabaseAdmin
                 .from('games')
                 .insert({
                   igdb_id: igdbGame.id,
-                  title: igdbGame.name,
+                  title: gameName,
                   release_date: releaseDate || '2000-01-01', // Double sécurité
                   developer: developer || 'Unknown',
                   publisher: publisher || 'Unknown',
-                  description: igdbGame.summary || '',
+                  description_en: gameSummary,
+                  description_fr: null, // Sera traduit plus tard via le bouton admin
                   cover_url: igdbGame.cover
                     ? getIGDBImageUrl(igdbGame.cover.image_id, '720p')
                     : null,
@@ -324,8 +331,8 @@ export const POST = withApi(async (request, { user, supabase }) => {
                 .single();
 
               if (gameError) {
-                console.error(`Error creating game ${igdbGame.name} for ${consoleData.name}:`, gameError);
-                errors.push(`Erreur lors de la création du jeu ${igdbGame.name} pour ${consoleData.name}: ${gameError.message}`);
+                console.error(`Error creating game ${gameName} for ${consoleData.name}:`, gameError);
+                errors.push(`Erreur lors de la création du jeu ${gameName} pour ${consoleData.name}: ${gameError.message}`);
                 continue;
               }
 
@@ -388,17 +395,19 @@ export const POST = withApi(async (request, { user, supabase }) => {
             }
 
             if (!gameAdded) {
+              const gameName = getIGDBGameName(igdbGame);
               if (platformsProcessed === 0) {
-                console.log(`⚠ ${igdbGame.name}: Aucune plateforme correspondante trouvée`);
+                console.log(`⚠ ${gameName}: Aucune plateforme correspondante trouvée`);
               } else {
-                console.log(`⚠ ${igdbGame.name}: Déjà présent sur toutes les plateformes disponibles`);
+                console.log(`⚠ ${gameName}: Déjà présent sur toutes les plateformes disponibles`);
               }
               totalSkipped++;
             }
             processedGameIds.add(igdbGame.id);
           } catch (error: any) {
-            console.error(`Error processing game ${igdbGame.name}:`, error);
-            errors.push(`Erreur lors du traitement du jeu ${igdbGame.name}: ${error.message}`);
+            const gameName = getIGDBGameName(igdbGame);
+            console.error(`Error processing game ${gameName}:`, error);
+            errors.push(`Erreur lors du traitement du jeu ${gameName}: ${error.message}`);
           }
         }
       } catch (error: any) {

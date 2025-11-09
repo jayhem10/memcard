@@ -59,9 +59,6 @@ export const POST = withApi(async (request, { user }) => {
     throw new ApiError('Aucun rang retourné', 500);
     }
 
-    // Vérifier les achievements
-    await supabaseAdmin.rpc('check_achievements', { p_user_id: userId });
-
   return { rankId: String(rankId) };
 });
 

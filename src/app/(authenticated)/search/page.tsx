@@ -8,7 +8,7 @@ import { formatIGDBReleaseDate, getIGDBReleaseYear } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Search, Loader2, X, Check, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
-import { queryIGDB, IGDB_ENDPOINTS } from '@/lib/igdb';
+import { queryIGDB, IGDB_ENDPOINTS, getIGDBGameName, getIGDBGameSummary } from '@/lib/igdb';
 import toast from 'react-hot-toast';
 import { supabase } from '@/lib/supabase';
 import { ConsoleSelectDialog } from '@/components/console-select-dialog';
@@ -285,7 +285,8 @@ export default function SearchPage() {
       const query = `
         fields name, cover.image_id, first_release_date, summary, 
           involved_companies.company.name, involved_companies.developer, 
-          involved_companies.publisher, platforms.*, platforms.name, genres.*, rating, total_rating;
+          involved_companies.publisher, platforms.*, platforms.name, genres.*, rating, total_rating,
+          alternative_names.name, alternative_names.comment;
         search "${searchQuery}";
         ${hasPlatformFilter ? `where platforms = (${selectedPlatform}) & version_parent = null;` : 'where version_parent = null;'}
         limit 12;
@@ -461,28 +462,34 @@ export default function SearchPage() {
         }
       }
       
-      // Créer une nouvelle entrée de jeu si nécessaire
-      if (!existingGame) {
-        // Le jeu n'existe pas pour cette console, on l'ajoute
-        // S'assurer que release_date n'est jamais null
-        const releaseDate = formatIGDBReleaseDate(selectedGame.first_release_date);
-        
-        const { data: newGame, error: gameError } = await supabase
-          .from('games')
-          .insert({
-            igdb_id: selectedGame.id, // Add the igdb_id to prevent not-null constraint violation
-            title: selectedGame.name,
-            release_date: releaseDate || '2000-01-01', // Double sécurité pour éviter null
-            developer: developer || 'Unknown',
-            publisher: publisher || 'Unknown',
-            description: selectedGame.summary || '',
-            cover_url: selectedGame.cover 
-              ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${selectedGame.cover.image_id}.jpg`
-              : null,
-            console_id: consoleId // Remettre console_id ici
-          })
-          .select()
-          .single();
+        // Créer une nouvelle entrée de jeu si nécessaire
+        if (!existingGame) {
+          // Le jeu n'existe pas pour cette console, on l'ajoute
+          // S'assurer que release_date n'est jamais null
+          const releaseDate = formatIGDBReleaseDate(selectedGame.first_release_date);
+          
+          // Extraire le nom (français si disponible via alternative_names, sinon anglais)
+          // et la description (anglais uniquement)
+          const gameName = getIGDBGameName(selectedGame);
+          const gameSummary = getIGDBGameSummary(selectedGame);
+          
+          const { data: newGame, error: gameError } = await supabase
+            .from('games')
+            .insert({
+              igdb_id: selectedGame.id, // Add the igdb_id to prevent not-null constraint violation
+              title: gameName,
+              release_date: releaseDate || '2000-01-01', // Double sécurité pour éviter null
+              developer: developer || 'Unknown',
+              publisher: publisher || 'Unknown',
+              description_en: gameSummary,
+              description_fr: null, // Sera traduit plus tard via le bouton admin
+              cover_url: selectedGame.cover 
+                ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${selectedGame.cover.image_id}.jpg`
+                : null,
+              console_id: consoleId // Remettre console_id ici
+            })
+            .select()
+            .single();
   
         if (gameError) {
           console.error('Erreur lors de l\'ajout du jeu:', gameError);
@@ -660,10 +667,12 @@ export default function SearchPage() {
               Rechercher
             </Button>
           </div>
-          
+          <div className="flex flex-col gap-1">
           <p className="text-xs text-muted-foreground italic">
             Appuyez sur Entrée ou cliquez sur Rechercher pour lancer la recherche
           </p>
+          <p className="text-xs text-muted-foreground italic"><span className="font-bold">Attention :</span> Si le titre n'est pas trouvé en français, il est possible que le titre soit en anglais.</p>
+        </div>
         </div>
       </section>
       
@@ -855,7 +864,7 @@ export default function SearchPage() {
                       <div className="relative aspect-[3/4] overflow-hidden rounded-t-lg">
                         {game.cover ? (
                           <>
-                            <GameCover3D gameId={game.id} imageId={game.cover.image_id} gameName={game.name} pageIndex={pageIndex} gameIndex={gameIndex}>
+                            <GameCover3D gameId={game.id} imageId={game.cover.image_id} gameName={getIGDBGameName(game)} pageIndex={pageIndex} gameIndex={gameIndex}>
                             </GameCover3D>
                           </>
                         ) : (
@@ -871,8 +880,8 @@ export default function SearchPage() {
                         )}
                       </div>
                       <div className="p-2">
-                        <h3 className="font-medium text-sm truncate" title={game.name}>
-                          {game.name}
+                        <h3 className="font-medium text-sm truncate" title={getIGDBGameName(game)}>
+                          {getIGDBGameName(game)}
                         </h3>
                         <p className="text-xs text-muted-foreground mt-1">
                           {game.first_release_date 

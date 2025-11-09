@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfileStore } from '@/store/useProfileStore';
 import { useAuth } from '@/context/auth-context';
 import { useUserRole } from '@/hooks/useUserRole';
-import { WishlistNotifications } from '@/components/wishlist/wishlist-notifications';
+import { UnifiedNotifications } from '@/components/notifications/unified-notifications';
 import { SupportDialog } from '@/components/ui/support-dialog';
 import {
   DropdownMenu,
@@ -112,8 +112,8 @@ function NavbarContent() {
               Ajouter un jeu
             </Link>
             
-            {/* Notifications wishlist */}
-            {user && <WishlistNotifications />}
+            {/* Notifications unifiées */}
+            {user && <UnifiedNotifications />}
             
             {/* Sélecteur de thème */}
             <div className="ml-2">
@@ -173,6 +173,12 @@ function NavbarContent() {
                     <Link href="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       Mon profil
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/achievements" className="cursor-pointer">
+                      <Trophy className="mr-2 h-4 w-4" />
+                      Mes succès
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
@@ -236,6 +242,12 @@ function NavbarContent() {
                     <Link href="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       Mon profil
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/achievements" className="cursor-pointer">
+                      <Trophy className="mr-2 h-4 w-4" />
+                      Mes succès
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
@@ -337,6 +349,12 @@ function NavbarContent() {
                       Mon profil
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/achievements" className="cursor-pointer">
+                      <Trophy className="mr-2 h-4 w-4" />
+                      Mes succès
+                    </Link>
+                  </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="cursor-pointer">
@@ -398,6 +416,12 @@ function NavbarContent() {
                     <Link href="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       Mon profil
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/achievements" className="cursor-pointer">
+                      <Trophy className="mr-2 h-4 w-4" />
+                      Mes succès
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (

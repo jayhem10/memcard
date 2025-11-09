@@ -4,8 +4,6 @@ Allow: /
 Allow: /collection
 Allow: /games/
 Allow: /search
-Allow: /achievements
-Allow: /rewards
 Allow: /help
 Allow: /contact
 

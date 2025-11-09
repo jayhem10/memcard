@@ -57,8 +57,12 @@ export function withApi<T>(
 ) {
   return async (
     request: NextRequest,
-    context?: { params?: any }
+    context?: { params?: Promise<{ [key: string]: string }> | { [key: string]: string } }
   ) => {
+    // Résoudre les paramètres si c'est une Promise (Next.js 15+)
+    const resolvedParams = context?.params 
+      ? (context.params instanceof Promise ? await context.params : context.params)
+      : undefined;
     try {
       // Authentification si requise
       if (options.requireAuth) {
@@ -75,7 +79,7 @@ export function withApi<T>(
         const result = await handler(request, {
           user,
           supabase,
-          params: context?.params,
+          params: resolvedParams,
         });
 
         return NextResponse.json(result);
@@ -85,7 +89,7 @@ export function withApi<T>(
       const result = await handler(request, {
         user: null,
         supabase: null,
-        params: context?.params,
+        params: resolvedParams,
       });
 
       return NextResponse.json(result);

@@ -57,13 +57,10 @@ export async function POST(request: NextRequest) {
       // 1. Supprimer les réponses de quiz de l'utilisateur
       { name: 'user_quiz_answers', operation: supabase.from('user_quiz_answers').delete().eq('user_id', userId) },
       
-      // 2. Supprimer les achievements de l'utilisateur
-      { name: 'user_achievements', operation: supabase.from('user_achievements').delete().eq('user_id', userId) },
-      
-      // 3. Supprimer les jeux de l'utilisateur
+      // 2. Supprimer les jeux de l'utilisateur
       { name: 'user_games', operation: supabase.from('user_games').delete().eq('user_id', userId) },
       
-      // 4. Supprimer le profil utilisateur
+      // 3. Supprimer le profil utilisateur
       { name: 'profiles', operation: supabase.from('profiles').delete().eq('id', userId) }
     ];
 

@@ -228,8 +228,6 @@ export default function QuizForm() {
         throw new Error('Aucun détail de rang trouvé');
       }
       
-      // Les achievements sont vérifiés automatiquement par l'API
-      
     } catch (error: any) {
       console.error('Error submitting quiz:', error);
       toast.error(error?.message || 'Erreur lors de la soumission du quiz');
