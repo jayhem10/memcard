@@ -97,7 +97,7 @@ class AchievementNotificationsManager {
       }
 
       // Mettre à jour les IDs des achievements débloqués
-      const currentUnlockedIds = new Set(
+      const currentUnlockedIds = new Set<string>(
         data.unlocked.map((ua: UserAchievement) => ua.achievement_id)
       );
       this.previousUnlockedIds = currentUnlockedIds;
