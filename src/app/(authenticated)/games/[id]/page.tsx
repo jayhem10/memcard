@@ -119,18 +119,22 @@ export default function GameDetailPage() {
       if (result.error) throw result.error;
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('Modifications enregistrées');
       setIsEditing(false);
-      // Invalider le cache pour forcer un rechargement
       queryClient.invalidateQueries({ queryKey: ['game', gameId, user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['userGames', user?.id] });
+
+      await queryClient.refetchQueries({ 
+        queryKey: ['userGames', user?.id],
+        type: 'all' 
+      });
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de la mise à jour');
     },
   });
   
-  // Mutation pour supprimer le jeu de la collection
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (!user || !gameId) throw new Error('Utilisateur non authentifié ou ID de jeu manquant');

@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { transformUserGameItem, sortGamesByTitle } from '@/lib/game-utils';
 import { useAuth } from '@/context/auth-context';
@@ -29,8 +30,9 @@ export type CollectionGame = {
 
 export function useUserGames() {
   const { user, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   
-  return useQuery<CollectionGame[], Error>({
+  const query = useQuery<CollectionGame[], Error>({
     queryKey: ['userGames', user?.id],
     queryFn: async () => {
       if (!user) {
@@ -76,6 +78,51 @@ export function useUserGames() {
       return sortGamesByTitle(formattedGames);
     },
     enabled: !!user && !authLoading,
+    staleTime: 0, // Les données sont immédiatement considérées comme périmées après invalidation
+    refetchOnMount: true, // Rafraîchir au montage pour avoir les données les plus récentes
+    refetchOnWindowFocus: true, // Rafraîchir au focus de la fenêtre
   });
+
+  // Écouter les changements en temps réel pour invalider le cache
+  useEffect(() => {
+    if (!user) return;
+
+    // S'abonner aux changements sur user_games pour cet utilisateur
+    const channel = supabase
+      .channel(`user_games_${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'user_games',
+          filter: `user_id=eq.${user.id}`,
+        },
+        async (payload) => {
+          // Invalider le cache et forcer un refetch immédiat
+          await queryClient.invalidateQueries({ queryKey: ['userGames', user.id] });
+          
+          // Attendre un peu pour s'assurer que l'invalidation est propagée
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          // Forcer un refetch immédiat même si la query n'est pas active
+          await queryClient.refetchQueries({ 
+            queryKey: ['userGames', user.id],
+            type: 'all' // Refetch même si la query n'est pas active
+          });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.error(`Erreur d'abonnement Realtime pour user_games de l'utilisateur ${user.id}`);
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, queryClient]);
+
+  return query;
 }
 
