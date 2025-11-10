@@ -4,6 +4,7 @@ import { AuthProvider } from "@/context/auth-context";
 import { ReactQueryProvider } from "@/providers/query-provider";
 import { Toaster } from "react-hot-toast";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { WebSiteSchema, OrganizationSchema, WebApplicationSchema } from "@/components/schema-org";
 import "@fontsource/press-start-2p";
 import "./globals.css";
@@ -143,6 +144,7 @@ export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
               {children}
               <Toaster position="top-right" />
               <Analytics />
+              <SpeedInsights />
             </ReactQueryProvider>
           </ThemeProvider>
         </AuthProvider>
