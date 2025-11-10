@@ -26,6 +26,8 @@ export type CollectionGame = {
   play_time?: number | null;
   completion_percentage?: number | null;
   buy_price?: number | null;
+  edition?: string | null;
+  edition_other?: string | null;
 };
 
 export function useUserGames() {
@@ -55,6 +57,8 @@ export function useUserGames() {
           completion_percentage,
           buy_price,
           buy,
+          edition,
+          edition_other,
           games:game_id(id, igdb_id, title, release_date, developer, publisher, description_en, description_fr, cover_url, console_id, consoles:console_id(id, name), game_genres(genre_id, genres(id, name)))
         `)
         .eq('user_id', user.id)

@@ -12,6 +12,8 @@ export type UserGameData = {
   buy_price: number | null;
   condition: string | null;
   review: string | null;
+  edition: string | null;
+  edition_other: string | null;
 };
 
 export type GameData = {
@@ -64,4 +66,20 @@ export const STATUS_LABELS: Record<string, string> = {
   DROPPED: 'Abandonné',
   WISHLIST: 'Liste de souhaits',
 };
+
+export const EDITION_OPTIONS = [
+  { value: 'standard', label: 'Standard' },
+  { value: 'enhanced', label: 'Édition Enhanced' },
+  { value: 'collector', label: 'Édition Collector' },
+  { value: 'limitee', label: 'Édition Limitée' },
+  { value: 'deluxe', label: 'Édition Deluxe' },
+  { value: 'ultimate', label: 'Édition Ultimate' },
+  { value: 'goty', label: 'Édition GOTY (Game of the Year)' },
+  { value: 'day_one', label: 'Édition Day One' },
+  { value: 'prestige', label: 'Édition Prestige' },
+  { value: 'steelbook', label: 'Édition Steelbook' },
+  { value: 'autres', label: 'Autres' },
+] as const;
+
+export type EditionValue = typeof EDITION_OPTIONS[number]['value'];
 

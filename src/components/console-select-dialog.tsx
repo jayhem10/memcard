@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
+import { EDITION_OPTIONS } from '@/types/games';
 
 interface Console {
   id: string;
@@ -34,7 +35,7 @@ interface Platform {
 interface ConsoleSelectDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (consoleId: string, consoleName?: string, status?: string, buyPrice?: number, condition?: string) => void;
+  onSelect: (consoleId: string, consoleName?: string, status?: string, buyPrice?: number, condition?: string, edition?: string, editionOther?: string) => void;
   gameName: string;
   gamePlatforms?: Platform[];
 }
@@ -46,6 +47,8 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
   const [selectedStatus, setSelectedStatus] = useState<string>('NOT_STARTED');
   const [buyPrice, setBuyPrice] = useState<string>('');
   const [condition, setCondition] = useState<string>('');
+  const [edition, setEdition] = useState<string>('');
+  const [editionOther, setEditionOther] = useState<string>('');
   const [isWishlist, setIsWishlist] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -150,8 +153,10 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
       // Si wishlist, pas de prix ni d'état
       const finalPrice = isWishlist ? undefined : numericPrice;
       const finalCondition = isWishlist ? undefined : (condition || undefined);
-      // Pass both ID, name, status and price to the parent component
-      onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée', finalStatus, finalPrice, finalCondition);
+      const finalEdition = edition && edition !== 'standard' ? edition : undefined;
+      const finalEditionOther = edition === 'autres' ? (editionOther || undefined) : undefined;
+      // Pass both ID, name, status, price, condition, edition and editionOther to the parent component
+      onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée', finalStatus, finalPrice, finalCondition, finalEdition, finalEditionOther);
     }
   };
 
@@ -162,6 +167,8 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
       setSelectedStatus('NOT_STARTED');
       setBuyPrice('');
       setCondition('');
+      setEdition('');
+      setEditionOther('');
     }
   }, [isOpen]);
 
@@ -298,6 +305,34 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                   <SelectItem value="mauvais état">Mauvais état</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Édition */}
+            <div className="space-y-2">
+              <Label htmlFor="edition">Édition (optionnel)</Label>
+              <Select
+                value={edition}
+                onValueChange={setEdition}
+              >
+                <SelectTrigger id="edition" className="w-full">
+                  <SelectValue placeholder="Standard" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EDITION_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {edition === 'autres' && (
+                <Input
+                  placeholder="Précisez l'édition"
+                  value={editionOther}
+                  onChange={(e) => setEditionOther(e.target.value)}
+                  className="w-full"
+                />
+              )}
             </div>
 
             {/* Prix d'achat - désactivé si wishlist */}

@@ -332,7 +332,7 @@ export default function SearchPage() {
 
   const [selectedConsoleName, setSelectedConsoleName] = useState<string>('');
   
-  const handleAddGame = async (consoleId: string, consoleName?: string, status?: string, buyPrice?: number, condition?: string) => {
+  const handleAddGame = async (consoleId: string, consoleName?: string, status?: string, buyPrice?: number, condition?: string, edition?: string, editionOther?: string) => {
     // Ne pas convertir le consoleId pour préserver le format UUID
     if (!selectedGame || !user) return;
     
@@ -556,7 +556,9 @@ export default function SearchPage() {
           rating: 0,
           notes: '',
           buy_price: buyPrice || null,
-          condition: finalCondition
+          condition: finalCondition,
+          edition: edition || null,
+          edition_other: edition === 'autres' ? (editionOther || null) : null
         });
       
       if (userGameError) throw userGameError;

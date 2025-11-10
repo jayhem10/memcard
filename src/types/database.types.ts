@@ -44,6 +44,8 @@ export interface UserGame {
   buy_price: number | null;
   buy: boolean | null;
   review: string | null;
+  edition: string | null;
+  edition_other: string | null;
 }
 
 export interface WishlistShare {

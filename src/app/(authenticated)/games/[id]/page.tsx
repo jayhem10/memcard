@@ -16,7 +16,8 @@ import Game3DImage from '@/components/games/Game3DImage';
 import GamePriceDisplay from '@/components/games/GamePriceDisplay';
 import { GameRecentActivities } from '@/components/games/GameRecentActivities';
 import { SimilarGamesList } from '@/components/games/SimilarGamesList';
-import { STATUS_LABELS } from '@/types/games';
+import { STATUS_LABELS, EDITION_OPTIONS } from '@/types/games';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGame } from '@/hooks/useGame';
 import { useSimilarGames } from '@/hooks/useSimilarGames';
 
@@ -36,6 +37,8 @@ export default function GameDetailPage() {
     completion_percentage: number;
     condition: string | null;
     review: string | null;
+    edition: string | null;
+    edition_other: string | null;
   }>({
     notes: '',
     rating: 0,
@@ -44,6 +47,8 @@ export default function GameDetailPage() {
     completion_percentage: 0,
     condition: null,
     review: null,
+    edition: null,
+    edition_other: null,
   });
   
   // Rediriger si l'ID du jeu n'est pas défini
@@ -94,6 +99,20 @@ export default function GameDetailPage() {
       // Convertir les chaînes vides en null pour review
       if (updateData.review === '' || updateData.review === undefined) {
         updateData.review = null;
+      }
+      
+      // Gérer edition et edition_other
+      // Si edition est vide, null, ou 'standard', mettre à null (standard = pas d'édition spéciale)
+      if (updateData.edition === '' || updateData.edition === undefined || updateData.edition === 'standard') {
+        updateData.edition = null;
+        updateData.edition_other = null; // Si pas d'édition, pas de texte libre
+      } else if (updateData.edition !== 'autres') {
+        // Si ce n'est pas "autres", supprimer edition_other
+        updateData.edition_other = null;
+      }
+      // Si edition_other est vide, mettre à null
+      if (updateData.edition_other === '' || updateData.edition_other === undefined) {
+        updateData.edition_other = null;
       }
       
       let result;
@@ -199,6 +218,8 @@ export default function GameDetailPage() {
       completion_percentage: typeof userGame?.completion_percentage === 'number' ? userGame.completion_percentage : 0,
       condition: typeof userGame?.condition === 'string' ? userGame.condition : null,
       review: typeof userGame?.review === 'string' ? userGame.review : null,
+      edition: typeof userGame?.edition === 'string' ? userGame.edition : null,
+      edition_other: typeof userGame?.edition_other === 'string' ? userGame.edition_other : null,
     });
     setIsEditing(true);
   };
@@ -457,6 +478,52 @@ export default function GameDetailPage() {
                         {userGame?.condition
                           ? userGame.condition.charAt(0).toUpperCase() + userGame.condition.slice(1).toLowerCase()
                           : 'Non renseigné'}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Édition</label>
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <Select
+                          value={editedData.edition || 'standard'}
+                          onValueChange={(value) => setEditedData({
+                            ...editedData,
+                            edition: value === 'standard' ? null : value,
+                            edition_other: value === 'autres' ? editedData.edition_other : null,
+                          })}
+                        >
+                          <SelectTrigger className="w-full rounded-lg">
+                            <SelectValue placeholder="Standard" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {EDITION_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {editedData.edition === 'autres' && (
+                          <Input
+                            placeholder="Précisez l'édition"
+                            value={editedData.edition_other || ''}
+                            onChange={(e) => setEditedData({
+                              ...editedData,
+                              edition_other: e.target.value || null,
+                            })}
+                            className="rounded-lg"
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-lg font-semibold text-foreground">
+                        {userGame?.edition === 'autres' && userGame?.edition_other
+                          ? userGame.edition_other
+                          : userGame?.edition
+                          ? EDITION_OPTIONS.find(opt => opt.value === userGame.edition)?.label || userGame.edition
+                          : 'Standard'}
                       </p>
                     )}
                   </div>
