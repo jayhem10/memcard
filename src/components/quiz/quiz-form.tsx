@@ -75,7 +75,7 @@ export default function QuizForm() {
           .from('profiles')
           .select('quiz_completed, rank_id')
           .eq('id', userData.user.id)
-          .single();
+          .single<{ quiz_completed: boolean; rank_id: number | null }>();
           
         if (profileData?.quiz_completed) {
           // Si le quiz est déjà complété, rediriger vers la page de profil
@@ -98,7 +98,8 @@ export default function QuizForm() {
     try {
       const { data, error } = await supabase
         .from('quiz_questions')
-        .select('*');
+        .select('*')
+        .returns<Array<{ id: string; question_en: string; question_fr: string; options: Array<{ id: number; text_en: string; text_fr: string }> }>>();
       
       if (error) {
         console.error('Error fetching quiz questions:', error);
@@ -197,7 +198,7 @@ export default function QuizForm() {
         .from('ranks')
         .select('*')
         .eq('id', rankId)
-        .single();
+        .single<{ id: string; name_en: string; name_fr: string; description_en: string | null; description_fr: string | null; level: number; icon_url: string | null; created_at: string }>();
       
       if (rankDetailsError) {
         console.error('Error fetching rank details:', rankDetailsError);

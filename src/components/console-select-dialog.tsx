@@ -113,8 +113,8 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
 
   const createDefaultConsole = async () => {
     try {
-      const { data, error } = await supabase
-        .from('consoles')
+      const { data, error } = await (supabase
+        .from('consoles') as any)
         .insert({ 
           name: 'Console par défaut',
           igdb_platform_id: null,

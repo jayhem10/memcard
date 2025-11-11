@@ -22,7 +22,7 @@ export function useSimilarGames(gameId: string | undefined) {
           game_genres(genre_id, genres(id, name))
         `)
         .eq('id', gameId)
-        .single();
+        .single<{ id: string; console_id: string; developer: string; publisher: string; game_genres: Array<{ genre_id: string; genres: { id: string; name: string } }> }>();
 
       if (gameError || !currentGame) {
         console.error('Error fetching current game:', gameError);

@@ -50,11 +50,11 @@ export function GameFormDialog({ isOpen, onClose, gameId, initialBuyPrice }: Gam
       }
 
       // Mise à jour du prix dans la base de données
-      const { error } = await supabase
-        .from('user_games')
-        .update({ buy_price: numericPrice })
-        .eq('game_id', gameId)
-        .eq('user_id', user.id);
+        const { error } = await (supabase
+          .from('user_games') as any)
+          .update({ buy_price: numericPrice })
+          .eq('game_id', gameId)
+          .eq('user_id', user.id);
 
       if (error) throw error;
 

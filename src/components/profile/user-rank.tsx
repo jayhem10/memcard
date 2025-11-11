@@ -64,7 +64,7 @@ export default function UserRank() {
             )
           `)
           .eq('id', userData.user.id)
-          .single();
+          .single<{ quiz_completed: boolean; rank_id: number | null; ranks: { name_fr: string; description_fr: string | null; icon_url: string | null } | null }>();
         
         if (profileError) {
           console.error('Error fetching profile:', profileError);

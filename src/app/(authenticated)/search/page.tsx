@@ -367,7 +367,8 @@ export default function SearchPage() {
       const { data: existingUserGames, error: userGamesError } = await supabase
         .from('user_games')
         .select('id, game_id')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .returns<Array<{ id: string; game_id: string }>>();
       
       if (userGamesError) throw userGamesError;
       
@@ -376,7 +377,8 @@ export default function SearchPage() {
         const { data: games, error: gamesError } = await supabase
           .from('games')
           .select('id, igdb_id, console_id')
-          .in('id', existingUserGames.map(ug => ug.game_id));
+          .in('id', existingUserGames.map(ug => ug.game_id))
+          .returns<Array<{ id: string; igdb_id: number; console_id: string }>>();
         
         if (gamesError) throw gamesError;
         
@@ -407,7 +409,7 @@ export default function SearchPage() {
         .select('id')
         .eq('igdb_id', selectedGame.id)
         .eq('console_id', consoleId)
-        .maybeSingle();
+        .maybeSingle<{ id: string }>();
 
       if (findError) throw findError;
       
@@ -473,8 +475,8 @@ export default function SearchPage() {
           const gameName = getIGDBGameName(selectedGame);
           const gameSummary = getIGDBGameSummary(selectedGame);
           
-          const { data: newGame, error: gameError } = await supabase
-            .from('games')
+          const { data: newGame, error: gameError } = await (supabase
+            .from('games') as any)
             .insert({
               igdb_id: selectedGame.id, // Add the igdb_id to prevent not-null constraint violation
               title: gameName,
@@ -506,7 +508,7 @@ export default function SearchPage() {
               .from('genres')
               .select('id')
               .eq('name', genre.name)
-              .maybeSingle();
+              .maybeSingle<{ id: string }>();
             
             if (genreQueryError) throw genreQueryError;
             
@@ -516,8 +518,8 @@ export default function SearchPage() {
               genreId = existingGenre.id;
             } else {
               // 2. Ajouter le genre s'il n'existe pas
-              const { data: newGenre, error: genreInsertError } = await supabase
-                .from('genres')
+              const { data: newGenre, error: genreInsertError } = await (supabase
+                .from('genres') as any)
                 .insert({ name: genre.name })
                 .select()
                 .single();
@@ -527,8 +529,8 @@ export default function SearchPage() {
             }
             
             // 3. Créer la relation entre le jeu et le genre
-            const { error: gameGenreError } = await supabase
-              .from('game_genres')
+            const { error: gameGenreError } = await (supabase
+              .from('game_genres') as any)
               .insert({
                 game_id: gameId,
                 genre_id: genreId
@@ -547,9 +549,9 @@ export default function SearchPage() {
         ? null 
         : (condition || null);
       
-      const { error: userGameError } = await supabase
-        .from('user_games')
-        .insert({
+        const { error: userGameError } = await (supabase
+          .from('user_games') as any)
+          .insert({
           user_id: user.id,
           game_id: gameId,
           status: finalStatus,

@@ -12,7 +12,7 @@ export function useGamePrices(gameId: string | undefined) {
         .from('game_prices')
         .select('min_price, max_price, average_price, new_price, last_updated')
         .eq('game_id', gameId)
-        .maybeSingle();
+        .maybeSingle<{ min_price: number; max_price: number; average_price: number; new_price: number; last_updated: string }>();
 
       // Si l'erreur est "PGRST116" (no rows returned), c'est normal = pas de données
       if (error && error.code !== 'PGRST116') {

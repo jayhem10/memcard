@@ -79,7 +79,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           )
         `)
         .eq('id', user.id)
-        .single();
+        .single<{ id: string; username: string | null; full_name: string | null; avatar_url: string | null; theme: string | null; rank_id: number | null; quiz_completed: boolean; is_public: boolean; role: string; updated_at: string; created_at: string; ranks: { id: string; name_fr: string } | null }>();
       
       // Si erreur mais que c'est juste que la table n'existe pas ou l'enregistrement n'est pas trouvé
       // On crée un profil par défaut
@@ -102,8 +102,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         
         // On essaie d'insérer le profil par défaut si c'est possible
         try {
-          const { error: insertError } = await supabase
-            .from('profiles')
+          const { error: insertError } = await (supabase
+            .from('profiles') as any)
             .insert([{
               id: user.id,
               username: defaultProfile.username,
@@ -186,8 +186,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       }
       
       // Mettre à jour le profil avec les données fournies
-      const { error } = await supabase
-        .from('profiles')
+      const { error } = await (supabase
+        .from('profiles') as any)
         .update({
           ...profileData,
           updated_at: new Date().toISOString()

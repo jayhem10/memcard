@@ -20,6 +20,7 @@ import { STATUS_LABELS, EDITION_OPTIONS } from '@/types/games';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGame } from '@/hooks/useGame';
 import { useSimilarGames } from '@/hooks/useSimilarGames';
+import { UserGame } from '@/types/database.types';
 
 export default function GameDetailPage() {
   const params = useParams();
@@ -82,7 +83,27 @@ export default function GameDetailPage() {
       if (findError) throw findError;
       
       // Préparer les données à mettre à jour
-      const updateData = { ...data };
+      const updateData: {
+        notes: string | null;
+        rating: number | null;
+        status: string;
+        play_time: number | null;
+        completion_percentage: number | null;
+        condition: string | null;
+        review: string | null;
+        edition: string | null;
+        edition_other: string | null;
+      } = {
+        notes: data.notes || null,
+        rating: data.rating || null,
+        status: data.status,
+        play_time: data.play_time || null,
+        completion_percentage: data.completion_percentage || null,
+        condition: null,
+        review: null,
+        edition: null,
+        edition_other: null,
+      };
       
       // Si le statut est WISHLIST, réinitialiser condition à NULL
       // (car un jeu en wishlist n'a pas encore d'état physique)
@@ -91,42 +112,51 @@ export default function GameDetailPage() {
       } else {
         // Pour les autres statuts, convertir les chaînes vides en null
         // condition reste optionnel (peut être null)
-        if (updateData.condition === '' || updateData.condition === undefined) {
+        if (data.condition === '' || data.condition === undefined) {
           updateData.condition = null;
+        } else {
+          updateData.condition = data.condition;
         }
       }
       
       // Convertir les chaînes vides en null pour review
-      if (updateData.review === '' || updateData.review === undefined) {
+      if (data.review === '' || data.review === undefined) {
         updateData.review = null;
+      } else {
+        updateData.review = data.review;
       }
       
       // Gérer edition et edition_other
       // Si edition est vide, null, ou 'standard', mettre à null (standard = pas d'édition spéciale)
-      if (updateData.edition === '' || updateData.edition === undefined || updateData.edition === 'standard') {
+      if (data.edition === '' || data.edition === undefined || data.edition === 'standard') {
         updateData.edition = null;
         updateData.edition_other = null; // Si pas d'édition, pas de texte libre
-      } else if (updateData.edition !== 'autres') {
+      } else if (data.edition !== 'autres') {
         // Si ce n'est pas "autres", supprimer edition_other
+        updateData.edition = data.edition;
         updateData.edition_other = null;
-      }
-      // Si edition_other est vide, mettre à null
-      if (updateData.edition_other === '' || updateData.edition_other === undefined) {
-        updateData.edition_other = null;
+      } else {
+        updateData.edition = data.edition;
+        // Si edition_other est vide, mettre à null
+        if (data.edition_other === '' || data.edition_other === undefined) {
+          updateData.edition_other = null;
+        } else {
+          updateData.edition_other = data.edition_other;
+        }
       }
       
       let result;
       if (existingUserGame) {
         // Mettre à jour l'entrée existante
-        result = await supabase
-          .from('user_games')
+        result = await (supabase
+          .from('user_games') as any)
           .update(updateData)
           .eq('id', existingUserGame.id)
           .select();
       } else {
         // Créer une nouvelle entrée
-        result = await supabase
-          .from('user_games')
+        result = await (supabase
+          .from('user_games') as any)
           .insert({
             user_id: user.id,
             game_id: gameId,

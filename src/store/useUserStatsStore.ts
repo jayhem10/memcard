@@ -132,7 +132,8 @@ export const useUserStatsStore = create<UserStatsStore>((set, get) => ({
           id,
           status
         `)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .returns<Array<{ id: string; status: string }>>();
 
       if (statsError) throw statsError;
 

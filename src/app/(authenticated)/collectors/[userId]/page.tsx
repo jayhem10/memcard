@@ -61,11 +61,11 @@ function CollectorCollectionContent() {
           .from('profiles')
           .select('id, username, avatar_url, is_public')
           .eq('id', userId)
-          .single();
+          .single<{ id: string; username: string | null; avatar_url: string | null; is_public: boolean }>();
         
         if (error) throw error;
         
-        if (!data.is_public) {
+        if (!data || !data.is_public) {
           // Afficher le toast seulement une fois par utilisateur
           if (!hasShownPrivateToastRef.current) {
             toast.error('Ce profil est privé');
