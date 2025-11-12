@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
@@ -51,27 +51,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       toast.success('Vous avez été déconnecté');
       router.push('/login');
-    } catch (error: any) {
-      toast.error(error.message || 'Erreur lors de la déconnexion');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la déconnexion';
+      toast.error(errorMessage);
     }
   };
 
   // Fonction pour gérer la redirection
-  const handleRedirection = (user: User | null, event?: string) => {
-    // Utiliser useEffect pour éviter les redirections pendant le rendu
+  const handleRedirection = useCallback((user: User | null) => {
     if (typeof window === 'undefined') return;
     
     const pathname = window.location.pathname;
     
-    // Utiliser setTimeout pour éviter les redirections synchrones pendant le rendu
-    setTimeout(() => {
-      if (user && pathname === '/login') {
-        router.push('/');
-      } else if (!user && !isPublicRoute(pathname)) {
-        router.push('/login');
-      }
-    }, 0);
-  };
+    if (user && pathname === '/login') {
+      router.push('/');
+    } else if (!user && !isPublicRoute(pathname)) {
+      router.push('/login');
+    }
+  }, [router]);
 
   // Fonction pour nettoyer le localStorage en cas de problème avec les tokens
   const cleanupLocalStorage = () => {
@@ -117,9 +114,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const newUser = session?.user ?? null;
         setUser(newUser);
         setIsLoading(false);
-        
-        // Rediriger l'utilisateur en fonction de l'événement
-        handleRedirection(newUser, event);
       }
     );
 
@@ -128,31 +122,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       setIsLoading(false);
-      
-      setTimeout(() => {
-        handleRedirection(currentUser);
-      }, 100); // Petit délai pour s'assurer que le routeur est initialisé
     }).catch(error => {
       console.error('Error getting session:', error);
       setIsLoading(false);
-      // En cas d'erreur, nettoyer le localStorage et rediriger vers la page de connexion
-      // Sauf si on est sur une route publique (wishlist partagée, login, etc.)
-      if (typeof window !== 'undefined') {
-        const pathname = window.location.pathname;
-        cleanupLocalStorage();
-        if (!isPublicRoute(pathname)) {
-          setTimeout(() => {
-            router.push('/login');
-          }, 0);
-        }
-      }
+      // En cas d'erreur, nettoyer le localStorage
+      cleanupLocalStorage();
     });
 
     // Nettoyer l'abonnement à la déconnexion du composant
     return () => {
       subscription.unsubscribe();
     };
-  }, [router]);
+  }, []);
+
+  // Gérer les redirections dans un useEffect séparé pour éviter les problèmes de rendu
+  useEffect(() => {
+    if (!isLoading) {
+      handleRedirection(user);
+    }
+  }, [user, isLoading, handleRedirection]);
 
   // Fournir le contexte aux composants enfants
   return (

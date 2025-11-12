@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { transformUserGameItem, sortGamesByTitle } from '@/lib/game-utils';
 import { useAuth } from '@/context/auth-context';
+import { USER_GAME_WITH_RELATIONS_SELECT } from '@/lib/supabase-queries';
+import { handleSupabaseError } from '@/lib/error-handler';
 
 export type CollectionGame = {
   id: string;
@@ -44,29 +46,12 @@ export function useUserGames() {
       // Fetch user's games with a join to get console information
       const { data, error } = await supabase
         .from('user_games')
-        .select(`
-          id,
-          game_id,
-          status,
-          rating,
-          notes,
-          created_at,
-          updated_at,
-          purchase_date,
-          play_time,
-          completion_percentage,
-          buy_price,
-          buy,
-          edition,
-          edition_other,
-          games:game_id(id, igdb_id, title, release_date, developer, publisher, description_en, description_fr, cover_url, console_id, consoles:console_id(id, name), game_genres(genre_id, genres(id, name)))
-        `)
+        .select(USER_GAME_WITH_RELATIONS_SELECT)
         .eq('user_id', user.id)
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('Erreur lors de la récupération des jeux:', error);
-        throw error;
+        handleSupabaseError(error, 'useUserGames', 'Erreur lors de la récupération des jeux');
       }
       
       if (!data || data.length === 0) {
@@ -82,9 +67,9 @@ export function useUserGames() {
       return sortGamesByTitle(formattedGames);
     },
     enabled: !!user && !authLoading,
-    staleTime: 0, // Les données sont immédiatement considérées comme périmées après invalidation
+    staleTime: 1000 * 30, // 30 secondes - les données sont considérées fraîches pendant ce temps
     refetchOnMount: true, // Rafraîchir au montage pour avoir les données les plus récentes
-    refetchOnWindowFocus: true, // Rafraîchir au focus de la fenêtre
+    refetchOnWindowFocus: false, // Désactivé car on a déjà un abonnement Realtime qui invalide le cache
   });
 
   // Écouter les changements en temps réel pour invalider le cache

@@ -5,6 +5,39 @@ import { supabase } from '@/lib/supabase';
 import { ProfileUpdateRequest, UserProfile } from '@/types/profile';
 import toast from 'react-hot-toast';
 
+// Types pour les requêtes Supabase
+type ProfileInsertData = {
+  id: string;
+  username: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  theme: string;
+  quiz_completed: boolean;
+  rank_id: number | null;
+  role: string;
+  is_public: boolean;
+  updated_at: string;
+};
+
+type ProfileUpdateData = ProfileUpdateRequest & {
+  updated_at: string;
+};
+
+type ProfileWithRank = {
+  id: string;
+  username: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  theme: string | null;
+  rank_id: number | null;
+  quiz_completed: boolean;
+  is_public: boolean;
+  role: string;
+  updated_at: string;
+  created_at: string;
+  ranks: { id: string; name_fr: string } | null;
+};
+
 interface ProfileState {
   profile: UserProfile | null;
   isLoading: boolean;
@@ -79,7 +112,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           )
         `)
         .eq('id', user.id)
-        .single<{ id: string; username: string | null; full_name: string | null; avatar_url: string | null; theme: string | null; rank_id: number | null; quiz_completed: boolean; is_public: boolean; role: string; updated_at: string; created_at: string; ranks: { id: string; name_fr: string } | null }>();
+        .single<ProfileWithRank>();
       
       // Si erreur mais que c'est juste que la table n'existe pas ou l'enregistrement n'est pas trouvé
       // On crée un profil par défaut
@@ -102,20 +135,22 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         
         // On essaie d'insérer le profil par défaut si c'est possible
         try {
-          const { error: insertError } = await (supabase
-            .from('profiles') as any)
-            .insert([{
-              id: user.id,
-              username: defaultProfile.username,
-              full_name: defaultProfile.full_name,
-              avatar_url: defaultProfile.avatar_url,
-              theme: defaultProfile.theme,
-              quiz_completed: defaultProfile.quiz_completed,
-              rank_id: defaultProfile.rank_id,
-              role: defaultProfile.role,
-              is_public: defaultProfile.is_public,
-              updated_at: defaultProfile.updated_at
-            }]);
+          const insertData: ProfileInsertData = {
+            id: user.id,
+            username: defaultProfile.username,
+            full_name: defaultProfile.full_name,
+            avatar_url: defaultProfile.avatar_url,
+            theme: defaultProfile.theme,
+            quiz_completed: defaultProfile.quiz_completed,
+            rank_id: defaultProfile.rank_id,
+            role: defaultProfile.role,
+            is_public: defaultProfile.is_public,
+            updated_at: defaultProfile.updated_at
+          };
+          
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert([insertData]);
             
           if (insertError) {
             console.warn('⚠️ Impossible de créer le profil, la table n\'existe probablement pas:', insertError.message);
@@ -161,7 +196,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         last_sign_in_at: user.last_sign_in_at || null,
         quiz_completed: typeof data?.quiz_completed === 'boolean' ? data.quiz_completed : false,
         rank_id: data?.rank_id ? parseInt(data.rank_id.toString()) : null,
-        rank_name_fr: data?.ranks && typeof data.ranks === 'object' && 'name_fr' in data.ranks ? (data.ranks as any).name_fr : null,
+        rank_name_fr: data?.ranks && typeof data.ranks === 'object' && 'name_fr' in data.ranks ? String(data.ranks.name_fr) : null,
         role: (data?.role === 'admin' || data?.role === 'user') ? data.role : 'user',
         is_public: typeof data?.is_public === 'boolean' ? data.is_public : false
       };
@@ -186,12 +221,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       }
       
       // Mettre à jour le profil avec les données fournies
-      const { error } = await (supabase
-        .from('profiles') as any)
-        .update({
-          ...profileData,
-          updated_at: new Date().toISOString()
-        })
+      const updateData: ProfileUpdateData = {
+        ...profileData,
+        updated_at: new Date().toISOString()
+      };
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(updateData)
         .eq('id', user.id);
       
       if (error) throw error;

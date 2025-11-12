@@ -1,98 +1,71 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-// Import toast from your UI library
-// If you're using shadcn/ui, you might need to create these components
-const useToast = () => ({
-  toast: ({ title, description, variant }: { title: string; description: string; variant: string }) => {
-    console.error(`${title}: ${description}`);
-  }
-});
-
-// Mock translation function until you set up i18n
-const useTranslation = () => ({
-  t: (key: string) => {
-    const translations: Record<string, string> = {
-      'error': 'Erreur',
-      'errorFetchingProfile': 'Erreur lors de la récupération du profil',
-      'errorFetchingRankDetails': 'Erreur lors de la récupération des détails du rang',
-      'discoverYourRank': 'Découvrez votre rang',
-      'completeQuizToGetRank': 'Complétez le quiz pour obtenir votre rang de joueur',
-      'startQuiz': 'Commencer le quiz',
-      'yourRank': 'Votre rang',
-      'yourGameProfileRank': 'Votre rang de profil de joueur'
-    };
-    return translations[key] || key;
-  },
-  i18n: { language: 'fr' }
-});
-import { Profile, Rank } from '@/types/profile';
 import { Loader2, Award, ArrowRight } from 'lucide-react';
+import { useProfileStore } from '@/store/useProfileStore';
+import { useAuth } from '@/context/auth-context';
+import { supabase } from '@/lib/supabase';
 
 export default function UserRank() {
   const router = useRouter();
+  const { profile, isLoading: profileLoading, fetchProfile } = useProfileStore();
+  const { user } = useAuth();
   
-  const [hasQuizCompleted, setHasQuizCompleted] = useState<boolean>(false);
   const [rankName, setRankName] = useState<string>('');
   const [rankDescription, setRankDescription] = useState<string>('');
   const [rankIcon, setRankIcon] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function checkUserRank() {
+    // Charger le profil si nécessaire
+    if (!profile && user) {
+      fetchProfile();
+    }
+  }, [profile, user, fetchProfile]);
+
+  useEffect(() => {
+    // Charger les détails du rang si on a un rank_id
+    async function loadRankDetails() {
+      if (!profile?.rank_id) {
+        setRankName('');
+        setRankDescription('');
+        setRankIcon(null);
+        return;
+      }
+
       try {
-        setIsLoading(true);
-        
-        // Get current user
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) return;
-        
-        // Get profile data with rank information in one query
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select(`
-            quiz_completed,
-            rank_id,
-            ranks (
-              name_fr,
-              description_fr,
-              icon_url
-            )
-          `)
-          .eq('id', userData.user.id)
-          .single<{ quiz_completed: boolean; rank_id: number | null; ranks: { name_fr: string; description_fr: string | null; icon_url: string | null } | null }>();
-        
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
+        const { data: rankData, error } = await supabase
+          .from('ranks')
+          .select('name_fr, description_fr, icon_url')
+          .eq('id', profile.rank_id)
+          .single<{ name_fr: string; description_fr: string | null; icon_url: string | null }>();
+
+        if (error) {
+          console.error('Error fetching rank details:', error);
           return;
         }
-        
-        setHasQuizCompleted(!!profileData.quiz_completed);
-        
-        // Set rank data if available
-        if (profileData.ranks) {
-          const rankData = profileData.ranks as any;
+
+        if (rankData) {
           setRankName(rankData.name_fr ? String(rankData.name_fr) : '');
           setRankDescription(rankData.description_fr ? String(rankData.description_fr) : '');
           setRankIcon(rankData.icon_url ? String(rankData.icon_url) : null);
         }
       } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setIsLoading(false);
+        console.error('Error loading rank details:', error);
       }
     }
-    
-    checkUserRank();
-  }, []);
+
+    loadRankDetails();
+  }, [profile?.rank_id]);
 
   const handleStartQuiz = () => {
     router.push('/quiz');
   };
+
+  const isLoading = profileLoading;
+  const hasQuizCompleted = profile?.quiz_completed ?? false;
 
   if (isLoading) {
     return (

@@ -25,6 +25,7 @@ export function useDeleteAccount() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
+        credentials: 'include', // Inclure les cookies pour l'authentification
       });
 
       if (!response.ok) {

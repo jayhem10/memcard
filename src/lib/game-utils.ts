@@ -2,10 +2,69 @@
 
 import { GameData, UserGameData } from '@/types/games';
 
+// Types pour les données Supabase brutes
+interface SupabaseGameGenre {
+  genre_id: string;
+  genres: {
+    id: string;
+    name: string;
+  };
+}
+
+interface SupabaseGameData {
+  id: number;
+  igdb_id: number;
+  title: string;
+  release_date: string | null;
+  developer: string | null;
+  publisher: string | null;
+  description_en: string | null;
+  description_fr: string | null;
+  cover_url: string | null;
+  console_id: string;
+  game_genres?: SupabaseGameGenre[];
+  [key: string]: unknown;
+}
+
+interface SupabaseUserGameItem {
+  id: string;
+  game_id: number;
+  status: string;
+  rating: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  purchase_date: string | null;
+  play_time: number | null;
+  completion_percentage: number | null;
+  buy_price: number | null;
+  games: {
+    id: number;
+    igdb_id: number;
+    title: string;
+    release_date: string | null;
+    developer: string | null;
+    publisher: string | null;
+    description_en: string | null;
+    description_fr: string | null;
+    cover_url: string | null;
+    console_id: string;
+    consoles?: {
+      name: string;
+    } | null;
+    game_genres?: Array<{
+      genres?: {
+        id: string;
+        name: string;
+      } | null;
+    }>;
+  };
+}
+
 /**
  * Transforme les genres depuis la structure Supabase vers la structure attendue
  */
-export function transformGenres(gameGenres: any[]): Array<{
+export function transformGenres(gameGenres: SupabaseGameGenre[]): Array<{
   genre_id: string;
   genres: {
     id: string;
@@ -16,7 +75,7 @@ export function transformGenres(gameGenres: any[]): Array<{
     return [];
   }
   
-  return gameGenres.map((item: any) => ({
+  return gameGenres.map((item) => ({
     genre_id: item.genre_id,
     genres: item.genres
   }));
@@ -26,17 +85,27 @@ export function transformGenres(gameGenres: any[]): Array<{
  * Combine les données d'un jeu avec les données utilisateur
  */
 export function combineGameData(
-  gameData: any,
+  gameData: SupabaseGameData,
   userGameData: UserGameData | null
 ): GameData {
-  const genres = transformGenres((gameData as any).game_genres || []);
+  const genres = transformGenres(gameData.game_genres || []);
   
-  // Supprimer game_genres du spread pour éviter les conflits
-  const { game_genres, ...gameDataWithoutGenres } = gameData as any;
+  // Extraire console et game_genres du spread pour éviter les conflits
+  const { game_genres, console, ...gameDataWithoutGenres } = gameData;
+  
+  // Formater la console si elle existe
+  const formattedConsole = console && typeof console === 'object' && 'id' in console && 'name' in console
+    ? {
+        id: String(console.id),
+        name: String(console.name)
+      }
+    : null;
   
   return {
     ...gameDataWithoutGenres,
+    id: String(gameData.id), // Convertir l'id en string pour correspondre au type GameData
     genres: genres,
+    console: formattedConsole,
     user_games: userGameData ? [userGameData] : []
   };
 }
@@ -44,14 +113,36 @@ export function combineGameData(
 /**
  * Transforme les données d'un user_game avec ses relations
  */
-export function transformUserGameItem(item: any): any | null {
+export function transformUserGameItem(item: SupabaseUserGameItem): {
+  id: string;
+  igdb_id: number;
+  title: string;
+  release_date: string | null;
+  developer: string | null;
+  publisher: string | null;
+  description_en: string | null;
+  description_fr: string | null;
+  cover_url: string | null;
+  console_id: string;
+  console_name?: string;
+  genres: Array<{ id: string; name: string }>;
+  status: string;
+  rating: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  purchase_date: string | null;
+  play_time: number | null;
+  completion_percentage: number | null;
+  buy_price: number | null;
+} | null {
   if (!item.games) {
     console.warn('Données de jeu manquantes pour l\'item:', item);
     return null;
   }
   
   return {
-    id: item.games.id,
+    id: String(item.games.id), // Convertir l'id en string pour correspondre au type CollectionGame
     igdb_id: item.games.igdb_id,
     title: item.games.title,
     release_date: item.games.release_date,
@@ -62,10 +153,10 @@ export function transformUserGameItem(item: any): any | null {
     cover_url: item.games.cover_url,
     console_id: item.games.console_id,
     console_name: item.games.consoles?.name,
-    genres: item.games.game_genres?.map((g: any) => ({
-      id: g.genres?.id,
-      name: g.genres?.name
-    })) || [],
+    genres: item.games.game_genres?.map((g) => ({
+      id: g.genres?.id || '',
+      name: g.genres?.name || ''
+    })).filter(g => g.id && g.name) || [],
     status: item.status,
     rating: item.rating !== null && item.rating !== undefined ? Number(item.rating) : null,
     notes: item.notes,
@@ -81,7 +172,7 @@ export function transformUserGameItem(item: any): any | null {
 /**
  * Trie les jeux par titre (ordre alphabétique français)
  */
-export function sortGamesByTitle(games: any[]): any[] {
+export function sortGamesByTitle<T extends { title: string }>(games: T[]): T[] {
   return [...games].sort((a, b) => 
     a.title.localeCompare(b.title, 'fr', { 
       numeric: true, 

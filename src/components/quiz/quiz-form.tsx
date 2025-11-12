@@ -7,32 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-// Suppression du mock useToast, utilisation de react-hot-toast directement
-
-// Mock translation function until you set up i18n
-const useTranslation = () => ({
-  t: (key: string) => {
-    const translations: Record<string, string> = {
-      'error': 'Erreur',
-      'errorFetchingQuizQuestions': 'Erreur lors de la récupération des questions du quiz',
-      'errorSubmittingQuiz': 'Erreur lors de la soumission du quiz',
-      'quizCompleted': 'Quiz terminé',
-      'yourRankHasBeenDetermined': 'Votre rang a été déterminé',
-      'continueToProfile': 'Continuer vers le profil',
-      'noQuestionsAvailable': 'Aucune question disponible',
-      'question': 'Question',
-      'finish': 'Terminer',
-      'next': 'Suivant'
-    };
-    return translations[key] || key;
-  },
-  i18n: { language: 'fr' }
-});
 import { Rank } from '@/types/profile';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useProfileStore } from '@/store/useProfileStore';
+import { useAuth } from '@/context/auth-context';
+import { handleErrorSilently } from '@/lib/error-handler';
 
 interface QuizQuestion {
   id: string;
@@ -47,10 +28,9 @@ interface QuizQuestion {
 }
 
 export default function QuizForm() {
-  const { t, i18n } = useTranslation();
   const router = useRouter();
-  const { fetchProfile, resetProfile } = useProfileStore();
-  const currentLang = i18n.language || 'en';
+  const { fetchProfile, resetProfile, profile } = useProfileStore();
+  const { user } = useAuth();
   
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -61,23 +41,29 @@ export default function QuizForm() {
   const [showResult, setShowResult] = useState(false);
 
   useEffect(() => {
+    // Charger le profil si nécessaire
+    if (!profile && user) {
+      fetchProfile();
+    }
+  }, [profile, user, fetchProfile]);
+
+  useEffect(() => {
+    // Ne pas vérifier le statut si on affiche déjà le résultat (utilisateur vient de terminer le quiz)
+    if (showResult) {
+      return;
+    }
+    
     // Vérifier d'abord si l'utilisateur a déjà complété le quiz
     const checkQuizStatus = async () => {
       try {
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) {
+        if (!user) {
           // Si pas d'utilisateur, charger quand même les questions
           fetchQuizQuestions();
           return;
         }
         
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('quiz_completed, rank_id')
-          .eq('id', userData.user.id)
-          .single<{ quiz_completed: boolean; rank_id: number | null }>();
-          
-        if (profileData?.quiz_completed) {
+        // Utiliser le profil depuis le store si disponible
+        if (profile?.quiz_completed) {
           // Si le quiz est déjà complété, rediriger vers la page de profil
           router.push('/profile');
         } else {
@@ -85,14 +71,20 @@ export default function QuizForm() {
           fetchQuizQuestions();
         }
       } catch (error) {
-        console.error('Error checking quiz status:', error);
+        handleErrorSilently(error, 'QuizForm - checkQuizStatus');
         // En cas d'erreur, charger quand même les questions
         fetchQuizQuestions();
       }
     };
     
-    checkQuizStatus();
-  }, [router]);
+    // Attendre que le profil soit chargé avant de vérifier le statut
+    if (user && profile !== undefined) {
+      checkQuizStatus();
+    } else if (!user) {
+      // Si pas d'utilisateur, charger directement les questions
+      fetchQuizQuestions();
+    }
+  }, [router, user, profile, showResult]);
 
   const fetchQuizQuestions = async () => {
     try {
@@ -102,7 +94,7 @@ export default function QuizForm() {
         .returns<Array<{ id: string; question_en: string; question_fr: string; options: Array<{ id: number; text_en: string; text_fr: string }> }>>();
       
       if (error) {
-        console.error('Error fetching quiz questions:', error);
+        handleErrorSilently(error, 'QuizForm - fetchQuizQuestions');
         toast.error('Erreur lors de la récupération des questions du quiz');
         setIsLoading(false);
         return;
@@ -125,7 +117,7 @@ export default function QuizForm() {
       setQuestions(typedQuestions);
       setIsLoading(false);
     } catch (error) {
-      console.error('Error fetching quiz questions:', error);
+      handleErrorSilently(error, 'QuizForm - fetchQuizQuestions catch');
       toast.error('Erreur lors de la récupération des questions du quiz');
       setIsLoading(false);
     }
@@ -150,13 +142,15 @@ export default function QuizForm() {
     setIsSubmitting(true);
     
     try {
-      // First, get the current user
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      
-      const userId = userData.user?.id;
-      if (!userId) {
+      // Utiliser l'utilisateur depuis le contexte
+      if (!user) {
         throw new Error('User not authenticated');
+      }
+      
+      // Récupérer le token de session pour l'authentification
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Session non disponible');
       }
       
       // Convertir les réponses pour l'API
@@ -171,9 +165,10 @@ export default function QuizForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
+        credentials: 'include', // Inclure les cookies pour l'authentification
         body: JSON.stringify({ 
-          userId,
           answers 
         }),
       });
@@ -189,7 +184,6 @@ export default function QuizForm() {
       const rankId = rankIdFromApi ? String(rankIdFromApi) : null;
       
       if (!rankId) {
-        console.error('No rank ID returned from calculate_user_rank');
         throw new Error('Échec du calcul du rang. Aucun rang retourné.');
       }
       
@@ -201,7 +195,7 @@ export default function QuizForm() {
         .single<{ id: string; name_en: string; name_fr: string; description_en: string | null; description_fr: string | null; level: number; icon_url: string | null; created_at: string }>();
       
       if (rankDetailsError) {
-        console.error('Error fetching rank details:', rankDetailsError);
+        handleErrorSilently(rankDetailsError, 'QuizForm - fetch rank details');
         throw rankDetailsError;
       }
       
@@ -229,9 +223,10 @@ export default function QuizForm() {
         throw new Error('Aucun détail de rang trouvé');
       }
       
-    } catch (error: any) {
-      console.error('Error submitting quiz:', error);
-      toast.error(error?.message || 'Erreur lors de la soumission du quiz');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la soumission du quiz';
+      handleErrorSilently(error, 'QuizForm - submitQuiz');
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -259,8 +254,8 @@ export default function QuizForm() {
       >
         <Card className="w-full max-w-2xl mx-auto">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">{t('quizCompleted')}</CardTitle>
-            <CardDescription>{t('yourRankHasBeenDetermined')}</CardDescription>
+            <CardTitle className="text-2xl">Quiz terminé</CardTitle>
+            <CardDescription>Votre rang a été déterminé</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6 py-6">
             {userRank.icon_url && (
@@ -271,7 +266,7 @@ export default function QuizForm() {
               >
                 <img 
                   src={userRank.icon_url} 
-                  alt={currentLang === 'fr' ? userRank.name_fr : userRank.name_en} 
+                  alt={userRank.name_fr} 
                   className="w-32 h-32 object-contain"
                 />
               </motion.div>
@@ -283,15 +278,15 @@ export default function QuizForm() {
               className="text-center"
             >
               <h3 className="text-2xl font-bold mb-2">
-                {currentLang === 'fr' ? userRank.name_fr : userRank.name_en}
+                {userRank.name_fr}
               </h3>
               <p className="text-muted-foreground">
-                {currentLang === 'fr' ? userRank.description_fr : userRank.description_en}
+                {userRank.description_fr}
               </p>
             </motion.div>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <Button onClick={handleFinish}>{t('continueToProfile')}</Button>
+            <Button onClick={handleFinish}>Continuer vers le profil</Button>
           </CardFooter>
         </Card>
       </motion.div>
@@ -304,7 +299,7 @@ export default function QuizForm() {
   if (!currentQuestion) {
     return (
       <div className="text-center p-4">
-        <p>{t('noQuestionsAvailable')}</p>
+        <p>Aucune question disponible</p>
       </div>
     );
   }
@@ -321,10 +316,10 @@ export default function QuizForm() {
         <Card className="w-full max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle>
-              {t('question')} {currentQuestionIndex + 1} / {questions.length}
+              Question {currentQuestionIndex + 1} / {questions.length}
             </CardTitle>
             <CardDescription>
-              {currentLang === 'fr' ? currentQuestion.question_fr : currentQuestion.question_en}
+              {currentQuestion.question_fr}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -337,7 +332,7 @@ export default function QuizForm() {
                 <div key={option.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent">
                   <RadioGroupItem value={option.id.toString()} id={`option-${option.id}`} />
                   <Label htmlFor={`option-${option.id}`} className="flex-1 cursor-pointer">
-                    {currentLang === 'fr' ? option.text_fr : option.text_en}
+                    {option.text_fr}
                   </Label>
                 </div>
               ))}
@@ -354,7 +349,7 @@ export default function QuizForm() {
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  {isLastQuestion ? t('finish') : t('next')}
+                  {isLastQuestion ? 'Terminer' : 'Suivant'}
                   <ArrowRight className="h-4 w-4" />
                 </>
               )}

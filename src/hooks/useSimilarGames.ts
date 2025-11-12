@@ -2,6 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { SimilarGame } from '@/types/games';
 import { useAuth } from '@/context/auth-context';
+import { GAME_BASIC_WITH_GENRES_SELECT, SIMILAR_GAME_SELECT, CONSOLE_SELECT } from '@/lib/supabase-queries';
+import { handleErrorSilently } from '@/lib/error-handler';
 
 export function useSimilarGames(gameId: string | undefined) {
   const { user } = useAuth();
@@ -14,18 +16,12 @@ export function useSimilarGames(gameId: string | undefined) {
       // Récupérer les informations du jeu actuel avec ses genres
       const { data: currentGame, error: gameError } = await supabase
         .from('games')
-        .select(`
-          id,
-          console_id,
-          developer,
-          publisher,
-          game_genres(genre_id, genres(id, name))
-        `)
+        .select(GAME_BASIC_WITH_GENRES_SELECT)
         .eq('id', gameId)
         .single<{ id: string; console_id: string; developer: string; publisher: string; game_genres: Array<{ genre_id: string; genres: { id: string; name: string } }> }>();
 
       if (gameError || !currentGame) {
-        console.error('Error fetching current game:', gameError);
+        handleErrorSilently(gameError, 'useSimilarGames - fetch current game');
         return [];
       }
 
@@ -36,14 +32,14 @@ export function useSimilarGames(gameId: string | undefined) {
         .eq('user_id', user.id);
 
       if (userGamesError) {
-        console.error('Error fetching user games:', userGamesError);
+        handleErrorSilently(userGamesError, 'useSimilarGames - fetch user games');
       }
 
-      const userGameIds = (userGames || []).map((ug: any) => ug.game_id);
+      const userGameIds = (userGames || []).map((ug: { game_id: string }) => ug.game_id);
       
       // Récupérer les genres du jeu actuel
       const gameGenres = Array.isArray(currentGame.game_genres) ? currentGame.game_genres : [];
-      const genreIds = gameGenres.map((g: any) => g.genre_id) || [];
+      const genreIds = gameGenres.map((g: { genre_id: string }) => g.genre_id) || [];
       
       if (genreIds.length === 0) {
         // Si pas de genres, chercher par console, développeur ou éditeur
@@ -65,24 +61,18 @@ export function useSimilarGames(gameId: string | undefined) {
         // Récupérer les jeux similaires uniquement parmi ceux de la bibliothèque
         const { data, error } = await supabase
           .from('games')
-          .select(`
-            id,
-            title,
-            cover_url,
-            igdb_id,
-            console:console_id(id, name)
-          `)
+          .select(SIMILAR_GAME_SELECT)
           .in('id', userGameIds)
           .or(conditions.join(','))
           .neq('id', gameId)
           .limit(6);
 
         if (error) {
-          console.error('Error fetching similar games:', error);
+          handleErrorSilently(error, 'useSimilarGames - fetch similar games');
           return [];
         }
 
-        return (data || []).map((game: any) => ({
+        return (data || []).map((game) => ({
           id: game.id,
           title: game.title,
           cover_url: game.cover_url,
@@ -105,7 +95,7 @@ export function useSimilarGames(gameId: string | undefined) {
             cover_url,
             igdb_id,
             console_id,
-            console:console_id(id, name)
+            ${CONSOLE_SELECT}
           )
         `)
         .in('genre_id', genreIds)
@@ -115,14 +105,14 @@ export function useSimilarGames(gameId: string | undefined) {
       const { data: gamesWithGenres, error: genreError } = await genreQuery;
 
       if (genreError) {
-        console.error('Error fetching games by genres:', genreError);
+        handleErrorSilently(genreError, 'useSimilarGames - fetch games by genres');
         return [];
       }
 
       // Compter les genres en commun et trier
-      const gameCounts = new Map<string, { game: any; count: number }>();
+      const gameCounts = new Map<string, { game: SimilarGame; count: number }>();
       
-      (gamesWithGenres || []).forEach((item: any) => {
+      (gamesWithGenres || []).forEach((item: { game_id: string; games: SimilarGame }) => {
         const similarGameId = item.games?.id;
         const similarGame = item.games;
         
@@ -144,7 +134,7 @@ export function useSimilarGames(gameId: string | undefined) {
       return Array.from(gameCounts.values())
         .sort((a, b) => b.count - a.count)
         .slice(0, 6)
-        .map(item => item.game as SimilarGame);
+        .map(item => item.game);
     },
     enabled: !!gameId && !!user,
   });
