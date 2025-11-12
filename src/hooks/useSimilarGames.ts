@@ -17,6 +17,19 @@ type SimilarGameData = {
   } | null;
 };
 
+// Type pour les données retournées par Supabase avec genres (inclut console_id)
+type GameWithGenresData = {
+  id: string;
+  title: string;
+  cover_url: string | null;
+  igdb_id: number | null;
+  console_id: string;
+  console: {
+    id: string;
+    name: string;
+  } | null;
+};
+
 export function useSimilarGames(gameId: string | undefined) {
   const { user } = useAuth();
   
@@ -113,7 +126,8 @@ export function useSimilarGames(gameId: string | undefined) {
         `)
         .in('genre_id', genreIds)
         .in('game_id', userGameIds)
-        .neq('game_id', gameId);
+        .neq('game_id', gameId)
+        .returns<Array<{ game_id: string; games: GameWithGenresData }>>();
 
       const { data: gamesWithGenres, error: genreError } = await genreQuery;
 
@@ -125,18 +139,27 @@ export function useSimilarGames(gameId: string | undefined) {
       // Compter les genres en commun et trier
       const gameCounts = new Map<string, { game: SimilarGame; count: number }>();
       
-      (gamesWithGenres || []).forEach((item: { game_id: string; games: SimilarGame }) => {
+      (gamesWithGenres || []).forEach((item) => {
         const similarGameId = item.games?.id;
-        const similarGame = item.games;
+        const similarGameRaw = item.games;
         
-        if (!similarGameId) {
+        if (!similarGameId || !similarGameRaw) {
           return;
         }
         
         // Filtrer par même plateforme si le jeu actuel en a une
-        if (currentGame.console_id && similarGame.console_id !== currentGame.console_id) {
+        if (currentGame.console_id && similarGameRaw.console_id !== currentGame.console_id) {
           return;
         }
+        
+        // Convertir en SimilarGame
+        const similarGame: SimilarGame = {
+          id: similarGameRaw.id,
+          title: similarGameRaw.title,
+          cover_url: similarGameRaw.cover_url,
+          igdb_id: similarGameRaw.igdb_id || null,
+          console: similarGameRaw.console || null
+        };
         
         const current = gameCounts.get(similarGameId) || { game: similarGame, count: 0 };
         current.count += 1;

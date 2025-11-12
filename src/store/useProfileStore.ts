@@ -148,8 +148,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
             updated_at: defaultProfile.updated_at
           };
           
-          const { error: insertError } = await supabase
-            .from('profiles')
+          const { error: insertError } = await (supabase
+            .from('profiles') as any)
             .insert([insertData]);
             
           if (insertError) {
@@ -226,8 +226,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         updated_at: new Date().toISOString()
       };
       
-      const { error } = await supabase
-        .from('profiles')
+      const { error } = await (supabase
+        .from('profiles') as any)
         .update(updateData)
         .eq('id', user.id);
       
