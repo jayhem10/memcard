@@ -5,6 +5,18 @@ import { useAuth } from '@/context/auth-context';
 import { GAME_BASIC_WITH_GENRES_SELECT, SIMILAR_GAME_SELECT, CONSOLE_SELECT } from '@/lib/supabase-queries';
 import { handleErrorSilently } from '@/lib/error-handler';
 
+// Type pour les données retournées par Supabase avec SIMILAR_GAME_SELECT
+type SimilarGameData = {
+  id: string;
+  title: string;
+  cover_url: string | null;
+  igdb_id: number | null;
+  console: {
+    id: string;
+    name: string;
+  } | null;
+};
+
 export function useSimilarGames(gameId: string | undefined) {
   const { user } = useAuth();
   
@@ -65,7 +77,8 @@ export function useSimilarGames(gameId: string | undefined) {
           .in('id', userGameIds)
           .or(conditions.join(','))
           .neq('id', gameId)
-          .limit(6);
+          .limit(6)
+          .returns<SimilarGameData[]>();
 
         if (error) {
           handleErrorSilently(error, 'useSimilarGames - fetch similar games');
