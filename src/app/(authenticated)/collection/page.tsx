@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/search-input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Grid2X2, List, Loader2, Database, Share2, Check, Power } from 'lucide-react';
+import { Grid2X2, List, Loader2, Database, Share2, Check, Power, ArrowUpDown, Type, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
@@ -17,11 +17,20 @@ import { ExportButton } from '@/components/ui/export-button';
 import { GameExportData } from '@/lib/excel-export';
 import { useUserGames } from '@/hooks/useUserGames';
 import { MobileFilterSelector } from '@/components/filters/mobile-filter-selector';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { sortGamesByTitle } from '@/lib/game-utils';
 
 // Types de données
 type ViewMode = 'grid' | 'list';
 type FilterStatus = 'all' | 'playing' | 'completed' | 'backlog' | 'wishlist';
 type CollectionTab = 'collection' | 'wishlist';
+type SortOrder = 'alphabetical' | 'date-desc';
 
 function CollectionPageContent() {
   const searchParams = useSearchParams();
@@ -35,6 +44,7 @@ function CollectionPageContent() {
   const [copied, setCopied] = useState(false);
   const [isShareActive, setIsShareActive] = useState<boolean | null>(null);
   const [isLoadingShare, setIsLoadingShare] = useState(false);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('alphabetical');
 
   // Utiliser le hook React Query pour récupérer les jeux
   const { data: games = [], isLoading: loading, error } = useUserGames();
@@ -202,6 +212,21 @@ function CollectionPageContent() {
     return matchesSearch && matchesStatus && matchesConsole && matchesGenre;
   });
 
+  // Trier les jeux filtrés selon l'ordre sélectionné
+  const sortedGames = useMemo(() => {
+    if (sortOrder === 'alphabetical') {
+      return sortGamesByTitle(filteredGames);
+    } else if (sortOrder === 'date-desc') {
+      // Trier par date de création (plus récent au plus ancien)
+      return [...filteredGames].sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateB - dateA; // Décroissant (plus récent en premier)
+      });
+    }
+    return filteredGames;
+  }, [filteredGames, sortOrder]);
+
   const filterButtons: { label: string; value: FilterStatus }[] = [
     { label: 'Tous', value: 'all' },
     { label: 'En cours', value: 'playing' },
@@ -365,7 +390,7 @@ function CollectionPageContent() {
             <p className="text-sm sm:text-base text-muted-foreground">
               {activeTab === 'wishlist' 
                 ? 'Gérez vos jeux souhaités et partagez votre liste'
-                : `Gérez et explorez votre collection de ${filteredGames.length} jeu${filteredGames.length > 1 ? 'x' : ''}`
+                : `Gérez et explorez votre collection de ${sortedGames.length} jeu${sortedGames.length > 1 ? 'x' : ''}`
               }
             </p>
           </div>
@@ -433,7 +458,7 @@ function CollectionPageContent() {
             </div>
           ) : (
             <ExportButton 
-              games={filteredGames as GameExportData[]}
+              games={sortedGames as GameExportData[]}
               activeTab={activeTab}
               filename="ma_collection"
               size="sm"
@@ -634,6 +659,28 @@ function CollectionPageContent() {
         </div>
       </div>
 
+      {/* Sélecteur de tri */}
+      {!loading && sortedGames.length > 0 && (
+        <div className="flex items-center justify-end">
+          <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
+            <SelectTrigger className="w-auto sm:w-[200px] h-9 px-2 sm:px-3 text-sm border-border/50 bg-muted/30 hover:bg-muted/50">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                {sortOrder === 'alphabetical' ? (
+                  <span className="hidden sm:inline">Ordre alphabétique</span>
+                ) : (
+                  <span className="hidden sm:inline">Plus récent au plus ancien</span>
+                )}
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="alphabetical">Ordre alphabétique</SelectItem>
+              <SelectItem value="date-desc">Plus récent au plus ancien</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {/* Liste des jeux */}
       <div className="min-h-[300px]">
         {loading ? (
@@ -668,11 +715,11 @@ function CollectionPageContent() {
               ))}
             </div>
           )
-        ) : filteredGames.length > 0 ? (
+        ) : sortedGames.length > 0 ? (
           viewMode === 'grid' ? (
-            <GameGrid games={filteredGames} />
+            <GameGrid games={sortedGames} />
           ) : (
-            <GameList games={filteredGames} />
+            <GameList games={sortedGames} />
           )
         ) : (
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-12">
