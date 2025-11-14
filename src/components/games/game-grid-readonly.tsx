@@ -1,15 +1,10 @@
 import Image from 'next/image';
-import { Game } from '@/types/database.types';
 import { STATUS_LABELS } from '@/types/games';
+import { CollectionGame } from '@/hooks/useUserGames';
 
 interface GameGridReadonlyProps {
-  games: (Game & {
-    status?: string;
-    rating?: number;
-    notes?: string;
-    console_name?: string;
-  })[];
-  onGameClick?: (game: Game & { status?: string; rating?: number; notes?: string; console_name?: string }) => void;
+  games: CollectionGame[];
+  onGameClick?: (game: CollectionGame) => void;
 }
 
 export function GameGridReadonly({ games, onGameClick }: GameGridReadonlyProps) {
