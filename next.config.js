@@ -21,7 +21,6 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 jours
   },
   compiler: {
-    // Supprime les console.log en production pour réduire la taille du bundle
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn'], // Garde console.error et console.warn pour le débogage
     } : false,

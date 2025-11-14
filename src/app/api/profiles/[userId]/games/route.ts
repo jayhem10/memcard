@@ -87,6 +87,7 @@ export async function GET(
         status,
         rating,
         notes,
+        review,
         created_at,
         updated_at,
         purchase_date,

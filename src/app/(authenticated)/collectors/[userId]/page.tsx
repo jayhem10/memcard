@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, Suspense, useRef } from 'react';
 import { GameGridReadonly } from '@/components/games/game-grid-readonly';
 import { GameListReadonly } from '@/components/games/game-list-readonly';
+import { OtherUserGameModal } from '@/components/games/other-user-game-modal';
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/search-input';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +32,8 @@ function CollectorCollectionContent() {
   const [genreFilter, setGenreFilter] = useState<string>('all');
   const [profile, setProfile] = useState<{ id: string; username: string | null; avatar_url: string | null } | null>(null);
   const [isProfilePublic, setIsProfilePublic] = useState<boolean | null>(null);
+  const [selectedGame, setSelectedGame] = useState<CollectionGame | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const hasShownPrivateToastRef = useRef(false);
   const hasShownErrorToastRef = useRef(false);
   const queryClient = useQueryClient();
@@ -224,6 +227,16 @@ function CollectorCollectionContent() {
     { label: 'À faire', value: 'backlog' },
   ];
 
+  const handleGameClick = (game: CollectionGame) => {
+    setSelectedGame(game);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedGame(null);
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Hero Section */}
@@ -371,9 +384,9 @@ function CollectorCollectionContent() {
             </div>
           ) : filteredGames.length > 0 ? (
             viewMode === 'grid' ? (
-              <GameGridReadonly games={filteredGames} />
+              <GameGridReadonly games={filteredGames} onGameClick={handleGameClick} />
             ) : (
-              <GameListReadonly games={filteredGames} />
+              <GameListReadonly games={filteredGames} onGameClick={handleGameClick} />
             )
           ) : (
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-12">
@@ -387,6 +400,16 @@ function CollectorCollectionContent() {
           )}
         </div>
       </div>
+
+      {/* Modale de détails du jeu */}
+      {selectedGame && userId && (
+        <OtherUserGameModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          game={selectedGame}
+          ownerUserId={userId}
+        />
+      )}
     </div>
   );
 }

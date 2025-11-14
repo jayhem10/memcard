@@ -9,22 +9,24 @@ interface GameGridReadonlyProps {
     notes?: string;
     console_name?: string;
   })[];
+  onGameClick?: (game: Game & { status?: string; rating?: number; notes?: string; console_name?: string }) => void;
 }
 
-export function GameGridReadonly({ games }: GameGridReadonlyProps) {
+export function GameGridReadonly({ games, onGameClick }: GameGridReadonlyProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {games.map((game, index) => (
         <div
           key={game.id}
-          className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted"
+          onClick={() => onGameClick?.(game)}
+          className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-muted cursor-pointer"
         >
           {game.cover_url ? (
             <Image
               src={game.cover_url}
               alt={game.title}
               fill
-              className="object-cover"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
               priority={index < 6}
               quality={90}
@@ -40,7 +42,7 @@ export function GameGridReadonly({ games }: GameGridReadonlyProps) {
             {game.console_name || 'Console inconnue'}
           </div>
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <div className="absolute bottom-0 left-0 right-0 p-4">
               <h3 className="text-sm font-medium text-white line-clamp-2">
                 {game.title}

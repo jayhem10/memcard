@@ -32,6 +32,7 @@ interface SupabaseUserGameItem {
   status: string;
   rating: number | null;
   notes: string | null;
+  review: string | null;
   created_at: string;
   updated_at: string;
   purchase_date: string | null;
@@ -160,6 +161,7 @@ export function transformUserGameItem(item: SupabaseUserGameItem): {
     status: item.status,
     rating: item.rating !== null && item.rating !== undefined ? Number(item.rating) : null,
     notes: item.notes,
+    review: item.review,
     created_at: item.created_at,
     updated_at: item.updated_at,
     purchase_date: item.purchase_date,

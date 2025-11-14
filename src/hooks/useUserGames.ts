@@ -22,6 +22,7 @@ export type CollectionGame = {
   status?: string;
   rating?: number | null;
   notes?: string;
+  review?: string | null;
   created_at?: string;
   updated_at?: string;
   purchase_date?: string | null;
