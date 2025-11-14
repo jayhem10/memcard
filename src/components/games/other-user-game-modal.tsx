@@ -257,23 +257,13 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
           <DialogFooter className="flex-shrink-0 px-4 sm:px-6 pb-4 sm:pb-6 pt-4 border-t gap-2 flex-row">
             {localGameStatus === 'in_collection' ? (
               <Button
-                onClick={handleRemoveFromCollection}
-                disabled={isRemoving}
-                variant="default"
+                disabled
+                variant="outline"
                 size="sm"
-                className="h-9 px-2 sm:px-3 gap-1 sm:gap-2 flex-1"
+                className="h-9 px-2 sm:px-3 gap-1 sm:gap-2 flex-1 cursor-not-allowed"
               >
-                {isRemoving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-                    <span className="text-sm hidden sm:inline">Suppression...</span>
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="h-4 w-4 flex-shrink-0" />
-                    <span className="text-sm hidden sm:inline">Retirer de ma collection</span>
-                  </>
-                )}
+                <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm hidden sm:inline">Dans ma collection</span>
               </Button>
             ) : localGameStatus === 'in_wishlist' ? (
               <Button
