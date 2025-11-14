@@ -188,6 +188,19 @@ export default function GameDetailPage() {
     mutationFn: async () => {
       if (!user || !gameId) throw new Error('Utilisateur non authentifié ou ID de jeu manquant');
       
+      // Récupérer le statut du jeu avant suppression pour savoir où rediriger
+      const { data: userGame, error: fetchError } = await supabase
+        .from('user_games')
+        .select('status')
+        .eq('user_id', user.id)
+        .eq('game_id', gameId)
+        .single<{ status: string }>();
+      
+      if (fetchError) throw fetchError;
+      
+      const gameStatus = userGame?.status?.toUpperCase();
+      const isWishlist = gameStatus === 'WISHLIST' || gameStatus === 'wishlist';
+      
       const { error } = await supabase
         .from('user_games')
         .delete()
@@ -195,8 +208,10 @@ export default function GameDetailPage() {
         .eq('game_id', gameId);
 
       if (error) throw error;
+      
+      return { isWishlist };
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       // Invalider le cache pour rafraîchir les listes
       queryClient.invalidateQueries({ queryKey: ['userGames', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['game', gameId, user?.id] });
@@ -205,9 +220,15 @@ export default function GameDetailPage() {
       // Attendre un peu pour que l'invalidation se propage
       await queryClient.refetchQueries({ queryKey: ['userGames', user?.id] });
       
-      toast.success('Jeu supprimé de votre collection');
-      // Rediriger vers la page de collection
-      router.push('/collection');
+      if (data.isWishlist) {
+        toast.success('Jeu supprimé de votre liste de souhaits');
+        // Rediriger vers la wishlist si c'était un jeu de la wishlist
+        router.push('/collection?tab=wishlist');
+      } else {
+        toast.success('Jeu supprimé de votre collection');
+        // Rediriger vers la collection si c'était un jeu de la collection
+        router.push('/collection');
+      }
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erreur lors de la suppression');

@@ -24,19 +24,19 @@ export function SupportDialog({ open, onOpenChange }: SupportDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!w-[calc(100vw-2rem)] sm:!w-full !max-w-[500px] !max-h-[90vh] !grid !grid-rows-[auto_1fr_auto] !left-[50%] !translate-x-[-50%]">
+      <DialogContent className="!w-[calc(100vw-2rem)] sm:!w-full !max-w-[500px] !max-h-[85vh] !overflow-y-auto !overflow-x-hidden !left-[50%] !translate-x-[-50%] flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Heart className="h-6 w-6 text-primary" />
+          <DialogTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+            <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             Soutenir MemCard
           </DialogTitle>
-          <DialogDescription className="text-base">
+          <DialogDescription className="text-sm sm:text-base">
             Votre soutien nous aide à maintenir et améliorer l'application
           </DialogDescription>
         </DialogHeader>
 
-        <div className="overflow-y-auto max-h-[calc(90vh-200px)] min-h-0">
-          <div className="space-y-4 py-4 pr-4">
+        <div className="px-4 sm:px-6 pb-4 sm:pb-6 overflow-x-hidden flex-1 overflow-y-auto">
+          <div className="space-y-4">
             <div className="space-y-3">
               <h4 className="font-semibold text-sm">Pourquoi soutenir MemCard ?</h4>
               
@@ -87,7 +87,7 @@ export function SupportDialog({ open, onOpenChange }: SupportDialogProps) {
           </div>
         </div>
 
-        <DialogFooter className="flex-shrink-0 flex-col sm:flex-row gap-2 pt-4 border-t">
+        <DialogFooter className="flex-shrink-0 flex-col sm:flex-row gap-2 pt-4 border-t px-4 sm:px-6">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

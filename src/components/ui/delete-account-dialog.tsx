@@ -72,7 +72,7 @@ export function DeleteAccountDialog({ onConfirm, isLoading = false }: DeleteAcco
           Supprimer le compte
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent className="sm:max-w-[500px] !w-[calc(100vw-2rem)] sm:!w-full max-h-[85vh] overflow-y-auto overflow-x-hidden">
         <AlertDialogHeader>
           <div className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />

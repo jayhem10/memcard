@@ -174,8 +174,8 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
 
   return (
     <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px] max-w-[100vw] p-0">
-        <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
+      <DialogContent className="sm:max-w-[500px] !w-[calc(100vw-2rem)] sm:!w-full max-h-[85vh] overflow-y-auto overflow-x-hidden p-0 flex flex-col">
+        <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6 flex-shrink-0">
           <DialogTitle>
             Sélectionnez une console
           </DialogTitle>
@@ -197,7 +197,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="py-2 sm:py-4 space-y-3 sm:space-y-4 px-4 sm:px-6 overflow-y-auto max-h-[50vh] sm:max-h-[55vh]">
+          <div className="py-2 sm:py-4 space-y-3 sm:space-y-4 px-4 sm:px-6 overflow-x-hidden">
             <div className="space-y-2">
               <Label htmlFor="console">Console</Label>
               <Select

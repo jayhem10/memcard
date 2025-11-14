@@ -76,15 +76,15 @@ export function GameFormDialog({ isOpen, onClose, gameId, initialBuyPrice }: Gam
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px] max-w-[100vw] p-0">
-        <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
+      <DialogContent className="sm:max-w-[500px] !w-[calc(100vw-2rem)] sm:!w-full max-h-[85vh] overflow-y-auto overflow-x-hidden p-0 flex flex-col">
+        <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6 flex-shrink-0">
           <DialogTitle>Prix d'achat</DialogTitle>
           <DialogDescription>
             Entrez le prix d'achat du jeu pour suivre la valeur de votre collection
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 px-4 sm:px-6 overflow-y-auto max-h-[52vh] sm:max-h-[58vh]">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 px-4 sm:px-6 overflow-x-hidden">
           <div className="space-y-2">
             <Label htmlFor="buyPrice">Prix d'achat</Label>
             <Input

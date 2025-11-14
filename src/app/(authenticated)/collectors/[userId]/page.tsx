@@ -240,31 +240,47 @@ function CollectorCollectionContent() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 p-6 md:p-8 shadow-xl">
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-border/50 p-4 sm:p-6 md:p-8 shadow-xl">
         <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full blur-3xl pointer-events-none" />
+        
+        {/* Bouton retour - Mobile : en haut, Desktop : intégré */}
+        <div className="relative mb-4 md:hidden">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/collectors')}
+            className="flex items-center gap-2 -ml-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="text-sm font-medium">Retour aux collectionneurs</span>
+          </Button>
+        </div>
+
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            {/* Bouton retour - Desktop uniquement */}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.push('/collectors')}
-              className="flex-shrink-0"
+              className="hidden md:flex items-center gap-2 flex-shrink-0"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour
+              <ArrowLeft className="h-4 w-4" />
+              <span>Retour</span>
             </Button>
+            
             <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12">
+              <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                 <AvatarImage src={profile?.avatar_url || ''} alt={profile?.username || ''} />
                 <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground">
-                  {profile?.username?.[0]?.toUpperCase() || <User className="h-6 w-6" />}
+                  {profile?.username?.[0]?.toUpperCase() || <User className="h-5 w-5 sm:h-6 sm:w-6" />}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent truncate">
                   Collection de {profile?.username || 'Collectionneur'}
                 </h1>
-                <p className="text-sm sm:text-base text-muted-foreground">
+                <p className="text-xs sm:text-sm md:text-base text-muted-foreground mt-1">
                   {filteredGames.length} jeu{filteredGames.length > 1 ? 'x' : ''} dans la collection
                 </p>
               </div>

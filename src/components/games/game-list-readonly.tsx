@@ -84,7 +84,7 @@ export function GameListReadonly({ games, onGameClick }: GameListReadonlyProps) 
                   {game.completion_percentage}% terminé
                 </span>
               )}
-              {game.play_time !== undefined && (
+              {game.play_time !== undefined && game.play_time !== null && (
                 <span className="text-muted-foreground">
                   {Math.floor(game.play_time / 60)}h {game.play_time % 60}m
                 </span>
