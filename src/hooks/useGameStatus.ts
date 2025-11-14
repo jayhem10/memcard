@@ -96,7 +96,15 @@ export function useGameStatus(game: CollectionGame | null, enabled: boolean = tr
 
         if (userGamesWithGames && userGamesWithGames.length > 0) {
           // Trouver le jeu correspondant avec igdb_id et console_id
-          const matching = userGamesWithGames.find((ug: any) => 
+          type UserGameWithGame = {
+            status: string;
+            games: {
+              igdb_id: number;
+              console_id: string;
+            } | null;
+          };
+
+          const matching = (userGamesWithGames as UserGameWithGame[]).find((ug) => 
             ug.games?.igdb_id === game.igdb_id && ug.games?.console_id === game.console_id
           );
 

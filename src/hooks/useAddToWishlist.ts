@@ -38,8 +38,8 @@ export function useAddToWishlist() {
         gameId = existingGame.id;
       } else {
         // Créer le jeu s'il n'existe pas
-        const { data: newGame, error: createError } = await supabase
-          .from('games')
+        const { data: newGame, error: createError } = await (supabase
+          .from('games') as any)
           .insert({
             igdb_id: game.igdb_id,
             title: game.title,
@@ -52,7 +52,7 @@ export function useAddToWishlist() {
             console_id: game.console_id,
           })
           .select('id')
-          .single<{ id: string }>();
+          .single();
 
         if (createError) throw createError;
         gameId = newGame.id;
@@ -71,19 +71,19 @@ export function useAddToWishlist() {
             if (existingGenre) {
               genreId = existingGenre.id;
             } else {
-              const { data: newGenre, error: genreError } = await supabase
-                .from('genres')
+              const { data: newGenre, error: genreError } = await (supabase
+                .from('genres') as any)
                 .insert({ name: genre.name })
                 .select('id')
-                .single<{ id: string }>();
+                .single();
 
               if (genreError) throw genreError;
-              genreId = newGenre.id;
+              genreId = (newGenre as { id: string }).id;
             }
 
             // Créer la relation
-            await supabase
-              .from('game_genres')
+            await (supabase
+              .from('game_genres') as any)
               .insert({
                 game_id: gameId,
                 genre_id: genreId,
@@ -93,8 +93,8 @@ export function useAddToWishlist() {
       }
 
       // Ajouter à la wishlist
-      const { error: insertError } = await supabase
-        .from('user_games')
+      const { error: insertError } = await (supabase
+        .from('user_games') as any)
         .insert({
           user_id: user.id,
           game_id: gameId,

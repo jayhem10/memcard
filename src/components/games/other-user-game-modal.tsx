@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Gift, CheckCircle2, Loader2, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -99,11 +99,20 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
 
       if (deleteError) throw deleteError;
 
-      // Invalider le cache
-      queryClient.invalidateQueries({ queryKey: ['userGames', user.id] });
-      
-      // Mettre à jour le statut local
+      // Mettre à jour le cache localement immédiatement pour un feedback instantané
+      const cachedGames = queryClient.getQueryData<CollectionGame[]>(['userGames', user.id]);
+      if (cachedGames) {
+        const updatedGames = cachedGames.filter(
+          g => !(g.igdb_id === game.igdb_id && g.console_id === game.console_id)
+        );
+        queryClient.setQueryData(['userGames', user.id], updatedGames);
+      }
+
+      // Mettre à jour le statut local immédiatement
       setLocalGameStatus('not_in_collection');
+      
+      // Invalider le cache en arrière-plan (sans attendre) pour synchroniser avec la DB
+      queryClient.invalidateQueries({ queryKey: ['userGames', user.id] });
       
       const isWishlist = matchingGame.status?.toUpperCase() === 'WISHLIST' || matchingGame.status?.toUpperCase() === 'wishlist';
       toast.success(isWishlist ? 'Jeu supprimé de votre liste de souhaits' : 'Jeu supprimé de votre collection');
@@ -130,6 +139,9 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
           <DialogTitle className="text-lg sm:text-xl md:text-2xl pr-8 break-words">
             {game.title || 'Jeu sans titre'}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Détails du jeu {game.title}
+          </DialogDescription>
         </DialogHeader>
 
         {isChecking ? (

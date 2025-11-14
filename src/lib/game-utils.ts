@@ -130,6 +130,7 @@ export function transformUserGameItem(item: SupabaseUserGameItem): {
   status: string;
   rating: number | null;
   notes: string | null;
+  review: string | null;
   created_at: string;
   updated_at: string;
   purchase_date: string | null;
