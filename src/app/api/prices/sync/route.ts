@@ -8,9 +8,13 @@ export const dynamic = 'force-dynamic';
 export const POST = withApi(async (request) => {
   const supabase = supabaseAdmin;
 
-  const body = await request.json();
+  let body;
+  try {
+    body = await request.json();
+  } catch (error) {
+    throw new ApiError('Body JSON invalide', 400);
+  }
   
-  // Validation
   validateBody<{ gameId: string }>(body, ['gameId']);
 
   const { gameId } = body;
@@ -32,11 +36,19 @@ export const POST = withApi(async (request) => {
     const platformName = consoleData?.abbreviation || consoleData?.name || undefined;
 
     // Appel eBay (EUR, PAL, complet/CIB)
-    const priceData = await fetchEbayPriceSamples({
-      title: game.title,
-      platformName: platformName,
-      regionHint: 'PAL',
-    });
+    let priceData;
+    try {
+      priceData = await fetchEbayPriceSamples({
+        title: game.title,
+        platformName: platformName,
+        regionHint: 'PAL',
+      });
+    } catch (error: any) {
+      throw new ApiError(
+        `Erreur lors de la récupération des prix eBay: ${error.message || 'Erreur inconnue'}`,
+        500
+      );
+    }
 
     const summary = summarizePrices(priceData.used, priceData.new);
     if (!summary) {
@@ -90,6 +102,6 @@ export const POST = withApi(async (request) => {
       ...summary,
       last_updated: now,
     };
-    });
+});
 
 
