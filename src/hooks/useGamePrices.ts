@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { GamePrice } from '@/types/games';
+import { queryKeys, priceQueryOptions } from '@/lib/react-query-config';
 
 export function useGamePrices(gameId: string | undefined) {
   return useQuery<GamePrice | null, Error>({
-    queryKey: ['gamePrices', gameId],
+    queryKey: queryKeys.gamePrices(gameId || ''),
     queryFn: async () => {
       if (!gameId) return null;
 
@@ -12,7 +13,7 @@ export function useGamePrices(gameId: string | undefined) {
         .from('game_prices')
         .select('min_price, max_price, average_price, new_price, last_updated')
         .eq('game_id', gameId)
-        .maybeSingle<{ min_price: number; max_price: number; average_price: number; new_price: number; last_updated: string }>();
+        .maybeSingle();
 
       // Si l'erreur est "PGRST116" (no rows returned), c'est normal = pas de données
       if (error && error.code !== 'PGRST116') {
@@ -31,6 +32,7 @@ export function useGamePrices(gameId: string | undefined) {
       };
     },
     enabled: !!gameId,
+    ...priceQueryOptions,
   });
 }
 

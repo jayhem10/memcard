@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useCollectionStore } from '@/store/useCollectionStore';
+import { useCollection } from '@/store';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth-context';
 import toast from 'react-hot-toast';
@@ -29,7 +29,7 @@ interface GameFormDialogProps {
 export function GameFormDialog({ isOpen, onClose, gameId, initialBuyPrice }: GameFormDialogProps) {
   const [buyPrice, setBuyPrice] = useState<string>(initialBuyPrice?.toString() || '');
   const [isLoading, setIsLoading] = useState(false);
-  const { addToTotal, subtractFromTotal } = useCollectionStore();
+  const { addToTotal, subtractFromTotal } = useCollection();
   const queryClient = useQueryClient();
   const { user } = useAuth();
 

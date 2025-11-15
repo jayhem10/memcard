@@ -6,9 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/context/auth-context';
-import { useUserStatsStore } from '@/store/useUserStatsStore';
-import { useCollectionStore } from '@/store/useCollectionStore';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useStats, useCollection, useProfile } from '@/store';
 import { supabase } from '@/lib/supabase';
 import { Gamepad, Calendar, TrendingUp, Trophy, Heart, Euro, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -18,8 +16,8 @@ function UserStats() {
   const { 
     total, completed, inProgress, wishlist, 
     platforms, isLoading 
-  } = useUserStatsStore();
-  const { totalValue } = useCollectionStore();
+  } = useStats();
+  const { totalValue } = useCollection();
 
   if (isLoading) {
     return (
@@ -161,7 +159,7 @@ function UserStats() {
 
 // Composant pour les jeux récents
 function RecentGames() {
-  const { recentGames, isLoading } = useUserStatsStore();
+  const { recentGames, isLoading } = useStats();
   
   if (isLoading) {
     return (
@@ -281,9 +279,9 @@ function RecentGames() {
 
 export default function HomePage() {
   const { user, isLoading: authLoading } = useAuth();
-  const { profile, isLoading: profileLoading, fetchProfile } = useProfileStore();
-  const { fetchUserStats, reset: resetStats } = useUserStatsStore();
-  const { calculateTotalFromGames, setUserId, reset: resetCollection } = useCollectionStore();
+  const { profile, isLoading: profileLoading, fetchProfile } = useProfile();
+  const { fetchUserStats, resetStats } = useStats();
+  const { calculateTotalFromGames, setUserId, resetCollection } = useCollection();
   const lastFetchedUserIdRef = useRef<string | null>(null);
   
   // Charger la valeur de la collection (uniquement sur la page d'accueil)
@@ -300,10 +298,8 @@ export default function HomePage() {
         return;
       }
 
-      // Vérifier que la session Supabase est bien initialisée avant de faire la requête
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !session) {
-        console.warn('Session non disponible pour calculer la valeur de la collection');
         return;
       }
 
@@ -319,7 +315,7 @@ export default function HomePage() {
         .from('user_games')
         .select('buy_price')
         .eq('user_id', user.id)
-        .returns<GameWithPrice[]>();
+        // .returns();
 
       if (error) {
         console.error('Erreur lors de la récupération de la valeur de la collection:', error);
@@ -328,7 +324,7 @@ export default function HomePage() {
 
       if (games) {
         // Transformer les données pour s'assurer que buy_price est toujours un nombre
-        const gamesWithValidPrices = games.map(game => ({
+        const gamesWithValidPrices = games.map((game: { buy_price: number | null }) => ({
           buy_price: typeof game.buy_price === 'number' ? game.buy_price : 0
         }));
         
@@ -362,7 +358,8 @@ export default function HomePage() {
         fetchProfile(true); // Forcer pour éviter les problèmes de timing
       }
     }
-  }, [user, authLoading, profile, profileLoading, fetchProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, authLoading]); // Ne dépendre que de user.id et authLoading pour éviter les boucles infinies
   
   // Gérer le chargement des données utilisateur
   useEffect(() => {

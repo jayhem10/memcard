@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -9,14 +9,15 @@ import { User } from 'lucide-react';
 import Link from 'next/link';
 
 export const UserProfileDisplay = () => {
-  const { profile, isLoading, fetchProfile } = useProfileStore();
+  const { profile, isLoading, fetchProfile } = useProfile();
   const { user } = useAuth();
 
   React.useEffect(() => {
     if (user && !profile && !isLoading) {
       fetchProfile();
     }
-  }, [user, profile, isLoading, fetchProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]); // Ne dépendre que de user.id pour éviter les boucles infinies
 
   if (isLoading) {
     return <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />;

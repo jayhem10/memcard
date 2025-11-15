@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Award, ArrowRight } from 'lucide-react';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
 
 export default function UserRank() {
   const router = useRouter();
-  const { profile, isLoading: profileLoading, fetchProfile } = useProfileStore();
+  const { profile, isLoading: profileLoading, fetchProfile } = useProfile();
   const { user } = useAuth();
   
   const [rankName, setRankName] = useState<string>('');
@@ -23,7 +23,8 @@ export default function UserRank() {
     if (!profile && user) {
       fetchProfile();
     }
-  }, [profile, user, fetchProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]); // Ne dépendre que de user.id pour éviter les boucles infinies
 
   useEffect(() => {
     // Charger les détails du rang si on a un rank_id
@@ -40,7 +41,7 @@ export default function UserRank() {
           .from('ranks')
           .select('name_fr, description_fr, icon_url')
           .eq('id', profile.rank_id)
-          .single<{ name_fr: string; description_fr: string | null; icon_url: string | null }>();
+          .single();
 
         if (error) {
           console.error('Error fetching rank details:', error);

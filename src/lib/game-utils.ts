@@ -139,7 +139,6 @@ export function transformUserGameItem(item: SupabaseUserGameItem): {
   buy_price: number | null;
 } | null {
   if (!item.games) {
-    console.warn('Données de jeu manquantes pour l\'item:', item);
     return null;
   }
   

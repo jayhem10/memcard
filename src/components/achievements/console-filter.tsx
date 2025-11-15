@@ -43,7 +43,7 @@ export function ConsoleFilter({ consoles, selectedConsoleId, onSelect }: Console
   const filteredConsoles = useMemo(() => {
     if (!searchValue.trim() || !hasConsoles) return consoles;
     const searchLower = searchValue.toLowerCase();
-    return consoles.filter(console => 
+    return consoles.filter((console: any) => 
       console.name.toLowerCase().includes(searchLower)
     );
   }, [consoles, searchValue, hasConsoles]);

@@ -59,7 +59,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
         .from('consoles')
         .select('id, name, igdb_platform_id, abbreviation')
         .order('name')
-        .returns<Console[]>();
+        .returns();
       
       const { data, error } = await query;
 
@@ -72,7 +72,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
           const gamePlatformIds = gamePlatforms.map(p => p.id);
           
           // Filtrer les consoles pour ne montrer que celles liées aux plateformes du jeu
-          const matchedConsoles = data.filter(console => {
+          const matchedConsoles = data.filter((console: any) => {
             // Vérifier que igdb_platform_id est un nombre valide avant de l'utiliser
             return typeof console.igdb_platform_id === 'number' && 
                    gamePlatformIds.includes(console.igdb_platform_id);
@@ -215,7 +215,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                     </div>
                   )}
                   {consoles
-                    .filter(console => console.igdb_platform_id && 
+                    .filter((console: any) => console.igdb_platform_id && 
                       gamePlatforms?.some(p => p.id === console.igdb_platform_id))
                     .map((console) => (
                       <SelectItem 
@@ -237,7 +237,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                   
                   {/* Afficher les autres consoles */}
                   {consoles
-                    .filter(console => !console.igdb_platform_id || 
+                    .filter((console: any) => !console.igdb_platform_id || 
                       !gamePlatforms?.some(p => p.id === console.igdb_platform_id))
                     .map((console) => (
                       <SelectItem key={console.id} value={console.id}>

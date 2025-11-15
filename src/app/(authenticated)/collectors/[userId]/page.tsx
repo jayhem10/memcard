@@ -67,7 +67,7 @@ function CollectorCollectionContent() {
           .from('profiles')
           .select('id, username, avatar_url, is_public')
           .eq('id', userId)
-          .single<{ id: string; username: string | null; avatar_url: string | null; is_public: boolean }>();
+          .single();
         
         if (error) throw error;
         

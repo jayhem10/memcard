@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { PlusCircle, Library, Gift, User, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 import { WishlistNotifications } from '@/components/wishlist/wishlist-notifications';
 
 export function BottomNavbar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { profile } = useProfileStore();
+  const { profile } = useProfile();
   const { user } = useAuth();
   
   const tabParam = searchParams.get('tab');

@@ -4,37 +4,13 @@ import { SimilarGame } from '@/types/games';
 import { useAuth } from '@/context/auth-context';
 import { GAME_BASIC_WITH_GENRES_SELECT, SIMILAR_GAME_SELECT, CONSOLE_SELECT } from '@/lib/supabase-queries';
 import { handleErrorSilently } from '@/lib/error-handler';
-
-// Type pour les données retournées par Supabase avec SIMILAR_GAME_SELECT
-type SimilarGameData = {
-  id: string;
-  title: string;
-  cover_url: string | null;
-  igdb_id: number | null;
-  console: {
-    id: string;
-    name: string;
-  } | null;
-};
-
-// Type pour les données retournées par Supabase avec genres (inclut console_id)
-type GameWithGenresData = {
-  id: string;
-  title: string;
-  cover_url: string | null;
-  igdb_id: number | null;
-  console_id: string;
-  console: {
-    id: string;
-    name: string;
-  } | null;
-};
+import { queryKeys, collectionQueryOptions } from '@/lib/react-query-config';
 
 export function useSimilarGames(gameId: string | undefined) {
   const { user } = useAuth();
   
   return useQuery<SimilarGame[], Error>({
-    queryKey: ['similarGames', gameId, user?.id],
+    queryKey: queryKeys.similarGames(gameId || '', user?.id),
     queryFn: async () => {
       if (!gameId || !user) return [];
 
@@ -43,7 +19,7 @@ export function useSimilarGames(gameId: string | undefined) {
         .from('games')
         .select(GAME_BASIC_WITH_GENRES_SELECT)
         .eq('id', gameId)
-        .single<{ id: string; console_id: string; developer: string; publisher: string; game_genres: Array<{ genre_id: string; genres: { id: string; name: string } }> }>();
+        .single();
 
       if (gameError || !currentGame) {
         handleErrorSilently(gameError, 'useSimilarGames - fetch current game');
@@ -91,14 +67,14 @@ export function useSimilarGames(gameId: string | undefined) {
           .or(conditions.join(','))
           .neq('id', gameId)
           .limit(6)
-          .returns<SimilarGameData[]>();
+          .returns();
 
         if (error) {
           handleErrorSilently(error, 'useSimilarGames - fetch similar games');
           return [];
         }
 
-        return (data || []).map((game) => ({
+        return (data || []).map((game: any) => ({
           id: game.id,
           title: game.title,
           cover_url: game.cover_url,
@@ -126,8 +102,7 @@ export function useSimilarGames(gameId: string | undefined) {
         `)
         .in('genre_id', genreIds)
         .in('game_id', userGameIds)
-        .neq('game_id', gameId)
-        .returns<Array<{ game_id: string; games: GameWithGenresData }>>();
+        .neq('game_id', gameId);
 
       const { data: gamesWithGenres, error: genreError } = await genreQuery;
 
@@ -139,7 +114,7 @@ export function useSimilarGames(gameId: string | undefined) {
       // Compter les genres en commun et trier
       const gameCounts = new Map<string, { game: SimilarGame; count: number }>();
       
-      (gamesWithGenres || []).forEach((item) => {
+      (gamesWithGenres || []).forEach((item: any) => {
         const similarGameId = item.games?.id;
         const similarGameRaw = item.games;
         
@@ -173,6 +148,7 @@ export function useSimilarGames(gameId: string | undefined) {
         .map(item => item.game);
     },
     enabled: !!gameId && !!user,
+    ...collectionQueryOptions,
   });
 }
 

@@ -11,7 +11,7 @@ import { Rank } from '@/types/profile';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 import { handleErrorSilently } from '@/lib/error-handler';
 
@@ -29,7 +29,7 @@ interface QuizQuestion {
 
 export default function QuizForm() {
   const router = useRouter();
-  const { fetchProfile, resetProfile, profile } = useProfileStore();
+  const { fetchProfile, resetProfile, profile } = useProfile();
   const { user } = useAuth();
   
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -45,7 +45,8 @@ export default function QuizForm() {
     if (!profile && user) {
       fetchProfile();
     }
-  }, [profile, user, fetchProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]); // Ne dépendre que de user.id pour éviter les boucles infinies
 
   useEffect(() => {
     // Ne pas vérifier le statut si on affiche déjà le résultat (utilisateur vient de terminer le quiz)
@@ -91,7 +92,7 @@ export default function QuizForm() {
       const { data, error } = await supabase
         .from('quiz_questions')
         .select('*')
-        .returns<Array<{ id: string; question_en: string; question_fr: string; options: Array<{ id: number; text_en: string; text_fr: string }> }>>();
+        // .returns<Array<{ id: string; question_en: string; question_fr: string; options: Array<{ id: number; text_en: string; text_fr: string }> }>>();
       
       if (error) {
         handleErrorSilently(error, 'QuizForm - fetchQuizQuestions');
@@ -101,7 +102,7 @@ export default function QuizForm() {
       }
       
       // Conversion sûre des données
-      const typedQuestions: QuizQuestion[] = (data || []).map(item => ({
+      const typedQuestions: QuizQuestion[] = (data || []).map((item: any) => ({
         id: String(item.id),
         question_en: String(item.question_en),
         question_fr: String(item.question_fr),
@@ -147,38 +148,16 @@ export default function QuizForm() {
         throw new Error('User not authenticated');
       }
       
-      // Récupérer le token de session pour l'authentification
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('Session non disponible');
-      }
-      
-      // Convertir les réponses pour l'API
+      // Convertir les réponses pour la Server Action
       // Convertir optionId en nombre car la fonction SQL attend un entier
       const answers = Object.entries(selectedOptions).map(([questionId, optionId]) => ({
         question_id: questionId,
         selected_option: parseInt(optionId, 10), // Convertir en nombre
       }));
       
-      // Envoyer toutes les données à l'API (réponses + calcul du rang)
-      const response = await fetch('/api/quiz/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        credentials: 'include', // Inclure les cookies pour l'authentification
-        body: JSON.stringify({ 
-          answers 
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la soumission du quiz');
-      }
-
-      const { rankId: rankIdFromApi } = await response.json();
+      // Utiliser la Server Action au lieu de l'API Route
+      const { submitQuiz } = await import('@/actions/quiz');
+      const { rankId: rankIdFromApi } = await submitQuiz(answers);
       
       // Vérifier et convertir rankId en string pour l'utiliser comme ID
       const rankId = rankIdFromApi ? String(rankIdFromApi) : null;
@@ -192,7 +171,7 @@ export default function QuizForm() {
         .from('ranks')
         .select('*')
         .eq('id', rankId)
-        .single<{ id: string; name_en: string; name_fr: string; description_en: string | null; description_fr: string | null; level: number; icon_url: string | null; created_at: string }>();
+        .single();
       
       if (rankDetailsError) {
         handleErrorSilently(rankDetailsError, 'QuizForm - fetch rank details');

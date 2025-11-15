@@ -6,7 +6,7 @@ import { themes } from '@/lib/theme';
 import { Sun, Moon, Zap, Gamepad, Sword, Circle, Square, X, Sparkles } from 'lucide-react';
 import * as React from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useProfile } from '@/store';
 import { useEffect } from 'react';
 
 const icons = {
@@ -23,7 +23,7 @@ const icons = {
 
 export function ThemeSelector() {
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const { profile, updateProfile } = useProfileStore();
+  const { profile, updateProfile } = useProfile();
   const currentTheme = theme || resolvedTheme || 'light';
   const [mounted, setMounted] = React.useState(false);
 

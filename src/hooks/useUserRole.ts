@@ -1,11 +1,11 @@
 'use client';
 
-import { useProfileStore } from '@/store/useProfileStore';
+import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 import { useEffect, useState } from 'react';
 
 export function useUserRole() {
-  const { profile, isLoading } = useProfileStore();
+  const { profile, isLoading } = useProfile();
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoadingRole, setIsLoadingRole] = useState(true);

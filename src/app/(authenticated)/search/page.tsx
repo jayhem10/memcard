@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/react-query-config';
 import { Input } from '@/components/ui/input';
 import { SearchInput } from '@/components/ui/search-input';
 import { formatIGDBReleaseDate, getIGDBReleaseYear } from '@/lib/date-utils';
@@ -210,24 +211,20 @@ export default function SearchPage() {
           .from('consoles')
           .select('id, name, igdb_platform_id, release_year, image_url, abbreviation')
           .order('name')
-          .returns<ConsoleData[]>();
+          .returns();
         
         if (error) throw error;
                 
         // Vérifier que les plateformes ont un igdb_platform_id valide
-        const validPlatforms = data.filter(platform => {
+        const validPlatforms = data.filter((platform: any) => {
           // Vérifier si igdb_platform_id existe et est un nombre valide
           return platform.igdb_platform_id !== null && 
                  platform.igdb_platform_id !== undefined && 
                  !isNaN(Number(platform.igdb_platform_id));
         });
-                
-        if (validPlatforms.length !== data.length) {
-          console.warn(`${data.length - validPlatforms.length} plateformes sans igdb_platform_id ont été filtrées`);
-        }
         
         // S'assurer que tous les champs sont du bon type
-        const formattedPlatforms: Platform[] = validPlatforms.map(platform => ({
+        const formattedPlatforms: Platform[] = validPlatforms.map((platform: any) => ({
           id: Number(platform.id),
           name: platform.name,
           igdb_platform_id: Number(platform.igdb_platform_id),
@@ -310,11 +307,16 @@ export default function SearchPage() {
     }
     
   const { data, isLoading, fetchNextPage, isFetchingNextPage, isError, refetch } = useInfiniteQuery({
-    queryKey: ['igdbGames', searchQuery, selectedPlatform, shouldSearch],
+    queryKey: queryKeys.igdbGames(searchQuery, selectedPlatform),
     initialPageParam: 0,
     queryFn: fetchGames,
     getNextPageParam: (lastPage: PageResult) => lastPage.nextCursor,
-    enabled: !!searchQuery && shouldSearch, // Actif uniquement avec terme de recherche et shouldSearch=true
+    enabled: !!searchQuery && shouldSearch,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   });
   
   useEffect(() => {
@@ -348,7 +350,7 @@ export default function SearchPage() {
         .from('consoles')
         .select('name')
         .eq('id', consoleId)
-        .single<ConsoleNameData>();
+        .single();
       
       if (consoleData && typeof consoleData.name === 'string') {
         consoleDisplayName = consoleData.name;
@@ -368,7 +370,7 @@ export default function SearchPage() {
         .from('user_games')
         .select('id, game_id')
         .eq('user_id', user.id)
-        .returns<Array<{ id: string; game_id: string }>>();
+        // .returns<Array<{ id: string; game_id: string }>>();
       
       if (userGamesError) throw userGamesError;
       
@@ -377,13 +379,13 @@ export default function SearchPage() {
         const { data: games, error: gamesError } = await supabase
           .from('games')
           .select('id, igdb_id, console_id')
-          .in('id', existingUserGames.map(ug => ug.game_id))
-          .returns<Array<{ id: string; igdb_id: number; console_id: string }>>();
+          .in('id', existingUserGames.map((ug: any) => ug.game_id))
+          // .returns<Array<{ id: string; igdb_id: number; console_id: string }>>();
         
         if (gamesError) throw gamesError;
         
         // Vérifier si l'utilisateur a déjà ce jeu sur la même console
-        if (games && games.some(game => game.igdb_id === selectedGame.id && game.console_id === consoleId)) {
+        if (games && games.some((game: any) => game.igdb_id === selectedGame.id && game.console_id === consoleId)) {
           toast.error(
             `${selectedGame.name} existe déjà dans votre bibliothèque pour ${consoleDisplayName}`, 
             { 
@@ -409,7 +411,7 @@ export default function SearchPage() {
         .select('id')
         .eq('igdb_id', selectedGame.id)
         .eq('console_id', consoleId)
-        .maybeSingle<{ id: string }>();
+        .maybeSingle();
 
       if (findError) throw findError;
       
@@ -421,7 +423,7 @@ export default function SearchPage() {
         .select('id')
         .eq('igdb_id', selectedGame.id)
         .neq('console_id', consoleId)
-        .returns<GameIdData>();
+        .returns();
       
       if (findErrorOther) throw findErrorOther;
       
@@ -508,7 +510,7 @@ export default function SearchPage() {
               .from('genres')
               .select('id')
               .eq('name', genre.name)
-              .maybeSingle<{ id: string }>();
+              .maybeSingle();
             
             if (genreQueryError) throw genreQueryError;
             
@@ -566,12 +568,10 @@ export default function SearchPage() {
       if (userGameError) throw userGameError;
       
       // Invalider le cache pour rafraîchir les listes automatiquement
-      // Invalider toutes les queries userGames et game pour cet utilisateur
-      queryClient.invalidateQueries({ queryKey: ['userGames', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['game'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userGames(user?.id) });
       
       // Attendre un peu pour que l'invalidation se propage
-      await queryClient.refetchQueries({ queryKey: ['userGames', user?.id] });
+      await queryClient.refetchQueries({ queryKey: queryKeys.userGames(user?.id) });
       
       // Message personnalisé selon le cas
       if (isNewConsole) {

@@ -58,7 +58,6 @@ export async function GET(
         };
       }
     } catch (profileErr) {
-      console.warn('Could not fetch owner profile:', profileErr);
       // On continue même si on ne peut pas récupérer le profil
     }
 

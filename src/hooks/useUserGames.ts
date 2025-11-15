@@ -5,6 +5,7 @@ import { transformUserGameItem, sortGamesByTitle } from '@/lib/game-utils';
 import { useAuth } from '@/context/auth-context';
 import { USER_GAME_WITH_RELATIONS_SELECT } from '@/lib/supabase-queries';
 import { handleSupabaseError } from '@/lib/error-handler';
+import { queryKeys, collectionQueryOptions } from '@/lib/react-query-config';
 
 export type CollectionGame = {
   id: string;
@@ -38,7 +39,7 @@ export function useUserGames() {
   const queryClient = useQueryClient();
   
   const query = useQuery<CollectionGame[], Error>({
-    queryKey: ['userGames', user?.id],
+    queryKey: queryKeys.userGames(user?.id),
     queryFn: async () => {
       if (!user) {
         throw new Error('Utilisateur non authentifié');
@@ -68,9 +69,7 @@ export function useUserGames() {
       return sortGamesByTitle(formattedGames);
     },
     enabled: !!user && !authLoading,
-    staleTime: 1000 * 30, // 30 secondes - les données sont considérées fraîches pendant ce temps
-    refetchOnMount: true, // Rafraîchir au montage pour avoir les données les plus récentes
-    refetchOnWindowFocus: false, // Désactivé car on a déjà un abonnement Realtime qui invalide le cache
+    ...collectionQueryOptions,
   });
 
   // Écouter les changements en temps réel pour invalider le cache
@@ -88,21 +87,21 @@ export function useUserGames() {
           table: 'user_games',
           filter: `user_id=eq.${user.id}`,
         },
-        async (payload) => {
+        async (_payload: any) => {
           // Invalider le cache et forcer un refetch immédiat
-          await queryClient.invalidateQueries({ queryKey: ['userGames', user.id] });
+          await queryClient.invalidateQueries({ queryKey: queryKeys.userGames(user.id) });
           
           // Attendre un peu pour s'assurer que l'invalidation est propagée
           await new Promise(resolve => setTimeout(resolve, 100));
           
           // Forcer un refetch immédiat même si la query n'est pas active
           await queryClient.refetchQueries({ 
-            queryKey: ['userGames', user.id],
+            queryKey: queryKeys.userGames(user.id),
             type: 'all' // Refetch même si la query n'est pas active
           });
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         if (status === 'CHANNEL_ERROR') {
           console.error(`Erreur d'abonnement Realtime pour user_games de l'utilisateur ${user.id}`);
         }

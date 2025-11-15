@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'react-hot-toast';
 import { CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,58 +10,31 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Loader2, Send } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
-import { useProfileStore } from '@/store/useProfileStore';
-
-type ContactFormData = {
-  subject: string;
-  message: string;
-};
+import { useProfile } from '@/store';
+import { contactSchema, type ContactInput } from '@/lib/validations/contact';
 
 export default function ContactPage() {
   const { user } = useAuth();
-  const { profile } = useProfileStore();
+  const { profile } = useProfile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<ContactFormData>({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<ContactInput>({
+    resolver: zodResolver(contactSchema),
     defaultValues: {
+      name: profile?.username || user?.email?.split('@')[0] || '',
+      email: user?.email || '',
       subject: '',
       message: '',
     },
   });
 
-  const onSubmit = async (data: ContactFormData) => {
+  const onSubmit = async (data: ContactInput) => {
     setIsSubmitting(true);
     
     try {
-      // Récupérer le token d'authentification Supabase
-      const { supabase } = await import('@/lib/supabase');
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-      
-      // Ajouter le token dans les headers si disponible
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
-      }
-      
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers,
-        credentials: 'include', // Inclure les cookies pour l'authentification
-        body: JSON.stringify({
-          subject: data.subject,
-          message: data.message,
-          userEmail: user?.email || 'email inconnu',
-          userName: profile?.username || user?.email?.split('@')[0] || 'Utilisateur',
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de l\'envoi du message');
-      }
+      // Utiliser la Server Action au lieu de l'API Route
+      const { sendContactMessage } = await import('@/actions/contact');
+      await sendContactMessage(data);
 
       toast.success('Votre message a été envoyé avec succès ! Nous vous répondrons dès que possible.');
       reset();
@@ -91,6 +65,37 @@ export default function ContactPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
         <CardContent className="relative p-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Nom <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Votre nom"
+                  {...register('name')}
+                  className={`rounded-lg ${errors.name ? 'border-destructive' : ''}`}
+                />
+                {errors.name && (
+                  <p className="text-sm text-destructive">{errors.name.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Email <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="votre@email.com"
+                  {...register('email')}
+                  className={`rounded-lg ${errors.email ? 'border-destructive' : ''}`}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                )}
+              </div>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="subject" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                 Sujet <span className="text-destructive">*</span>
@@ -98,17 +103,7 @@ export default function ContactPage() {
               <Input
                 id="subject"
                 placeholder="Ex: Question sur ma collection, bug signalé, suggestion..."
-                {...register('subject', {
-                  required: 'Le sujet est requis',
-                  minLength: {
-                    value: 3,
-                    message: 'Le sujet doit contenir au moins 3 caractères',
-                  },
-                  maxLength: {
-                    value: 200,
-                    message: 'Le sujet ne peut pas dépasser 200 caractères',
-                  },
-                })}
+                {...register('subject')}
                 className={`rounded-lg ${errors.subject ? 'border-destructive' : ''}`}
               />
               {errors.subject && (
@@ -124,17 +119,7 @@ export default function ContactPage() {
                 id="message"
                 rows={8}
                 placeholder="Décrivez votre demande, question ou problème en détail..."
-                {...register('message', {
-                  required: 'Le message est requis',
-                  minLength: {
-                    value: 10,
-                    message: 'Le message doit contenir au moins 10 caractères',
-                  },
-                  maxLength: {
-                    value: 2000,
-                    message: 'Le message ne peut pas dépasser 2000 caractères',
-                  },
-                })}
+                {...register('message')}
                 className={`flex min-h-[120px] w-full rounded-lg border border-input bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none ${
                   errors.message ? 'border-destructive' : ''
                 }`}

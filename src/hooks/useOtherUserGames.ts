@@ -3,12 +3,13 @@ import { useEffect } from 'react';
 import { transformUserGameItem, sortGamesByTitle } from '@/lib/game-utils';
 import { CollectionGame } from './useUserGames';
 import { supabase } from '@/lib/supabase';
+import { queryKeys, collectionQueryOptions } from '@/lib/react-query-config';
 
 export function useOtherUserGames(userId: string | undefined) {
   const queryClient = useQueryClient();
 
   const query = useQuery<CollectionGame[], Error>({
-    queryKey: ['otherUserGames', userId],
+    queryKey: queryKeys.otherUserGames(userId),
     queryFn: async () => {
       if (!userId) {
         throw new Error('ID utilisateur requis');
@@ -48,11 +49,7 @@ export function useOtherUserGames(userId: string | undefined) {
       return sortGamesByTitle(formattedGames);
     },
     enabled: !!userId,
-    staleTime: 0, // Les données sont immédiatement considérées comme périmées pour permettre un refetch après invalidation
-    gcTime: 1000 * 60 * 60, // Garder en cache 1 heure après inactivité
-    refetchOnMount: true, // Rafraîchir au montage pour avoir les données les plus récentes
-    refetchOnWindowFocus: false, // Ne pas rafraîchir au focus (Realtime gère les mises à jour)
-    refetchOnReconnect: true, // Rafraîchir à la reconnexion pour synchroniser
+    ...collectionQueryOptions,
   });
 
   // Écouter les changements en temps réel pour invalider le cache
@@ -70,22 +67,21 @@ export function useOtherUserGames(userId: string | undefined) {
           table: 'user_games',
           filter: `user_id=eq.${userId}`,
         },
-        async (payload) => {
+        async (_payload: any) => {
           // Invalider le cache et forcer un refetch immédiat
-          // Invalider d'abord
-          await queryClient.invalidateQueries({ queryKey: ['otherUserGames', userId] });
+          await queryClient.invalidateQueries({ queryKey: queryKeys.otherUserGames(userId) });
           
           // Attendre un peu pour s'assurer que l'invalidation est propagée
           await new Promise(resolve => setTimeout(resolve, 100));
           
           // Forcer un refetch immédiat pour mettre à jour l'affichage
           await queryClient.refetchQueries({ 
-            queryKey: ['otherUserGames', userId],
-            type: 'active' // Seulement refetch les queries actives
+            queryKey: queryKeys.otherUserGames(userId),
+            type: 'active'
           });
         }
       )
-      .subscribe((status) => {
+      .subscribe((status: string) => {
         if (status === 'CHANNEL_ERROR') {
           console.error(`Erreur d'abonnement Realtime pour user_games de l'utilisateur ${userId}`);
         }

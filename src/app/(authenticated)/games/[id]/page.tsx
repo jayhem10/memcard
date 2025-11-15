@@ -78,7 +78,7 @@ export default function GameDetailPage() {
         .select('id')
         .eq('user_id', user.id)
         .eq('game_id', gameId || '')
-        .maybeSingle<{ id: string }>();
+        .maybeSingle();
       
       if (findError) throw findError;
       
@@ -194,7 +194,7 @@ export default function GameDetailPage() {
         .select('status')
         .eq('user_id', user.id)
         .eq('game_id', gameId)
-        .single<{ status: string }>();
+        .single();
       
       if (fetchError) throw fetchError;
       
@@ -213,9 +213,9 @@ export default function GameDetailPage() {
     },
     onSuccess: async (data) => {
       // Invalider le cache pour rafraîchir les listes
-      queryClient.invalidateQueries({ queryKey: ['userGames', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['game', gameId, user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['game'] });
+      const { queryKeys } = await import('@/lib/react-query-config');
+      queryClient.invalidateQueries({ queryKey: queryKeys.userGames(user?.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.game(gameId || '', user?.id) });
       
       // Attendre un peu pour que l'invalidation se propage
       await queryClient.refetchQueries({ queryKey: ['userGames', user?.id] });

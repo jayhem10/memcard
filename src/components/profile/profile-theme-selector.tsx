@@ -1,7 +1,7 @@
 'use client';
 
 import { useTheme } from 'next-themes';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useProfile } from '@/store';
 import { themes } from '@/lib/theme';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -22,7 +22,7 @@ const icons = {
 
 export function ProfileThemeSelector() {
   const { theme, setTheme } = useTheme();
-  const { profile, updateProfile } = useProfileStore();
+  const { profile, updateProfile } = useProfile();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

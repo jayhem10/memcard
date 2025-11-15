@@ -55,7 +55,6 @@ export function useGameStatus(game: CollectionGame | null, enabled: boolean = tr
               cachedGames = sortedGames;
             }
           } catch (prefetchError) {
-            console.warn('Erreur lors du préchargement du cache:', prefetchError);
             // Continuer avec la méthode de fallback
           }
         }

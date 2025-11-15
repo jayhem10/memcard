@@ -3,22 +3,23 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
-
-type AuthFormData = {
-  email: string;
-  password: string;
-};
+import { loginSchema, signupSchema, type LoginInput, type SignupInput } from '@/lib/validations/auth';
 
 export function AuthForm() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [oAuthLoading, setOAuthLoading] = useState<'google' | 'discord' | null>(null);
-  const { register, handleSubmit, formState: { errors } } = useForm<AuthFormData>();
+  
+  // Utiliser le schéma approprié selon le mode (login ou signup)
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginInput | SignupInput>({
+    resolver: zodResolver(isSignUp ? signupSchema : loginSchema),
+  });
 
   // Détecter le paramètre mode=signup dans l'URL
   useEffect(() => {
@@ -28,7 +29,12 @@ export function AuthForm() {
     }
   }, [searchParams]);
 
-  const onSubmit = async (data: AuthFormData) => {
+  // Réinitialiser le formulaire quand on change de mode (login/signup)
+  useEffect(() => {
+    reset();
+  }, [isSignUp, reset]);
+
+  const onSubmit = async (data: LoginInput | SignupInput) => {
     setIsLoading(true);
     try {
       if (isSignUp) {
@@ -101,13 +107,7 @@ export function AuthForm() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-2">
           <Input
-            {...register('email', {
-              required: 'Email requis',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Email invalide',
-              },
-            })}
+            {...register('email')}
             type="email"
             placeholder="Email"
             disabled={isLoading}
@@ -120,13 +120,7 @@ export function AuthForm() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
           <Input
-            {...register('password', {
-              required: 'Mot de passe requis',
-              minLength: {
-                value: 6,
-                message: 'Le mot de passe doit contenir au moins 6 caractères',
-              },
-            })}
+            {...register('password')}
             type="password"
             placeholder="Mot de passe"
             disabled={isLoading}

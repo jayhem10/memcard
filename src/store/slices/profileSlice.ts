@@ -1,6 +1,6 @@
 'use client';
 
-import { create } from 'zustand';
+import { StateCreator } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { ProfileUpdateRequest, UserProfile } from '@/types/profile';
 import toast from 'react-hot-toast';
@@ -38,23 +38,31 @@ type ProfileWithRank = {
   ranks: { id: string; name_fr: string } | null;
 };
 
-interface ProfileState {
+export interface ProfileSlice {
+  // State
   profile: UserProfile | null;
-  isLoading: boolean;
-  error: string | null;
+  profileLoading: boolean;
+  profileError: string | null;
+  
+  // Actions
   fetchProfile: (force?: boolean) => Promise<void>;
   updateProfile: (profileData: ProfileUpdateRequest) => Promise<void>;
   resetProfile: () => void;
 }
 
-export const useProfileStore = create<ProfileState>((set, get) => ({
+export const createProfileSlice: StateCreator<
+  ProfileSlice,
+  [],
+  [],
+  ProfileSlice
+> = (set, get) => ({
   profile: null,
-  isLoading: false,
-  error: null,
+  profileLoading: false,
+  profileError: null,
 
   fetchProfile: async (force = false) => {
     const currentProfile = get().profile;
-    const isLoading = get().isLoading;
+    const isLoading = get().profileLoading;
 
     // Si on force le rechargement, on ignore les vérifications
     if (!force) {
@@ -80,14 +88,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('lastProfileFetch', Date.now().toString());
     }
-    set({ isLoading: true, error: null });
+    set({ profileLoading: true, profileError: null });
     
     try {
       // Récupérer l'utilisateur authentifié actuel
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        set({ profile: null, isLoading: false });
+        set({ profile: null, profileLoading: false });
         return;
       }
       
@@ -167,7 +175,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           is_public: defaultProfile.is_public
         };
         
-        set({ profile: userProfile, isLoading: false, error: null });
+        set({ profile: userProfile, profileLoading: false, profileError: null });
         return;
       }
 
@@ -190,18 +198,18 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         is_public: typeof data?.is_public === 'boolean' ? data.is_public : false
       };
       
-      set({ profile: userProfile, isLoading: false });
+      set({ profile: userProfile, profileLoading: false });
     } catch (error: any) {
       console.error('❌ Erreur lors de la récupération du profil:', error);
       set({ 
-        error: error.message || 'Erreur lors de la récupération du profil', 
-        isLoading: false 
+        profileError: error.message || 'Erreur lors de la récupération du profil', 
+        profileLoading: false 
       });
     }
   },
 
   updateProfile: async (profileData: ProfileUpdateRequest) => {
-    set({ isLoading: true, error: null });
+    set({ profileLoading: true, profileError: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -227,20 +235,21 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       await get().fetchProfile(true);
       
       // S'assurer que isLoading est bien à false après le rechargement
-      set({ isLoading: false });
+      set({ profileLoading: false });
       
       toast.success('Profil mis à jour avec succès');
     } catch (error: any) {
       console.error('Erreur lors de la mise à jour du profil:', error);
       set({ 
-        error: error.message || 'Erreur lors de la mise à jour du profil', 
-        isLoading: false 
+        profileError: error.message || 'Erreur lors de la mise à jour du profil', 
+        profileLoading: false 
       });
       toast.error(error.message || 'Erreur lors de la mise à jour du profil');
     }
   },
 
   resetProfile: () => {
-    set({ profile: null, error: null });
+    set({ profile: null, profileError: null });
   }
-}));
+});
+

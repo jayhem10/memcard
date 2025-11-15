@@ -5,6 +5,7 @@ import { useAuth } from '@/context/auth-context';
 import { toast } from 'react-hot-toast';
 import { CollectionGame } from './useUserGames';
 import { sortGamesByTitle } from '@/lib/game-utils';
+import { queryKeys } from '@/lib/react-query-config';
 
 /**
  * Hook pour ajouter un jeu à la wishlist
@@ -28,7 +29,7 @@ export function useAddToWishlist() {
         .select('id')
         .eq('igdb_id', game.igdb_id)
         .eq('console_id', game.console_id)
-        .maybeSingle<{ id: string }>();
+        .maybeSingle();
 
       if (findError) throw findError;
 
@@ -65,7 +66,7 @@ export function useAddToWishlist() {
               .from('genres')
               .select('id')
               .eq('name', genre.name)
-              .maybeSingle<{ id: string }>();
+              .maybeSingle();
 
             let genreId: string;
             if (existingGenre) {
@@ -111,10 +112,10 @@ export function useAddToWishlist() {
       toast.success('Jeu ajouté à votre liste de souhaits');
       
       // Invalider le cache pour qu'il se mette à jour via Realtime
-      queryClient.invalidateQueries({ queryKey: ['userGames', user.id] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userGames(user.id) });
       
       // Mettre à jour le cache localement si il existe pour un feedback immédiat
-      const cachedGames = queryClient.getQueryData<CollectionGame[]>(['userGames', user.id]);
+      const cachedGames = queryClient.getQueryData<CollectionGame[]>(queryKeys.userGames(user.id));
       if (cachedGames) {
         // Créer un nouveau jeu pour le cache
         const newGame: CollectionGame = {
@@ -135,7 +136,7 @@ export function useAddToWishlist() {
         
         // Ajouter le jeu au cache et trier
         const updatedGames = sortGamesByTitle([...cachedGames, newGame]);
-        queryClient.setQueryData(['userGames', user.id], updatedGames);
+        queryClient.setQueryData(queryKeys.userGames(user.id), updatedGames);
       }
 
       return { success: true, gameId };

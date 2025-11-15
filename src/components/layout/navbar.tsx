@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { LogOut, User, MoreVertical, Heart, PlusCircle, Library, Shield, Trophy, Sparkles, Mail, Gift, HelpCircle, Gamepad2, Users } from 'lucide-react';
 import { ThemeSelector } from '@/components/theme/theme-selector';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 import { useUserRole } from '@/hooks/useUserRole';
 import { UnifiedNotifications } from '@/components/notifications/unified-notifications';
@@ -25,7 +25,7 @@ import {
 function NavbarContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { profile, isLoading, fetchProfile } = useProfileStore();
+  const { profile, isLoading, fetchProfile } = useProfile();
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const [supportDialogOpen, setSupportDialogOpen] = useState(false);
@@ -39,7 +39,7 @@ function NavbarContent() {
       fetchProfile();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, profile, isLoading]);
+  }, [user?.id]); // Ne dépendre que de user.id pour éviter les boucles infinies
 
   const navigation = [
     { name: 'Collection', href: '/collection', icon: Library },

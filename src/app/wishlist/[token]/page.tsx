@@ -54,11 +54,6 @@ export default function WishlistSharePage() {
         }
 
         const data = await response.json();
-        
-        if (!data.games || data.games.length === 0) {
-          console.warn('No games returned, but token is valid');
-        }
-        
         setGames(data.games || []);
         
         // Définir le nom du propriétaire

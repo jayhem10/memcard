@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { User } from '@supabase/supabase-js';
+import { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -93,8 +93,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             JSON.parse(value);
           }
         } catch (e) {
-          // Si le parsing échoue, supprimer cette entrée
-          console.warn(`Removing invalid token in localStorage: ${key}`);
           localStorage.removeItem(key);
         }
       });
@@ -110,19 +108,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Abonnement aux changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        const newUser = session?.user ?? null;
+      (_event: AuthChangeEvent, session: Session | null) => {
+        const newUser = session?.user || null;
         setUser(newUser);
         setIsLoading(false);
       }
     );
 
     // Vérifier la session initiale
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const currentUser = session?.user ?? null;
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+      const currentUser = session?.user || null;
       setUser(currentUser);
       setIsLoading(false);
-    }).catch(error => {
+    }).catch((error: unknown) => {
       console.error('Error getting session:', error);
       setIsLoading(false);
       // En cas d'erreur, nettoyer le localStorage

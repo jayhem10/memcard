@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ProfileThemeSelector } from '@/components/profile/profile-theme-selector';
@@ -14,22 +15,24 @@ import { DeleteAccountDialog } from '@/components/ui/delete-account-dialog';
 import { useDeleteAccount } from '@/hooks/useDeleteAccount';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-
-interface ProfileFormData {
-  username: string;
-  full_name: string;
-  email: string;
-  avatar_url: string;
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
+import { profileFormSchema, type ProfileFormInput } from '@/lib/validations/profile';
 
 export default function ProfilePage() {
   const { user, refreshProfile } = useAuth();
-  const { profile, isLoading: profileLoading, updateProfile } = useProfileStore();
+  const { profile, isLoading: profileLoading, updateProfile } = useProfile();
   const [isLoading, setIsLoading] = useState(false);
-  const { register, handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<ProfileFormData>();
+  const { register, handleSubmit, formState: { errors }, watch, setValue, reset } = useForm<ProfileFormInput>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      username: '',
+      full_name: '',
+      email: '',
+      avatar_url: '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    },
+  });
   const newPassword = watch('newPassword');
   const { deleteAccount, isDeleting } = useDeleteAccount();
 
@@ -43,24 +46,15 @@ export default function ProfilePage() {
     }
   }, [profile, user, setValue]);
 
-  const onSubmit = async (data: ProfileFormData) => {
+  const onSubmit = async (data: ProfileFormInput) => {
     setIsLoading(true);
     try {
-      // Validation des mots de passe si fournis
-      if (data.newPassword && data.confirmPassword) {
-        if (data.newPassword !== data.confirmPassword) {
-          throw new Error('Les mots de passe ne correspondent pas');
-        }
-        if (data.newPassword.length < 6) {
-          throw new Error('Le mot de passe doit contenir au moins 6 caractères');
-        }
-      }
-
       // 1. Mise à jour du profil dans la table profiles
+      // Convertir avatar_url vide en null et gérer les types
       await updateProfile({
-        username: data.username,
-        full_name: data.full_name,
-        avatar_url: data.avatar_url
+        username: data.username || undefined,
+        full_name: data.full_name || undefined,
+        avatar_url: data.avatar_url && data.avatar_url.trim() !== '' ? data.avatar_url : undefined
       });
       
       // 2. Mise à jour du mot de passe si fourni (seulement pour les comptes email)
@@ -89,12 +83,7 @@ export default function ProfilePage() {
         if (userError) throw userError;
 
         if (userData.user.email !== data.email) {
-          // Vérifier que l'email est valide avant de l'envoyer
-          const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-          if (!emailRegex.test(data.email)) {
-            throw new Error('Format d\'email invalide');
-          }
-          
+          // La validation de l'email est déjà faite par Zod
           const { error } = await supabase.auth.updateUser({
             email: data.email
           });
@@ -112,16 +101,16 @@ export default function ProfilePage() {
       // 5. Réinitialiser les champs du formulaire, notamment les mots de passe
       reset({
         username: data.username,
-        full_name: data.full_name,
+        full_name: data.full_name || '',
         email: data.email,
-        avatar_url: data.avatar_url,
+        avatar_url: data.avatar_url || '',
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
       });
 
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || 'Erreur lors de la mise à jour du profil');
     } finally {
       setIsLoading(false);
     }
@@ -173,9 +162,7 @@ export default function ProfilePage() {
               </label>
               <Input
                 id="username"
-                {...register('username', {
-                  required: 'Le nom d\'utilisateur est requis',
-                })}
+                {...register('username')}
                 disabled={isLoading || profileLoading}
                 className="rounded-lg"
               />
@@ -223,13 +210,7 @@ export default function ProfilePage() {
               <Input
                 id="email"
                 type="email"
-                {...register('email', {
-                  required: 'L\'email est requis',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Email invalide',
-                  },
-                })}
+                {...register('email')}
                 disabled={isLoading || profileLoading || profile?.provider !== 'email'}
                 className={`rounded-lg ${profile?.provider !== 'email' ? 'bg-muted' : ''}`}
               />
@@ -257,7 +238,11 @@ export default function ProfilePage() {
                     {...register('currentPassword')}
                     disabled={isLoading || profileLoading}
                     className="rounded-lg"
+                    placeholder="Requis si vous changez le mot de passe"
                   />
+                  {errors.currentPassword && (
+                    <p className="text-sm text-destructive">{errors.currentPassword.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -267,14 +252,10 @@ export default function ProfilePage() {
                   <Input
                     id="newPassword"
                     type="password"
-                    {...register('newPassword', {
-                      minLength: {
-                        value: 6,
-                        message: 'Le mot de passe doit contenir au moins 6 caractères',
-                      },
-                    })}
+                    {...register('newPassword')}
                     disabled={isLoading || profileLoading}
                     className="rounded-lg"
+                    placeholder="Minimum 8 caractères avec majuscule, minuscule et chiffre"
                   />
                   {errors.newPassword && (
                     <p className="text-sm text-destructive">{errors.newPassword.message}</p>
@@ -288,14 +269,10 @@ export default function ProfilePage() {
                 <Input
                   id="confirmPassword"
                   type="password"
-                  {...register('confirmPassword', {
-                    validate: (value) => {
-                      if (!newPassword) return true; // Si pas de nouveau mot de passe, pas de validation
-                      return value === newPassword || 'Les mots de passe ne correspondent pas';
-                    },
-                  })}
+                  {...register('confirmPassword')}
                   disabled={isLoading || profileLoading}
                   className="rounded-lg"
+                  placeholder="Confirmez le nouveau mot de passe"
                 />
                   {errors.confirmPassword && (
                     <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>

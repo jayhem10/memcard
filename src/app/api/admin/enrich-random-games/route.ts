@@ -395,12 +395,6 @@ export const POST = withApi(async (request, { user, supabase }) => {
             }
 
             if (!gameAdded) {
-              const gameName = getIGDBGameName(igdbGame);
-              if (platformsProcessed === 0) {
-                console.log(`⚠ ${gameName}: Aucune plateforme correspondante trouvée`);
-              } else {
-                console.log(`⚠ ${gameName}: Déjà présent sur toutes les plateformes disponibles`);
-              }
               totalSkipped++;
             }
             processedGameIds.add(igdbGame.id);

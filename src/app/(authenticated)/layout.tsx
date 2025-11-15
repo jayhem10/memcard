@@ -6,11 +6,11 @@ import { AuthGuard } from '@/components/auth/auth-guard';
 import { Navbar } from '@/components/layout/navbar';
 import { Footer } from '@/components/layout/footer';
 import { BottomNavbar } from '@/components/layout/bottom-navbar';
-import { useProfileStore } from '@/store/useProfileStore';
+import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 
 function DataInitializer() {
-  const { fetchProfile } = useProfileStore();
+  const { fetchProfile } = useProfile();
   const { user } = useAuth();
 
   useEffect(() => {

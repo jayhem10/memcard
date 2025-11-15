@@ -5,12 +5,13 @@ import { combineGameData } from '@/lib/game-utils';
 import { useAuth } from '@/context/auth-context';
 import { GAME_WITH_RELATIONS_SELECT, USER_GAME_DATA_SELECT } from '@/lib/supabase-queries';
 import { handleSupabaseError } from '@/lib/error-handler';
+import { queryKeys, collectionQueryOptions } from '@/lib/react-query-config';
 
 export function useGame(gameId: string | undefined) {
   const { user } = useAuth();
   
   return useQuery<GameData, Error>({
-    queryKey: ['game', gameId, user?.id],
+    queryKey: queryKeys.game(gameId || '', user?.id),
     queryFn: async () => {
       if (!user || !gameId) {
         throw new Error('Utilisateur non authentifié ou ID de jeu manquant');
@@ -33,7 +34,7 @@ export function useGame(gameId: string | undefined) {
         .select(USER_GAME_DATA_SELECT)
         .eq('game_id', gameId)
         .eq('user_id', user.id)
-        .maybeSingle<UserGameData>();
+        .maybeSingle();
 
       if (userGameError) {
         handleSupabaseError(userGameError, 'useGame', 'Erreur lors de la récupération des données utilisateur pour le jeu');
@@ -43,6 +44,7 @@ export function useGame(gameId: string | undefined) {
       return combineGameData(gameData, userGameData);
     },
     enabled: !!gameId && !!user,
+    ...collectionQueryOptions,
   });
 }
 
