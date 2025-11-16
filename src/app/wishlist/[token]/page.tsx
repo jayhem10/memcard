@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { PublicNavbar } from '@/components/layout/public-navbar';
 import { Footer } from '@/components/layout/footer';
 

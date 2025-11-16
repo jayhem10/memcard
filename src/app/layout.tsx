@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/auth-context";
 import { ReactQueryProvider } from "@/providers/query-provider";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { WebSiteSchema, OrganizationSchema, WebApplicationSchema } from "@/components/schema-org";
@@ -142,7 +142,7 @@ export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
           >
             <ReactQueryProvider>
               {children}
-              <Toaster position="top-right" />
+              <Toaster position="top-right" richColors expand={false} closeButton />
               <Analytics />
               <SpeedInsights />
             </ReactQueryProvider>

@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Rank } from '@/types/profile';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 import { handleErrorSilently } from '@/lib/error-handler';

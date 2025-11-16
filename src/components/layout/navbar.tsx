@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 import { useUserRole } from '@/hooks/useUserRole';
-import { UnifiedNotifications } from '@/components/notifications/unified-notifications';
+import { Notifications } from '@/components/notifications/notifications';
 import { SupportDialog } from '@/components/ui/support-dialog';
 import {
   DropdownMenu,
@@ -112,8 +112,8 @@ function NavbarContent() {
               Ajouter un jeu
             </Link>
             
-            {/* Notifications unifiées */}
-            {user && <UnifiedNotifications />}
+            {/* Notifications */}
+            {user && <Notifications />}
             
             {/* Sélecteur de thème */}
             <div className="ml-2">

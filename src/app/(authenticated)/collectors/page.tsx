@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Search, Users } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface PublicProfile {
   id: string;

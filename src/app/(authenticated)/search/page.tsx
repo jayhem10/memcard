@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Loader2, X, Check, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { queryIGDB, IGDB_ENDPOINTS, getIGDBGameName, getIGDBGameSummary } from '@/lib/igdb';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { ConsoleSelectDialog } from '@/components/console-select-dialog';
 import { useAuth } from '@/context/auth-context';
@@ -222,7 +222,7 @@ export default function SearchPage() {
                  platform.igdb_platform_id !== undefined && 
                  !isNaN(Number(platform.igdb_platform_id));
         });
-        
+                
         // S'assurer que tous les champs sont du bon type
         const formattedPlatforms: Platform[] = validPlatforms.map((platform: any) => ({
           id: Number(platform.id),

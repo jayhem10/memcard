@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Download, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { exportCollectionToExcel, GameExportData } from '@/lib/excel-export';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface ExportButtonProps {
   games: GameExportData[];

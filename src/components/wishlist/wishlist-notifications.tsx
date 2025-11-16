@@ -18,7 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import Image from 'next/image';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth-context';

@@ -39,10 +39,10 @@ export const POST = withApi(async (request) => {
     let priceData;
     try {
       priceData = await fetchEbayPriceSamples({
-        title: game.title,
-        platformName: platformName,
-        regionHint: 'PAL',
-      });
+      title: game.title,
+      platformName: platformName,
+      regionHint: 'PAL',
+    });
     } catch (error: any) {
       throw new ApiError(
         `Erreur lors de la récupération des prix eBay: ${error.message || 'Erreur inconnue'}`,
@@ -102,6 +102,6 @@ export const POST = withApi(async (request) => {
       ...summary,
       last_updated: now,
     };
-});
+    });
 
 

@@ -17,7 +17,7 @@ import { supabase } from '@/lib/supabase';
 import { useCollection } from '@/store';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth-context';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface GameFormDialogProps {
   isOpen: boolean;

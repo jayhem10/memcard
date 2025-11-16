@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/auth-context';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { CollectionGame } from './useUserGames';
 import { sortGamesByTitle } from '@/lib/game-utils';
 import { queryKeys } from '@/lib/react-query-config';

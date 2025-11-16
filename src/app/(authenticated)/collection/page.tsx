@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Grid2X2, List, Loader2, Database, Share2, Check, Power, ArrowUpDown, Type, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { ExportButton } from '@/components/ui/export-button';

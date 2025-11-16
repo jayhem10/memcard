@@ -1,5 +1,6 @@
 import { withApi, ApiError } from '@/lib/api-wrapper';
 import { NextRequest } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,24 +73,92 @@ export const GET = withApi(async (request: NextRequest, { supabase, user }) => {
       achievement: ua.achievements,
     }));
 
-  // Créer des notifications en base pour les nouveaux achievements débloqués
+  // Créer des notifications SEULEMENT pour les achievements qui n'ont PAS DÉJÀ de notification
   if (newlyUnlocked.length > 0) {
-    const notificationsToInsert = newlyUnlocked.map((ua: any) => ({
-      user_id: user.id,
-      achievement_id: ua.achievement_id,
-      user_achievement_id: ua.id,
-      is_viewed: false,
-    }));
+    console.log(`[Achievements API] ${newlyUnlocked.length} nouveaux achievements détectés`);
+    
+    // Créer supabaseAdmin pour bypasser RLS
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+    
+    // Vérifier quelles notifications existent déjà (TOUTES, même dismissed)
+    // Comportement : une notification par achievement, une seule fois dans la vie
+    const newlyUnlockedIds = newlyUnlocked.map((ua: any) => ua.id);
+    console.log(`[Achievements API] 🔍 Checking for existing notifications for ${newlyUnlockedIds.length} achievements`);
+    
+    // Vérifier les notifications existantes
+    const { data: existingNotifications, error: notifCheckError } = await supabaseAdmin
+      .from('notifications')
+      .select('user_achievement_id, dismissed_at')
+      .eq('user_id', user.id)
+      .eq('type', 'achievement')
+      .in('user_achievement_id', newlyUnlockedIds);
+    // ⚠️ PAS de filtre sur dismissed_at → une notif par achievement, une seule fois
 
-    // Insérer les notifications (ignorer les doublons)
-    // On utilise insert avec ignoreDuplicates pour ignorer les erreurs de contrainte unique
-    const { error: insertError } = await supabase
-      .from('achievement_notifications')
-      .insert(notificationsToInsert);
+    if (notifCheckError) {
+      console.error('[Achievements API] ❌ Error checking existing notifications:', notifCheckError);
+    }
 
-    // Ignorer les erreurs de doublons (code 23505 = violation de contrainte unique)
-    if (insertError && insertError.code !== '23505') {
-      console.error('Erreur lors de l\'insertion des notifications:', insertError);
+    console.log(`[Achievements API] 📊 Found ${existingNotifications?.length || 0} existing notifications:`, 
+      existingNotifications?.map(n => ({
+        id: n.user_achievement_id?.substring(0, 8),
+        dismissed: n.dismissed_at !== null
+      }))
+    );
+
+    const existingNotificationIds = new Set(
+      (existingNotifications || []).map((n: any) => n.user_achievement_id)
+    );
+
+    console.log(`[Achievements API] ${existingNotificationIds.size} notifications existent déjà (incluant dismissed)`);
+
+    // Filtrer pour ne créer que les notifications qui n'existent pas encore
+    const achievementsNeedingNotification = newlyUnlocked.filter(
+      (ua: any) => !existingNotificationIds.has(ua.id)
+    );
+
+    if (achievementsNeedingNotification.length > 0) {
+      const notificationsToInsert = achievementsNeedingNotification.map((ua: any) => ({
+        user_id: user.id,
+        type: 'achievement',
+        user_achievement_id: ua.id,
+        created_at: new Date().toISOString(),
+        is_read: false, // ⬅️ Booléen, pas une chaîne
+        is_dismissed: false, // ⬅️ Booléen, pas une chaîne
+        read_at: null,
+        dismissed_at: null,
+      }));
+
+      console.log(`[Achievements API] Tentative de création de ${notificationsToInsert.length} notification(s)`);
+
+      // Insérer les notifications dans la nouvelle table unifiée
+      // Note: La contrainte UNIQUE sur (user_id, user_achievement_id) empêche les doublons
+      const { data: insertedNotifs, error: insertError } = await supabaseAdmin
+        .from('notifications')
+        .insert(notificationsToInsert)
+        .select();
+
+      // Ignorer les erreurs de doublons (code 23505 = violation de contrainte unique)
+      if (insertError) {
+        if (insertError.code === '23505') {
+          console.log(`⚠️ Certaines notifications d'achievements existent déjà (ignoré)`);
+        } else {
+          console.error('❌ Erreur lors de l\'insertion des notifications d\'achievements:', insertError);
+        }
+      } else {
+        const insertedCount = insertedNotifs?.length || 0;
+        console.log(`✅ ${insertedCount} notification(s) d'achievement créée(s) pour l'utilisateur ${user.id}`);
+      }
+    } else {
+      console.log(`ℹ️ Aucune nouvelle notification à créer (toutes existent déjà)`);
     }
   }
 

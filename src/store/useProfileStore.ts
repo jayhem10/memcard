@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { ProfileUpdateRequest, UserProfile } from '@/types/profile';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 // Types pour les requêtes Supabase
 type ProfileInsertData = {

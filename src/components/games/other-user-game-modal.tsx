@@ -12,7 +12,7 @@ import { useAddToWishlist } from '@/hooks/useAddToWishlist';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/auth-context';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface OtherUserGameModalProps {
   isOpen: boolean;

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Grid2X2, List, Loader2, ArrowLeft, User } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useOtherUserGames } from '@/hooks/useOtherUserGames';
 import { CollectionGame } from '@/hooks/useUserGames';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

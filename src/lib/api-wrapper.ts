@@ -82,6 +82,11 @@ export function withApi<T>(
           params: resolvedParams,
         });
 
+        // Si le résultat est déjà une NextResponse, la retourner telle quelle
+        if (result instanceof NextResponse) {
+          return result;
+        }
+
         return NextResponse.json(result);
       }
 
@@ -91,6 +96,11 @@ export function withApi<T>(
         supabase: null,
         params: resolvedParams,
       });
+
+      // Si le résultat est déjà une NextResponse, la retourner telle quelle
+      if (result instanceof NextResponse) {
+        return result;
+      }
 
       return NextResponse.json(result);
     } catch (error: any) {

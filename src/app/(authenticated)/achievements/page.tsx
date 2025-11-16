@@ -37,6 +37,7 @@ export default function AchievementsPage() {
             'Authorization': `Bearer ${session.access_token}`,
           },
           credentials: 'include', // Inclure les cookies pour l'authentification
+          cache: 'no-store', // Désactiver le cache du navigateur
         });
 
         if (!response.ok) {

@@ -6,7 +6,7 @@ import { PlusCircle, Library, Gift, User, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
-import { WishlistNotifications } from '@/components/wishlist/wishlist-notifications';
+import { Notifications } from '@/components/notifications/notifications';
 
 export function BottomNavbar() {
   const pathname = usePathname();
@@ -94,10 +94,10 @@ export function BottomNavbar() {
             <span className="text-xs font-medium">Ajouter</span>
           </Link>
 
-          {/* Notifications wishlist */}
+          {/* Notifications */}
           {user && (
             <div className="flex flex-col items-center justify-center gap-1 px-4 py-2">
-              <WishlistNotifications />
+              <Notifications />
             </div>
           )}
 
