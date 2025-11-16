@@ -10,13 +10,13 @@ export const dynamic = 'force-dynamic';
  */
 export const PATCH = withApi(async (
   request: NextRequest,
-  { params, user }: { params: { id: string }; user: any }
+  { params, user }: { params?: { id: string }; user: any }
 ) => {
   if (!user) {
     throw new ApiError('Non authentifié', 401);
   }
 
-  const notificationId = params.id;
+  const notificationId = params?.id;
 
   if (!notificationId) {
     throw new ApiError('ID de notification manquant', 400);
