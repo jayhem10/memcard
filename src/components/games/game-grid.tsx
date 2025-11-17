@@ -4,7 +4,7 @@ import { Game } from '@/types/database.types';
 import { STATUS_LABELS } from '@/types/games';
 import { CollectionGame } from '@/hooks/useUserGames';
 
-type GameGridItem = (Game | CollectionGame) & {
+export type GameGridItem = (Game | CollectionGame) & {
   status?: string;
   rating?: number | null;
   console_name?: string;

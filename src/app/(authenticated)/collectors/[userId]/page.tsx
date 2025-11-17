@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, Suspense, useRef } from 'react';
-import { GameGrid } from '@/components/games/game-grid';
+import { GameGrid, GameGridItem } from '@/components/games/game-grid';
 import { GameListReadonly } from '@/components/games/game-list-readonly';
 import { OtherUserGameModal } from '@/components/games/other-user-game-modal';
 import { Button } from '@/components/ui/button';
@@ -234,8 +234,10 @@ function CollectorCollectionContent() {
     { label: 'À faire', value: 'backlog' },
   ];
 
-  const handleGameClick = (game: CollectionGame) => {
-    setSelectedGame(game);
+  const handleGameClick = (game: GameGridItem) => {
+    // Dans ce contexte, filteredGames est toujours de type CollectionGame[]
+    // donc on peut faire un cast sécurisé
+    setSelectedGame(game as CollectionGame);
     setIsModalOpen(true);
   };
 
