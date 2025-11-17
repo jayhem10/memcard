@@ -936,6 +936,119 @@
     right: 0;
     border-bottom: 1px solid currentColor;
   }
+
+  /* Styles spécifiques pour les cartes de jeux dans la grille */
+  
+  /* Thème Cyberpunk - Effets néon sur les cartes */
+  .cyberpunk .game-card {
+    background: linear-gradient(
+      135deg,
+      hsla(230, 50%, 5%, 0.95) 0%,
+      hsla(240, 50%, 8%, 0.95) 100%
+    ) !important;
+    border-color: hsla(var(--neon-indigo) / 0.2) !important;
+    box-shadow: 
+      0 2px 8px hsla(var(--neon-purple) / 0.1),
+      inset 0 0 8px hsla(var(--neon-blue) / 0.05) !important;
+  }
+
+  .cyberpunk .game-card:hover {
+    border-color: hsla(var(--neon-purple) / 0.5) !important;
+    box-shadow: 
+      0 4px 16px hsla(var(--neon-purple) / 0.3),
+      0 0 24px hsla(var(--neon-indigo) / 0.2),
+      inset 0 0 12px hsla(var(--neon-blue) / 0.1) !important;
+  }
+
+  .cyberpunk .game-card:hover [class*="ring-2"] {
+    box-shadow: 
+      0 0 8px hsla(var(--neon-purple) / 0.4),
+      0 0 16px hsla(var(--neon-indigo) / 0.3) !important;
+  }
+
+  /* Thème Fantasy - Bordure dorée et ombre */
+  .fantasy .game-card {
+    border: 2px solid hsl(var(--fantasy-bronze)) !important;
+    box-shadow: 
+      0 4px 12px hsl(var(--fantasy-stone) / 0.3),
+      inset 0 1px 0 hsl(var(--fantasy-silver) / 0.2) !important;
+    background: linear-gradient(135deg, 
+      hsl(var(--card)) 0%, 
+      hsl(25 18% 10%) 100%) !important;
+  }
+
+  .fantasy .game-card:hover {
+    border-color: hsl(var(--fantasy-gold)) !important;
+    box-shadow: 
+      0 6px 20px hsl(var(--fantasy-gold) / 0.4),
+      0 0 24px hsl(var(--fantasy-ember) / 0.2),
+      inset 0 1px 0 hsl(var(--fantasy-silver) / 0.4) !important;
+  }
+
+  .fantasy .game-card h3 {
+    color: hsl(var(--fantasy-gold)) !important;
+    text-shadow: 0 0 8px hsl(var(--fantasy-gold) / 0.3) !important;
+  }
+
+  /* Thème Rétro - Bordure épaisse et style pixelisé */
+  .retro .game-card {
+    border-width: 3px !important;
+    border-style: solid !important;
+    border-color: hsl(var(--primary)) !important;
+    box-shadow: 
+      4px 4px 0 hsl(var(--primary) / 0.3),
+      inset 0 0 0 2px hsl(var(--card)) !important;
+  }
+
+  .retro .game-card:hover {
+    transform: translate(-2px, -2px) !important;
+    box-shadow: 
+      6px 6px 0 hsl(var(--primary) / 0.4),
+      inset 0 0 0 2px hsl(var(--card)) !important;
+  }
+
+  /* Thème Nintendo - Style rouge caractéristique */
+  .nintendo .game-card {
+    border-color: hsl(var(--nintendo-red) / 0.3) !important;
+    box-shadow: 0 2px 8px hsl(var(--nintendo-red) / 0.1) !important;
+  }
+
+  .nintendo .game-card:hover {
+    border-color: hsl(var(--nintendo-red)) !important;
+    box-shadow: 
+      0 4px 12px hsl(var(--nintendo-red) / 0.3),
+      0 0 16px hsl(var(--nintendo-red) / 0.2) !important;
+  }
+
+  .nintendo .game-card:hover h3 {
+    color: hsl(var(--nintendo-red)) !important;
+  }
+
+  /* Thème PlayStation - Style bleu */
+  .playstation .game-card {
+    border-color: hsl(220 60% 85%) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .playstation .game-card:hover {
+    border-color: hsl(var(--primary)) !important;
+    box-shadow: 
+      0 4px 12px hsl(var(--primary) / 0.2),
+      0 0 16px hsl(var(--primary) / 0.15) !important;
+  }
+
+  /* Thème Xbox - Style vert */
+  .xbox .game-card {
+    border-color: hsl(120 60% 85%) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .xbox .game-card:hover {
+    border-color: hsl(var(--primary)) !important;
+    box-shadow: 
+      0 4px 12px hsl(var(--primary) / 0.2),
+      0 0 16px hsl(var(--primary) / 0.15) !important;
+  }
 }
 
 /* Animation shimmer pour les skeletons */

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, Suspense, useRef } from 'react';
-import { GameGridReadonly } from '@/components/games/game-grid-readonly';
+import { GameGrid } from '@/components/games/game-grid';
 import { GameListReadonly } from '@/components/games/game-list-readonly';
 import { OtherUserGameModal } from '@/components/games/other-user-game-modal';
 import { Button } from '@/components/ui/button';
@@ -497,7 +497,7 @@ function CollectorCollectionContent() {
             )
           ) : filteredGames.length > 0 ? (
             viewMode === 'grid' ? (
-              <GameGridReadonly games={filteredGames} onGameClick={handleGameClick} />
+              <GameGrid games={filteredGames} readonly onGameClick={handleGameClick} />
             ) : (
               <GameListReadonly games={filteredGames} onGameClick={handleGameClick} />
             )
