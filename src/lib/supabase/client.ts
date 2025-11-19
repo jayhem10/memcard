@@ -79,6 +79,18 @@ export const getBaseUrl = () => {
 };
 
 /**
+ * Fonction pour obtenir l'URL complète de Supabase (pour les templates d'emails)
+ * Les liens de reset doivent pointer vers Supabase, pas vers notre domaine
+ */
+export const getSupabaseUrl = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL est requis');
+  }
+  return supabaseUrl;
+};
+
+/**
  * Client Supabase pour le navigateur
  * Utilise @supabase/ssr pour une meilleure gestion des sessions
  *

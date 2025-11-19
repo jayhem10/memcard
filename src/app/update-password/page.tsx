@@ -26,14 +26,7 @@ function UpdatePasswordForm() {
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
 
-      if (error) {
-        console.error('Session error:', error);
-        toast.error('Erreur lors de la vérification de la session');
-        router.push('/login');
-        return;
-      }
-
-      if (!session) {
+      if (error || !session) {
         toast.error('Lien de réinitialisation invalide ou expiré');
         router.push('/login');
         return;
@@ -43,7 +36,6 @@ function UpdatePasswordForm() {
       const isRecoverySession = session.user?.user_metadata?.recovery_sent_at;
 
       if (!isRecoverySession) {
-        console.log('Not a recovery session, redirecting to home');
         toast.error('Cette page est réservée à la réinitialisation de mot de passe');
         router.push('/');
         return;

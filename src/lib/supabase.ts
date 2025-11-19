@@ -5,4 +5,4 @@
  * Ce fichier est conservé pour la compatibilité ascendante.
  * Il sera supprimé dans une future version.
  */
-export { supabase, getBaseUrl } from './supabase/client';
+export { supabase, getBaseUrl, getSupabaseUrl } from './supabase/client';
