@@ -83,7 +83,7 @@ export function createOptimizedQueryClient() {
  */
 export const queryKeys = {
   profile: (userId?: string) => ['profile', userId] as const,
-  userGames: (userId?: string) => ['userGames', userId] as const,
+  userGames: (userId?: string, filters?: any) => ['userGames', userId, filters] as const,
   otherUserGames: (userId?: string) => ['otherUserGames', userId] as const,
   userStats: (userId?: string) => ['userStats', userId] as const,
   game: (gameId: string, userId?: string) => ['game', gameId, userId] as const,

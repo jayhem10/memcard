@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState, Suspense, useMemo } from 'react';
-import { GameGrid } from '@/components/games/game-grid';
+import { useInView } from 'react-intersection-observer';
+import { useQueryClient } from '@tanstack/react-query';
+import { GameGrid, GameGridItem } from '@/components/games/game-grid';
 import { GameList } from '@/components/games/game-list';
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/search-input';
@@ -15,7 +17,7 @@ import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { ExportButton } from '@/components/ui/export-button';
 import { GameExportData } from '@/lib/excel-export';
-import { useUserGames } from '@/hooks/useUserGames';
+import { useUserGames, useUserGamesStats, UserGamesFilters } from '@/hooks/useUserGames';
 import { MobileFilterSelector } from '@/components/filters/mobile-filter-selector';
 import {
   Select,
@@ -34,6 +36,7 @@ type SortOrder = 'alphabetical' | 'date-desc';
 
 function CollectionPageContent() {
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
@@ -46,8 +49,28 @@ function CollectionPageContent() {
   const [isLoadingShare, setIsLoadingShare] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>('alphabetical');
 
-  // Utiliser le hook React Query pour récupérer les jeux
-  const { data: games = [], isLoading: loading, error } = useUserGames();
+  // Préparer les filtres pour la requête
+  const currentFilters: UserGamesFilters = {
+    status: activeTab === 'wishlist' ? 'all' : statusFilter, // Dans wishlist, pas de filtre de statut
+    console_id: consoleFilter,
+    genre_id: genreFilter,
+    search: searchQuery,
+    tab: activeTab,
+    sortOrder: sortOrder,
+  };
+
+  // Utiliser le hook React Query avec pagination côté Supabase pour les jeux
+  const {
+    games,
+    isLoading: loading,
+    error,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useUserGames(currentFilters);
+
+  // Hook séparé pour les stats complètes
+  const { data: statsData, isLoading: statsLoading } = useUserGamesStats(activeTab);
 
   // Initialiser l'onglet et les filtres depuis l'URL si présent
   useEffect(() => {
@@ -58,6 +81,10 @@ function CollectionPageContent() {
     // Gérer l'onglet
     if (tabParam === 'wishlist') {
       setActiveTab('wishlist');
+      // Réinitialiser les filtres quand on passe à wishlist
+      setStatusFilter('all');
+      setConsoleFilter('all');
+      setGenreFilter('all');
     } else {
       setActiveTab('collection');
     }
@@ -92,140 +119,52 @@ function CollectionPageContent() {
     }
   }, [error]);
 
-  // Calculer les consoles et genres à partir des jeux filtrés
-  const { consoles, genres } = useMemo(() => {
-    // Filtrer les jeux selon l'onglet actif
-    const tabFilteredGames = games.filter(game => {
-      const status = game.status || '';
-      if (activeTab === 'collection') {
-        return !['wishlist', 'WISHLIST'].includes(status);
-      } else {
-        return ['wishlist', 'WISHLIST'].includes(status);
-      }
-    });
+  // Utiliser les stats complètes depuis le hook séparé
+  const { consoles, genres, totalGames } = useMemo(() => {
+    if (!statsData) {
+      return { consoles: [], genres: [], totalGames: 0 };
+    }
 
-    // Calculer le nombre de jeux par console pour l'onglet actif
-    const consoleMap = new Map<string, { id: string; name: string; count: number }>();
-    consoleMap.set('all', { id: 'all', name: 'Toutes les consoles', count: tabFilteredGames.length });
-    
-    tabFilteredGames.forEach(game => {
-      if (game.console_id && game.console_name) {
-        const key = game.console_id;
-        if (consoleMap.has(key)) {
-          consoleMap.get(key)!.count++;
-        } else {
-          consoleMap.set(key, { id: game.console_id, name: game.console_name, count: 1 });
-        }
-      }
-    });
-    
-    // Calculer le nombre de jeux par genre pour l'onglet actif
-    const genreMap = new Map<string, { id: string; name: string; count: number }>();
-    genreMap.set('all', { id: 'all', name: 'Tous les genres', count: tabFilteredGames.length });
-    
-    tabFilteredGames.forEach(game => {
-      if (game.genres && game.genres.length > 0) {
-        game.genres.forEach((genre) => {
-          if (genre.id && genre.name) {
-            const key = genre.id;
-            if (genreMap.has(key)) {
-              genreMap.get(key)!.count++;
-            } else {
-              genreMap.set(key, { id: genre.id, name: genre.name, count: 1 });
-            }
-          }
-        });
-      }
-    });
-    
-    // Convertir Map en tableau
-    const consoleList = Array.from(consoleMap.values());
-    const genreList = Array.from(genreMap.values());
-    
-    // Trier par nombre de jeux décroissant (sauf "Toutes les consoles"/"Tous les genres" qui reste en premier)
-    const sortByCount = (a: {id: string, count: number}, b: {id: string, count: number}) => {
-      if (a.id === 'all') return -1;
-      if (b.id === 'all') return 1;
-      return b.count - a.count; // Tri décroissant par nombre de jeux
+    // Calculer le nombre total de jeux pour l'onglet actif
+    const totalCount = statsData.consoles.find((c: { id: string; name: string; count: number }) => c.id === 'all')?.count || 0;
+
+    return {
+      consoles: statsData.consoles,
+      genres: statsData.genres,
+      totalGames: totalCount
     };
-    
-    consoleList.sort(sortByCount);
-    genreList.sort(sortByCount);
-    
-    return { consoles: consoleList, genres: genreList };
-  }, [games, activeTab]);
+  }, [statsData]);
 
-  // Préparer les jeux pour l'affichage avec les types attendus par GameGrid et GameList
-  const preparedGames = games.map(game => ({
+  // Préparer les jeux pour GameGrid (accepte null pour rating)
+  const preparedGamesForGrid: GameGridItem[] = games;
+
+  // Préparer les jeux pour GameList (n'accepte pas null pour rating et completion_percentage)
+  const preparedGamesForList = games.map(game => ({
     ...game,
-    // S'assurer que les propriétés requises par les composants existent
-    status: game.status || 'not_started',
-    rating: game.rating || undefined,
-    completion_percentage: undefined,
-    play_time: undefined
+    rating: game.rating ?? undefined, // Convertir null en undefined
+    completion_percentage: game.completion_percentage ?? undefined, // Convertir null en undefined
+    play_time: game.play_time ?? undefined, // Convertir null en undefined
   }));
-  
-  // Filter games based on searchQuery, statusFilter, consoleFilter and activeTab
-  const filteredGames = preparedGames.filter(game => {
-    const status = game.status || '';
-    // Filter by active tab first
-    if (activeTab === 'collection' && ['wishlist', 'WISHLIST'].includes(status)) {
-      return false; // Ne pas afficher les jeux wishlist dans l'onglet collection
-    }
-    if (activeTab === 'wishlist' && !['wishlist', 'WISHLIST'].includes(status)) {
-      return false; // Afficher uniquement les jeux wishlist dans l'onglet wishlist
-    }
-    
-    // Apply text search filter
-    const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         game.publisher.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         game.developer.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Apply status filter (seulement dans l'onglet collection)
-    let matchesStatus = true;
-    if (activeTab === 'collection' && statusFilter !== 'all') {
-      // Définir le mappage en fonction des valeurs réelles en BDD
-      const statusMapping: Record<FilterStatus, string[]> = {
-        all: [],
-        playing: ['in_progress', 'IN_PROGRESS'],
-        completed: ['completed', 'COMPLETED'],
-        backlog: ['not_started', 'NOT_STARTED'],
-        wishlist: ['wishlist', 'WISHLIST']
-      };
-      
-      // Vérifier si le statut du jeu correspond à l'un des statuts attendus
-      matchesStatus = statusMapping[statusFilter].includes(status);
-    }
-    
-    // Apply console filter
-    let matchesConsole = true;
-    if (consoleFilter !== 'all') {
-      matchesConsole = game.console_id === consoleFilter;
-    }
-    
-    // Apply genre filter
-    let matchesGenre = true;
-    if (genreFilter !== 'all') {
-      matchesGenre = game.genres?.some((genre) => genre.id === genreFilter) || false;
-    }
-    
-    return matchesSearch && matchesStatus && matchesConsole && matchesGenre;
+
+  // Les jeux sont maintenant filtrés côté serveur, on utilise directement les jeux
+  const filteredGames = preparedGamesForGrid;
+
+  // Hook pour l'infinite scroll
+  const { ref: loadMoreRef, inView } = useInView({
+    threshold: 0,
+    rootMargin: '100px',
   });
 
-  // Trier les jeux filtrés selon l'ordre sélectionné
-  const sortedGames = useMemo(() => {
-    if (sortOrder === 'alphabetical') {
-      return sortGamesByTitle(filteredGames);
-    } else if (sortOrder === 'date-desc') {
-      // Trier par date de création (plus récent au plus ancien)
-      return [...filteredGames].sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return dateB - dateA; // Décroissant (plus récent en premier)
-      });
+  // Charger plus de données quand l'élément sentinel devient visible
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-    return filteredGames;
-  }, [filteredGames, sortOrder]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Les jeux sont maintenant filtrés et triés côté Supabase
+  // On utilise directement les jeux récupérés
+  const sortedGames = games;
 
   const filterButtons: { label: string; value: FilterStatus }[] = [
     { label: 'Tous', value: 'all' },
@@ -377,6 +316,28 @@ function CollectionPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, user]);
 
+  // Invalider les queries quand les filtres changent pour forcer un refetch
+  useEffect(() => {
+    queryClient.invalidateQueries({
+      queryKey: ['userGames', user?.id],
+      exact: false, // Invalider toutes les queries userGames pour cet utilisateur
+    });
+    // Invalider aussi les stats quand l'onglet change
+    queryClient.invalidateQueries({
+      queryKey: ['userGamesStats', user?.id],
+      exact: false,
+    });
+  }, [searchQuery, statusFilter, consoleFilter, genreFilter, activeTab, sortOrder, queryClient, user?.id]);
+
+  // Forcer un refetch spécifique quand l'onglet change
+  useEffect(() => {
+    // Reset pagination et refetch quand l'onglet change
+    queryClient.resetQueries({
+      queryKey: ['userGames', user?.id],
+      exact: false,
+    });
+  }, [activeTab, queryClient, user?.id]);
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Hero Section */}
@@ -388,9 +349,9 @@ function CollectionPageContent() {
               {activeTab === 'wishlist' ? 'Ma Liste de Souhaits' : 'Ma Collection'}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              {activeTab === 'wishlist' 
-                ? 'Gérez vos jeux souhaités et partagez votre liste'
-                : `Gérez et explorez votre collection de ${sortedGames.length} jeu${sortedGames.length > 1 ? 'x' : ''}`
+              {activeTab === 'wishlist'
+                ? `Gérez vos ${totalGames} jeu${totalGames > 1 ? 'x' : ''} souhaité${totalGames > 1 ? 's' : ''} et partagez votre liste`
+                : `Gérez et explorez votre collection de ${totalGames} jeu${totalGames > 1 ? 'x' : ''}`
               }
             </p>
           </div>
@@ -458,7 +419,7 @@ function CollectionPageContent() {
             </div>
           ) : (
             <ExportButton 
-              games={sortedGames as GameExportData[]}
+              games={preparedGamesForGrid as GameExportData[]}
               activeTab={activeTab}
               filename="ma_collection"
               size="sm"
@@ -468,7 +429,7 @@ function CollectionPageContent() {
                 status: statusFilter,
                 search: searchQuery
               }}
-              consoleName={consoleFilter !== 'all' ? consoles.find(c => c.id === consoleFilter)?.name : undefined}
+              consoleName={consoleFilter !== 'all' ? consoles.find((c: { id: string; name: string; count: number }) => c.id === consoleFilter)?.name : undefined}
             />
           )}
           <Button
@@ -533,12 +494,14 @@ function CollectionPageContent() {
           
           {/* Mode mobile : sélecteur optimisé */}
           <div className="md:hidden">
-            {loading ? (
-              <div className="h-10 bg-muted rounded-md animate-pulse" />
+            {statsLoading ? (
+              <div className="relative h-10 bg-muted rounded-md overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
             ) : (
               <MobileFilterSelector
                 label="Plateforme"
-                options={consoles.map(c => ({ id: c.id, name: c.name, count: c.count }))}
+                options={consoles.map((c: { id: string; name: string; count: number }) => ({ id: c.id, name: c.name, count: c.count }))}
                 selectedId={consoleFilter}
                 onSelect={setConsoleFilter}
                 placeholder="Sélectionner une plateforme..."
@@ -550,7 +513,7 @@ function CollectionPageContent() {
           <div className="hidden md:block">
             <ScrollArea className="h-16 whitespace-nowrap">
               <div className="flex flex-wrap gap-2 pb-1">
-              {loading ? (
+              {statsLoading ? (
                 // Skeletons avec effet shimmer pendant le chargement
                 Array.from({ length: 5 }).map((_, i) => (
                   <div
@@ -562,7 +525,7 @@ function CollectionPageContent() {
                   </div>
                 ))
               ) : (
-                consoles.map((console) => (
+                consoles.map((console: { id: string; name: string; count: number }) => (
                   <Badge 
                     key={console.id} 
                     variant={consoleFilter === console.id ? "default" : "outline"}
@@ -606,12 +569,14 @@ function CollectionPageContent() {
           
           {/* Mode mobile : sélecteur optimisé */}
           <div className="md:hidden">
-            {loading ? (
-              <div className="h-10 bg-muted rounded-md animate-pulse" />
+            {statsLoading ? (
+              <div className="relative h-10 bg-muted rounded-md overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
             ) : (
               <MobileFilterSelector
                 label="Genre"
-                options={genres.map(g => ({ id: g.id, name: g.name, count: g.count }))}
+                options={genres.map((g: { id: string; name: string; count: number }) => ({ id: g.id, name: g.name, count: g.count }))}
                 selectedId={genreFilter}
                 onSelect={setGenreFilter}
                 placeholder="Sélectionner un genre..."
@@ -623,7 +588,7 @@ function CollectionPageContent() {
           <div className="hidden md:block">
             <ScrollArea className="h-16 whitespace-nowrap">
               <div className="flex flex-wrap gap-2 pb-1">
-              {loading ? (
+              {statsLoading ? (
                 // Skeletons avec effet shimmer pendant le chargement
                 Array.from({ length: 6 }).map((_, i) => (
                   <div
@@ -635,7 +600,7 @@ function CollectionPageContent() {
                   </div>
                 ))
               ) : (
-                genres.map((genre) => (
+                genres.map((genre: { id: string; name: string; count: number }) => (
                   <Badge 
                     key={genre.id} 
                     variant={genreFilter === genre.id ? "default" : "outline"}
@@ -690,9 +655,10 @@ function CollectionPageContent() {
               {Array.from({ length: 12 }).map((_, i) => (
                 <div
                   key={i}
-                  className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted animate-pulse"
+                  className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted"
                 >
                   <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/80 to-muted" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
                   <div className="absolute bottom-0 left-0 right-0 h-8 bg-muted-foreground/20" />
                 </div>
               ))}
@@ -703,8 +669,9 @@ function CollectionPageContent() {
               {Array.from({ length: 8 }).map((_, i) => (
                 <div
                   key={i}
-                  className="flex items-center space-x-4 p-4 rounded-lg bg-card animate-pulse"
+                  className="relative flex items-center space-x-4 p-4 rounded-lg bg-card overflow-hidden"
                 >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
                   <div className="w-20 h-24 bg-muted rounded-md flex-shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-5 bg-muted rounded w-3/4" />
@@ -716,11 +683,28 @@ function CollectionPageContent() {
             </div>
           )
         ) : sortedGames.length > 0 ? (
-          viewMode === 'grid' ? (
-            <GameGrid games={sortedGames} />
-          ) : (
-            <GameList games={sortedGames} />
-          )
+          <>
+            {viewMode === 'grid' ? (
+              <GameGrid games={preparedGamesForGrid} />
+            ) : (
+              <GameList games={preparedGamesForList} />
+            )}
+            {/* Élément sentinel pour l'infinite scroll */}
+            {hasNextPage && (
+              <div
+                ref={loadMoreRef}
+                className="flex justify-center py-8"
+              >
+                {isFetchingNextPage ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    Chargement de plus de jeux...
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         ) : (
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-12">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
@@ -749,10 +733,16 @@ export default function CollectionPage() {
     <Suspense fallback={
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div className="h-9 w-48 bg-muted animate-pulse rounded" />
+          <div className="relative h-9 w-48 bg-muted rounded overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+          </div>
           <div className="flex gap-2">
-            <div className="h-9 w-24 bg-muted animate-pulse rounded" />
-            <div className="h-9 w-24 bg-muted animate-pulse rounded" />
+            <div className="relative h-9 w-24 bg-muted rounded overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+            </div>
+            <div className="relative h-9 w-24 bg-muted rounded overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+            </div>
           </div>
         </div>
         <div className="flex h-[300px] items-center justify-center">
