@@ -60,9 +60,28 @@ const customStorage = {
 let supabaseInstance: ReturnType<typeof createBrowserClient> | null = null;
 
 /**
+ * Fonction utilitaire pour obtenir l'URL de base selon l'environnement
+ * Cela assure la cohérence entre le code et les templates d'emails Supabase
+ */
+export const getBaseUrl = () => {
+  // En production, utiliser l'URL fixe
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://memcard.fr';
+  }
+
+  // En développement, utiliser l'URL courante ou localhost
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+
+  // Fallback pour le serveur
+  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+};
+
+/**
  * Client Supabase pour le navigateur
  * Utilise @supabase/ssr pour une meilleure gestion des sessions
- * 
+ *
  * @example
  * import { supabase } from '@/lib/supabase/client'
  * const { data } = await supabase.from('users').select('*')

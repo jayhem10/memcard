@@ -2,23 +2,32 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { supabase } from '@/lib/supabase';
+import { supabase, getBaseUrl } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { loginSchema, signupSchema, type LoginInput, type SignupInput } from '@/lib/validations/auth';
+import { loginSchema, signupSchema, resetPasswordSchema, type LoginInput, type SignupInput, type ResetPasswordInput } from '@/lib/validations/auth';
+import { ArrowLeft } from 'lucide-react';
 
 export function AuthForm() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
   const [oAuthLoading, setOAuthLoading] = useState<'google' | 'discord' | null>(null);
-  
-  // Utiliser le schéma approprié selon le mode (login ou signup)
+
+  // Formulaire pour login/signup
   const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginInput | SignupInput>({
     resolver: zodResolver(isSignUp ? signupSchema : loginSchema),
+  });
+
+  // Formulaire pour reset password
+  const { register: registerReset, handleSubmit: handleSubmitReset, formState: { errors: errorsReset }, reset: resetReset } = useForm<ResetPasswordInput>({
+    resolver: zodResolver(resetPasswordSchema),
   });
 
   // Détecter le paramètre mode=signup dans l'URL
@@ -29,10 +38,16 @@ export function AuthForm() {
     }
   }, [searchParams]);
 
-  // Réinitialiser le formulaire quand on change de mode (login/signup)
+  // Réinitialiser les formulaires quand on change de mode
   useEffect(() => {
     reset();
   }, [isSignUp, reset]);
+
+  useEffect(() => {
+    if (!showForgotPassword) {
+      resetReset();
+    }
+  }, [showForgotPassword, resetReset]);
 
   const onSubmit = async (data: LoginInput | SignupInput) => {
     setIsLoading(true);
@@ -74,7 +89,7 @@ export function AuthForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${getBaseUrl()}/auth/callback`,
           scopes: provider === 'google' ? 'email profile' : 'email identify',
         },
       });
@@ -85,6 +100,80 @@ export function AuthForm() {
       setOAuthLoading(null);
     }
   };
+
+  const onResetPasswordSubmit = async (data: ResetPasswordInput) => {
+    setResetPasswordLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+        redirectTo: `${getBaseUrl()}/update-password`,
+      });
+
+      if (error) throw error;
+
+      toast.success('Email de réinitialisation envoyé !');
+      setShowForgotPassword(false);
+    } catch (error: any) {
+      console.error('Reset password error:', error);
+      toast.error(error.message || 'Erreur lors de l\'envoi de l\'email');
+    } finally {
+      setResetPasswordLoading(false);
+    }
+  };
+
+  // Affichage conditionnel selon l'état
+  if (showForgotPassword) {
+    return (
+      <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg">
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowForgotPassword(false)}
+            className="absolute top-4 left-4 p-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+
+          <h2 className="text-2xl font-bold">Mot de passe oublié</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmitReset(onResetPasswordSubmit)} className="space-y-6">
+          <div className="space-y-2">
+            <Input
+              {...registerReset('email')}
+              type="email"
+              placeholder="Votre adresse email"
+              disabled={resetPasswordLoading}
+            />
+            {errorsReset.email && (
+              <p className="text-sm text-destructive">{errorsReset.email.message}</p>
+            )}
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={resetPasswordLoading}
+          >
+            {resetPasswordLoading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Envoi en cours...
+              </span>
+            ) : (
+              'Envoyer le lien de réinitialisation'
+            )}
+          </Button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg">
@@ -118,14 +207,12 @@ export function AuthForm() {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
           <Input
             {...register('password')}
             type="password"
             placeholder="Mot de passe"
             disabled={isLoading}
           />
-          </div>
           {errors.password && (
             <p className="text-sm text-destructive">{errors.password.message}</p>
           )}
@@ -208,6 +295,19 @@ export function AuthForm() {
             )}
           </Button>
         </div>
+
+        {/* Lien mot de passe oublié - plus discret */}
+        {!isSignUp && (
+          <div className="text-center pt-4">
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              Mot de passe oublié ?
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );
