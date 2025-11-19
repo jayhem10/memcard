@@ -246,8 +246,8 @@ export default function AdminPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              onClick={enrichRandomGames} 
+            <Button
+              onClick={enrichRandomGames}
               disabled={loadingRandomGames}
               className="w-full sm:w-auto"
               variant="default"
@@ -279,6 +279,28 @@ export default function AdminPage() {
                 <AlertDescription className="text-red-700 dark:text-red-200">{randomGamesError}</AlertDescription>
               </Alert>
             )}
+          </CardContent>
+          </Card>
+        </div>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <Card className="border-0 shadow-none bg-transparent">
+          <CardHeader>
+            <CardTitle>Gestion des Ranks</CardTitle>
+            <CardDescription>
+              Créer, modifier et supprimer les rangs des utilisateurs. Gérez les noms, descriptions et icônes pour chaque niveau.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              asChild
+              className="w-full sm:w-auto"
+              variant="outline"
+            >
+              <a href="/admin/ranks">
+                Gérer les Ranks
+              </a>
+            </Button>
           </CardContent>
           </Card>
         </div>
