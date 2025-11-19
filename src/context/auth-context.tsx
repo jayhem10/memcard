@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { supabase, translateSupabaseError } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 // Définir le type pour le contexte d'authentification
@@ -52,8 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast.success('Vous avez été déconnecté');
       router.push('/login');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la déconnexion';
-      toast.error(errorMessage);
+      const errorMessage = error instanceof Error ? translateSupabaseError(error.message) : 'Erreur lors de la déconnexion';
+      toast.error(errorMessage || 'Erreur lors de la déconnexion');
     }
   };
 

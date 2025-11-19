@@ -22,6 +22,17 @@ function UpdatePasswordForm() {
   });
 
   useEffect(() => {
+    // Vérifier si on vient d'un lien de reset avec erreur
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    const errorCode = urlParams.get('error_code');
+
+    if (error === 'access_denied' && errorCode === 'otp_expired') {
+      toast.error('Le lien de réinitialisation a expiré. Veuillez en demander un nouveau.');
+      router.push('/login');
+      return;
+    }
+
     // Vérifier si l'utilisateur a une session valide de type recovery
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();

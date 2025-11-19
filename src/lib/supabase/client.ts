@@ -91,6 +91,43 @@ export const getSupabaseUrl = () => {
 };
 
 /**
+ * Fonction pour traduire les erreurs Supabase en français
+ */
+export const translateSupabaseError = (error: string): string => {
+  const translations: Record<string, string> = {
+    // Erreurs d'authentification
+    'Invalid login credentials': 'Identifiants de connexion invalides',
+    'Email not confirmed': 'Email non confirmé',
+    'User already registered': 'Un compte existe déjà avec cet email',
+    'Password should be at least 6 characters': 'Le mot de passe doit contenir au moins 6 caractères',
+    'Signup is disabled': 'Les inscriptions sont désactivées',
+    'Email link is invalid or has expired': 'Le lien email est invalide ou a expiré',
+    'Token has expired or is invalid': 'Le token a expiré ou est invalide',
+    'Unable to validate email address: invalid format': 'Format d\'email invalide',
+    'User not found': 'Utilisateur non trouvé',
+    'Password recovery is disabled': 'La récupération de mot de passe est désactivée',
+    'Invalid email': 'Email invalide',
+    'Email rate limit exceeded': 'Trop de tentatives, veuillez réessayer plus tard',
+    'Too many requests': 'Trop de requêtes, veuillez réessayer plus tard',
+
+    // Erreurs OAuth
+    'OAuth provider not found': 'Fournisseur OAuth non trouvé',
+    'OAuth provider not enabled': 'Fournisseur OAuth non activé',
+    'Invalid OAuth state': 'État OAuth invalide',
+    'OAuth callback failed': 'Échec de la connexion OAuth',
+
+    // Erreurs générales
+    'Server error': 'Erreur du serveur',
+    'Network error': 'Erreur de réseau',
+    'Something went wrong': 'Une erreur inattendue s\'est produite',
+    'Database error': 'Erreur de base de données',
+    'Internal server error': 'Erreur interne du serveur',
+  };
+
+  return translations[error] || error;
+};
+
+/**
  * Client Supabase pour le navigateur
  * Utilise @supabase/ssr pour une meilleure gestion des sessions
  *
