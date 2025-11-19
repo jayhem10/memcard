@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Fonction utilitaire pour vérifier si une route est publique
   const isPublicRoute = (pathname: string): boolean => {
-    const publicRoutes = ['/login', '/auth/callback', '/update-password'];
+    const publicRoutes = ['/login', '/auth/callback'];
     const isPublic = publicRoutes.some(route => pathname === route);
     const isSharedWishlist = pathname.startsWith('/wishlist/') && pathname !== '/wishlist';
     return isPublic || isSharedWishlist;
@@ -62,11 +62,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === 'undefined') return;
 
     const pathname = window.location.pathname;
-
-    // Ne pas rediriger si on est sur la page de reset de mot de passe
-    if (pathname === '/update-password') {
-      return;
-    }
 
     if (user && pathname === '/login') {
       router.push('/');

@@ -243,10 +243,10 @@ export default function QuizForm() {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
               >
-                <img 
-                  src={userRank.icon_url} 
-                  alt={userRank.name_fr} 
-                  className="w-32 h-32 object-contain"
+                <img
+                  src={userRank.icon_url}
+                  alt={userRank.name_fr}
+                  className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-72 lg:h-72 object-contain"
                 />
               </motion.div>
             )}
