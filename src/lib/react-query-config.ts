@@ -84,7 +84,8 @@ export function createOptimizedQueryClient() {
 export const queryKeys = {
   profile: (userId?: string) => ['profile', userId] as const,
   userGames: (userId?: string, filters?: any) => ['userGames', userId, filters] as const,
-  otherUserGames: (userId?: string) => ['otherUserGames', userId] as const,
+  otherUserGames: (userId?: string, filters?: any) => ['otherUserGames', userId, filters] as const,
+  otherUserGamesStats: (userId?: string, tab?: string) => ['otherUserGamesStats', userId, tab] as const,
   userStats: (userId?: string) => ['userStats', userId] as const,
   game: (gameId: string, userId?: string) => ['game', gameId, userId] as const,
   igdbGames: (query: string, platform?: number | null) => ['igdbGames', query, platform] as const,

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, Suspense, useRef } from 'react';
+import { useInView } from 'react-intersection-observer';
 import { GameGrid, GameGridItem } from '@/components/games/game-grid';
 import { GameListReadonly } from '@/components/games/game-list-readonly';
 import { OtherUserGameModal } from '@/components/games/other-user-game-modal';
@@ -11,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Grid2X2, List, Loader2, ArrowLeft, User } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useOtherUserGames } from '@/hooks/useOtherUserGames';
+import { useOtherUserGames, useOtherUserGamesStats, OtherUserGamesFilters } from '@/hooks/useOtherUserGames';
 import { CollectionGame } from '@/hooks/useUserGames';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/lib/supabase';
@@ -39,10 +40,60 @@ function CollectorCollectionContent() {
   const hasShownErrorToastRef = useRef(false);
   const queryClient = useQueryClient();
 
+  // Hook pour la pagination infinie
+  const { ref: loadMoreRef, inView } = useInView({
+    threshold: 0.1,
+  });
+
+  // Construire les filtres
+  const currentFilters: OtherUserGamesFilters = {
+    search: searchQuery.trim() || undefined,
+    console_id: consoleFilter,
+    genre_id: genreFilter,
+    status: statusFilter,
+  };
+
   // Désactiver le hook si le profil n'est pas public ou n'est pas encore vérifié
-  const { data: games = [], isLoading: loading, error, refetch } = useOtherUserGames(
-    isProfilePublic === true ? userId : undefined
+  const {
+    data,
+    isLoading: loading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch
+  } = useOtherUserGames(
+    isProfilePublic === true ? userId : undefined,
+    currentFilters
   );
+
+  // Hook pour les statistiques
+  const {
+    data: statsData,
+    isLoading: statsLoading
+  } = useOtherUserGamesStats(
+    isProfilePublic === true ? userId : undefined,
+    'collection' // Pour l'instant, on ne gère que la collection (pas wishlist)
+  );
+
+  // Déclencher le chargement de la page suivante quand on atteint le bas
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Aplatir les pages pour obtenir tous les jeux
+  const games = data?.pages.flat() ?? [];
+
+  // Invalider le cache quand les filtres changent
+  useEffect(() => {
+    if (isProfilePublic === true && userId) {
+      queryClient.invalidateQueries({
+        queryKey: ['otherUserGames', userId]
+      });
+    }
+  }, [searchQuery, statusFilter, consoleFilter, genreFilter, userId, isProfilePublic, queryClient]);
 
   // Le cache intelligent gère automatiquement le rafraîchissement via Realtime
   // Pas besoin de forcer le rafraîchissement à chaque montage
@@ -119,71 +170,43 @@ function CollectorCollectionContent() {
     }
   }, [error, isProfilePublic]);
 
-  // Calculer les consoles et genres à partir des jeux
+  // Utiliser UNIQUEMENT les stats RPC (pas de calcul côté client)
   const { consoles, genres } = useMemo(() => {
-    const gamesArray: CollectionGame[] = Array.isArray(games) ? games : [];
-    const consoleMap = new Map<string, { id: string; name: string; count: number }>();
-    consoleMap.set('all', { id: 'all', name: 'Toutes les consoles', count: gamesArray.length });
-    
-    gamesArray.forEach((game: CollectionGame) => {
-      if (game.console_id && game.console_name) {
-        const existing = consoleMap.get(game.console_id);
-        if (existing) {
-          existing.count++;
-        } else {
-          consoleMap.set(game.console_id, {
-            id: game.console_id,
-            name: game.console_name,
-            count: 1
-          });
-        }
-      }
-    });
+    if (!statsData) {
+      return {
+        consoles: [{ id: 'all', name: 'Toutes les consoles', count: 0 }],
+        genres: [{ id: 'all', name: 'Tous les genres', count: 0 }]
+      };
+    }
 
-    const genreMap = new Map<string, { id: string; name: string; count: number }>();
-    genreMap.set('all', { id: 'all', name: 'Tous les genres', count: gamesArray.length });
-    
-    gamesArray.forEach((game: CollectionGame) => {
-      game.genres?.forEach((genre: { id: string; name: string }) => {
-        const existing = genreMap.get(genre.id);
-        if (existing) {
-          existing.count++;
-        } else {
-          genreMap.set(genre.id, {
-            id: genre.id,
-            name: genre.name,
-            count: 1
-          });
-        }
-      });
-    });
+    // Trier les consoles et genres du plus grand nombre de jeux au plus petit
+    const sortedConsoles = [...statsData.consoles].sort((a, b) => b.count - a.count);
+    const sortedGenres = [...statsData.genres].sort((a, b) => b.count - a.count);
 
-    // Convertir Map en tableau et trier par nombre de jeux (décroissant)
-    // "Toutes les consoles" / "Tous les genres" reste en premier
-    const consoleList = Array.from(consoleMap.values());
-    const genreList = Array.from(genreMap.values());
-    
-    // Trier par nombre de jeux décroissant (sauf "all" qui reste en premier)
-    const sortByCount = (a: {id: string, count: number}, b: {id: string, count: number}) => {
-      if (a.id === 'all') return -1;
-      if (b.id === 'all') return 1;
-      return b.count - a.count; // Tri décroissant par nombre de jeux
-    };
-    
+    const consoleList = [
+      { id: 'all', name: 'Toutes les consoles', count: statsData.totalGames },
+      ...sortedConsoles
+    ];
+
+    const genreList = [
+      { id: 'all', name: 'Tous les genres', count: statsData.totalGames },
+      ...sortedGenres
+    ];
+
     return {
-      consoles: consoleList.sort(sortByCount),
-      genres: genreList.sort(sortByCount)
+      consoles: consoleList,
+      genres: genreList
     };
-  }, [games]);
+  }, [statsData]);
 
   // Préparer les jeux pour l'affichage
   // Convertir null en undefined pour les types attendus par les composants
   const gamesArray: CollectionGame[] = Array.isArray(games) ? games : [];
   const preparedGames = gamesArray.map((game: CollectionGame) => {
     // S'assurer que le rating est un nombre valide
-    const rating = typeof game.rating === 'number' ? game.rating : 
+    const rating = typeof game.rating === 'number' ? game.rating :
                    (game.rating !== null && game.rating !== undefined ? Number(game.rating) : undefined);
-    
+
     return {
       ...game,
       rating: rating,
@@ -191,40 +214,6 @@ function CollectorCollectionContent() {
       play_time: game.play_time ?? undefined,
       console_name: game.console_name
     };
-  });
-  
-  // Filtrer les jeux
-  const filteredGames = preparedGames.filter((game: CollectionGame) => {
-    // Recherche textuelle
-    const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         game.publisher.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         game.developer.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    // Filtre de statut
-    let matchesStatus = true;
-    if (statusFilter !== 'all') {
-      const statusMapping: Record<FilterStatus, string[]> = {
-        all: [],
-        playing: ['in_progress', 'IN_PROGRESS'],
-        completed: ['completed', 'COMPLETED'],
-        backlog: ['not_started', 'NOT_STARTED']
-      };
-      matchesStatus = statusMapping[statusFilter].includes(game.status || '');
-    }
-    
-    // Filtre de console
-    let matchesConsole = true;
-    if (consoleFilter !== 'all') {
-      matchesConsole = game.console_id === consoleFilter;
-    }
-    
-    // Filtre de genre
-    let matchesGenre = true;
-    if (genreFilter !== 'all') {
-      matchesGenre = game.genres?.some((genre: { id: string; name: string }) => genre.id === genreFilter) || false;
-    }
-    
-    return matchesSearch && matchesStatus && matchesConsole && matchesGenre;
   });
 
   const filterButtons: { label: string; value: FilterStatus }[] = [
@@ -257,25 +246,39 @@ function CollectorCollectionContent() {
           <>
             {/* Bouton retour - Mobile : en haut */}
             <div className="relative mb-4 md:hidden">
-              <div className="h-9 w-40 bg-muted animate-pulse rounded" />
+              <div className="relative h-9 w-40 bg-muted rounded overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
             </div>
 
             <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3 md:gap-4">
                 {/* Bouton retour - Desktop uniquement */}
-                <div className="hidden md:block h-9 w-20 bg-muted animate-pulse rounded" />
-                
+                <div className="hidden md:block relative h-9 w-20 bg-muted rounded overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                </div>
+
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 sm:h-12 sm:w-12 bg-muted animate-pulse rounded-full flex-shrink-0" />
+                  <div className="relative h-10 w-10 sm:h-12 sm:w-12 bg-muted rounded-full flex-shrink-0 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  </div>
                   <div className="min-w-0 flex-1 space-y-2">
-                    <div className="h-6 sm:h-7 md:h-8 lg:h-10 bg-muted animate-pulse rounded w-64" />
-                    <div className="h-4 sm:h-5 bg-muted animate-pulse rounded w-32" />
+                    <div className="relative h-6 sm:h-7 md:h-8 lg:h-10 bg-muted rounded w-64 overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                    </div>
+                    <div className="relative h-4 sm:h-5 bg-muted rounded w-32 overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                    </div>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="h-9 w-20 bg-muted animate-pulse rounded" />
-                <div className="h-9 w-20 bg-muted animate-pulse rounded" />
+                <div className="relative h-9 w-20 bg-muted rounded overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                </div>
+                <div className="relative h-9 w-20 bg-muted rounded overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                </div>
               </div>
             </div>
           </>
@@ -319,7 +322,7 @@ function CollectorCollectionContent() {
                       Collection de {profile?.username || 'Collectionneur'}
                     </h1>
                     <p className="text-xs sm:text-sm md:text-base text-muted-foreground mt-1">
-                      {filteredGames.length} jeu{filteredGames.length > 1 ? 'x' : ''} dans la collection
+                      {statsData?.totalGames || 0} jeu{(statsData?.totalGames || 0) > 1 ? 'x' : ''} dans la collection
                     </p>
                   </div>
                 </div>
@@ -349,19 +352,24 @@ function CollectorCollectionContent() {
         )}
       </section>
 
+
       {/* Filters Section */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm">
         <div className="relative p-6">
-          {loading || isLoadingProfile ? (
+          {loading || isLoadingProfile || statsLoading ? (
             // Skeletons pour les filtres
             <div className="space-y-4">
               {/* Search skeleton */}
-              <div className="h-10 bg-muted animate-pulse rounded" />
-              
+              <div className="relative h-10 bg-muted rounded overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
+
               {/* Status filters skeleton */}
               <div className="flex flex-wrap gap-2">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-9 w-20 bg-muted animate-pulse rounded" />
+                  <div key={i} className="relative h-9 w-20 bg-muted rounded overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  </div>
                 ))}
               </div>
 
@@ -369,14 +377,22 @@ function CollectorCollectionContent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Console Filter skeleton */}
                 <div className="space-y-2">
-                  <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                  <div className="h-32 bg-muted/50 animate-pulse rounded" />
+                  <div className="relative h-4 w-24 bg-muted rounded overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  </div>
+                  <div className="relative h-32 bg-muted/50 rounded overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  </div>
                 </div>
 
                 {/* Genre Filter skeleton */}
                 <div className="space-y-2">
-                  <div className="h-4 w-20 bg-muted animate-pulse rounded" />
-                  <div className="h-32 bg-muted/50 animate-pulse rounded" />
+                  <div className="relative h-4 w-20 bg-muted rounded overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  </div>
+                  <div className="relative h-32 bg-muted/50 rounded overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -472,10 +488,11 @@ function CollectorCollectionContent() {
                 {Array.from({ length: 12 }).map((_, i) => (
                   <div
                     key={i}
-                    className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted animate-pulse"
+                    className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted"
                   >
                     <div className="absolute inset-0 bg-gradient-to-b from-muted via-muted/80 to-muted" />
                     <div className="absolute bottom-0 left-0 right-0 h-8 bg-muted-foreground/20" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
                   </div>
                 ))}
               </div>
@@ -485,24 +502,50 @@ function CollectorCollectionContent() {
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div
                     key={i}
-                    className="flex items-center space-x-4 p-4 rounded-lg bg-card animate-pulse"
+                    className="flex items-center space-x-4 p-4 rounded-lg bg-card"
                   >
-                    <div className="w-20 h-24 bg-muted rounded-md flex-shrink-0" />
+                    <div className="relative w-20 h-24 bg-muted rounded-md flex-shrink-0 overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                    </div>
                     <div className="flex-1 space-y-2">
-                      <div className="h-5 bg-muted rounded w-3/4" />
-                      <div className="h-4 bg-muted rounded w-1/2" />
-                      <div className="h-4 bg-muted rounded w-1/4" />
+                      <div className="relative h-5 bg-muted rounded w-3/4 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                      </div>
+                      <div className="relative h-4 bg-muted rounded w-1/2 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                      </div>
+                      <div className="relative h-4 bg-muted rounded w-1/4 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             )
-          ) : filteredGames.length > 0 ? (
-            viewMode === 'grid' ? (
-              <GameGrid games={filteredGames} readonly onGameClick={handleGameClick} />
-            ) : (
-              <GameListReadonly games={filteredGames} onGameClick={handleGameClick} />
-            )
+          ) : preparedGames.length > 0 ? (
+            <>
+              {viewMode === 'grid' ? (
+                <GameGrid games={preparedGames} readonly onGameClick={handleGameClick} />
+              ) : (
+                <GameListReadonly games={preparedGames} onGameClick={handleGameClick} />
+              )}
+
+              {/* Sentinel pour la pagination infinie */}
+              {hasNextPage && (
+                <div
+                  ref={loadMoreRef}
+                  className="flex items-center justify-center py-8"
+                >
+                  {isFetchingNextPage ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  ) : (
+                    <div className="text-sm text-muted-foreground">
+                      Chargement de plus de jeux...
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-12">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />

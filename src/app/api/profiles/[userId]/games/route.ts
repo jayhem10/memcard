@@ -6,12 +6,21 @@ export async function GET(
   { params }: { params: { userId: string } }
 ) {
   try {
+    // Récupérer les paramètres de requête pour pagination et filtrage
+    const url = new URL(request.url);
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+    const limit = parseInt(url.searchParams.get('limit') || '30');
+    const consoleId = url.searchParams.get('console_id');
+    const genreId = url.searchParams.get('genre_id');
+    const searchTerm = url.searchParams.get('search');
+    const statusFilter = url.searchParams.get('status') || 'all';
+
     // Client anon pour vérifier que le profil est public
     const supabaseAnon = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
-    
+
     // Client admin pour contourner RLS après vérification de la visibilité
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -79,22 +88,36 @@ export async function GET(
     // SÉCURITÉ : Utiliser le client admin UNIQUEMENT après avoir vérifié que le profil est public
     // Le service_role key contourne RLS, mais on a déjà validé que seul un profil public peut être lu
     // On utilise l'ID du profil vérifié pour éviter toute manipulation
-    const { data: games, error: gamesError } = await supabaseAdmin
-      .from('user_games')
-      .select(`
-        id,
-        game_id,
-        status,
-        rating,
-        notes,
-        review,
-        created_at,
-        updated_at,
-        purchase_date,
-        play_time,
-        completion_percentage,
-        buy_price,
-        games:game_id(
+
+    // Utiliser UNIQUEMENT la RPC optimisée (pas de fallback)
+    const userGamesResult = await supabaseAdmin.rpc('get_user_games_filtered_paginated', {
+      p_user_id: authUserId,
+      p_console_id: consoleId && consoleId !== 'all' ? consoleId : null,
+      p_genre_id: genreId && genreId !== 'all' ? genreId : null,
+      p_search_term: searchTerm?.trim() || null,
+      p_status_filter: statusFilter || 'all',
+      p_tab: 'collection', // Pour les autres utilisateurs, on montre toujours la collection
+      p_sort_order: 'date_desc',
+      p_offset: offset,
+      p_limit: limit
+    });
+
+    if (userGamesResult.error) {
+      console.error('RPC error for collectors:', userGamesResult.error);
+      return NextResponse.json(
+        { error: 'Service de filtrage non disponible' },
+        { status: 503 }
+      );
+    }
+
+    // Récupérer les données complètes des games pour ces user_games
+    let games, gamesError;
+
+    if (userGamesResult.data && userGamesResult.data.length > 0) {
+      const gameIds = userGamesResult.data.map((ug: any) => ug.game_id);
+      const gamesResult = await supabaseAdmin
+        .from('games')
+        .select(`
           id,
           igdb_id,
           title,
@@ -107,21 +130,35 @@ export async function GET(
           console_id,
           consoles:console_id(id, name),
           game_genres(genre_id, genres(id, name))
-        )
-      `)
-      .eq('user_id', authUserId)
-      .neq('status', 'WISHLIST')
-      .neq('status', 'wishlist')
-      .order('created_at', { ascending: true });
+        `)
+        .in('id', gameIds);
+
+      if (gamesResult.error) {
+        console.error('Games query error:', gamesResult.error);
+        return NextResponse.json(
+          { error: 'Erreur lors de la récupération des données jeux', details: gamesResult.error.message },
+          { status: 500 }
+        );
+      }
+
+      // Combiner les données user_games avec les données games
+      games = userGamesResult.data.map((userGame: any) => {
+        const gameData = gamesResult.data?.find((g: any) => g.id === userGame.game_id);
+        return {
+          ...userGame,
+          games: gameData
+        };
+      });
+      gamesError = null;
+    } else {
+      games = [];
+      gamesError = null;
+    }
 
     if (gamesError) {
       console.error('Erreur lors de la récupération des jeux:', gamesError);
-      console.error('Code d\'erreur:', gamesError.code);
-      console.error('Message:', gamesError.message);
-      console.error('Détails:', gamesError.details);
-      console.error('Hint:', gamesError.hint);
       return NextResponse.json(
-        { error: 'Erreur lors de la récupération des jeux', details: gamesError.message },
+        { error: 'Erreur lors de la récupération des données jeux' },
         { status: 500 }
       );
     }

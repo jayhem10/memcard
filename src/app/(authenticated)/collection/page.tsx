@@ -128,9 +128,13 @@ function CollectionPageContent() {
     // Calculer le nombre total de jeux pour l'onglet actif
     const totalCount = statsData.consoles.find((c: { id: string; name: string; count: number }) => c.id === 'all')?.count || 0;
 
+    // Trier les consoles et genres du plus grand nombre de jeux au plus petit
+    const sortedConsoles = [...statsData.consoles].sort((a, b) => b.count - a.count);
+    const sortedGenres = [...statsData.genres].sort((a, b) => b.count - a.count);
+
     return {
-      consoles: statsData.consoles,
-      genres: statsData.genres,
+      consoles: sortedConsoles,
+      genres: sortedGenres,
       totalGames: totalCount
     };
   }, [statsData]);
