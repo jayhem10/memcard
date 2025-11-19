@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 import { handleErrorSilently } from '@/lib/error-handler';
+import { submitQuiz } from '@/actions/quiz';
 
 interface QuizQuestion {
   id: string;
@@ -155,8 +156,7 @@ export default function QuizForm() {
         selected_option: parseInt(optionId, 10), // Convertir en nombre
       }));
       
-      // Utiliser la Server Action au lieu de l'API Route
-      const { submitQuiz } = await import('@/actions/quiz');
+      // Utiliser la Server Action (import statique)
       const { rankId: rankIdFromApi } = await submitQuiz(answers);
       
       // Vérifier et convertir rankId en string pour l'utiliser comme ID
