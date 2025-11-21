@@ -44,6 +44,7 @@ function NavbarContent() {
   const navigation = [
     { name: 'Collection', href: '/collection', icon: Library },
     { name: 'Collectionneurs', href: '/collectors', icon: Users },
+    { name: 'Amis', href: '/friends', icon: Users },
   ];
   
   // Afficher le rang si le quiz est complété, sinon afficher le bouton pour le quiz

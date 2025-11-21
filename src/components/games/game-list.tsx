@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Game } from '@/types/database.types';
 import { STATUS_LABELS } from '@/types/games';
+import { useMobile } from '@/hooks/useMobile';
+import { Circle, Play, CheckCircle2, XCircle, Heart } from 'lucide-react';
 
 interface GameListProps {
   games: (Game & {
@@ -13,7 +15,27 @@ interface GameListProps {
   })[];
 }
 
+// Fonction pour obtenir l'icône correspondant au status
+function getStatusIcon(status: string) {
+  switch (status) {
+    case 'NOT_STARTED':
+      return Circle;
+    case 'IN_PROGRESS':
+      return Play;
+    case 'COMPLETED':
+      return CheckCircle2;
+    case 'DROPPED':
+      return XCircle;
+    case 'WISHLIST':
+      return Heart;
+    default:
+      return Circle;
+  }
+}
+
 export function GameList({ games }: GameListProps) {
+  const isMobile = useMobile();
+
   return (
     <div className="space-y-4">
       {games.map((game, index) => (
@@ -77,9 +99,18 @@ export function GameList({ games }: GameListProps) {
               {/* Additional info */}
               <div className="mt-2 flex items-center space-x-4 text-sm">
                 {game.status && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    {STATUS_LABELS[game.status] || game.status}
-                  </span>
+                  isMobile === true ? (
+                    <div className="p-1 rounded-full bg-primary/10">
+                      {(() => {
+                        const StatusIcon = getStatusIcon(game.status);
+                        return <StatusIcon className="w-3 h-3 text-primary" />;
+                      })()}
+                    </div>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                      {STATUS_LABELS[game.status] || game.status}
+                    </span>
+                  )
                 )}
                 {game.completion_percentage !== undefined && (
                   <span className="text-muted-foreground">

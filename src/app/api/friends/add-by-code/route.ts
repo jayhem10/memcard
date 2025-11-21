@@ -1,0 +1,91 @@
+import { withApi, ApiError } from '@/lib/api-wrapper';
+import { NextRequest } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+export const dynamic = 'force-dynamic';
+
+export const POST = withApi(async (request: NextRequest, { user, supabase }) => {
+  if (!user || !supabase) {
+    throw new ApiError('Non authentifié', 401);
+  }
+
+
+  const { friendCode } = await request.json();
+
+  if (!friendCode || typeof friendCode !== 'string') {
+    throw new ApiError('Code ami requis', 400);
+  }
+
+  const normalizedCode = friendCode.trim().toUpperCase();
+
+  if (normalizedCode.length !== 8) {
+    throw new ApiError('Le code ami doit contenir 8 caractères', 400);
+  }
+
+  // Trouver l'utilisateur avec ce code ami (les profils sont lisibles par tous les utilisateurs authentifiés)
+  const { data: friendProfile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, username')
+    .eq('friend_code', normalizedCode)
+    .single();
+
+  if (profileError || !friendProfile) {
+    throw new ApiError('Code ami invalide', 404);
+  }
+
+  // Vérifier que ce n'est pas l'utilisateur lui-même
+  if (friendProfile.id === user.id) {
+    throw new ApiError('Vous ne pouvez pas vous ajouter vous-même en ami', 400);
+  }
+
+  // Vérifier si ils sont déjà amis en utilisant la fonction RPC sécurisée
+  const { data: existingFriendship, error: friendCheckError } = await supabase
+    .rpc('are_users_friends', {
+      p_user_id: user.id,
+      p_friend_id: friendProfile.id
+    });
+
+  if (friendCheckError) {
+    console.error('Erreur lors de la vérification d\'amitié:', friendCheckError);
+    throw new ApiError('Erreur lors de la vérification', 500);
+  }
+
+  if (existingFriendship) {
+    throw new ApiError('Vous êtes déjà amis avec cet utilisateur', 400);
+  }
+
+  // Créer seulement une relation (user -> friend) - les fonctions RPC gèrent la bidirectionnalité
+  // Cela évite les problèmes RLS complexes avec les relations bidirectionnelles
+
+  const { error: insertError } = await supabase
+    .from('user_friends')
+    .insert([
+      { user_id: user.id, friend_id: friendProfile.id }
+    ]);
+
+  if (insertError) {
+    console.error('Erreur lors de l\'ajout d\'ami:', {
+      code: insertError.code,
+      message: insertError.message,
+      details: insertError.details,
+      hint: insertError.hint
+    });
+
+    // Gérer les erreurs de contrainte unique (si quelqu'un d'autre a ajouté entre temps)
+    if (insertError.code === '23505') {
+      throw new ApiError('Vous êtes déjà amis avec cet utilisateur', 400);
+    }
+
+    // Gérer les erreurs de clé étrangère (utilisateur n'existe pas)
+    if (insertError.code === '23503') {
+      throw new ApiError('Utilisateur introuvable', 404);
+    }
+
+    throw new ApiError(`Erreur lors de l'ajout de l'ami: ${insertError.message}`, 500);
+  }
+
+  return {
+    success: true,
+    message: `${friendProfile.username} ajouté à vos amis !`
+  };
+});

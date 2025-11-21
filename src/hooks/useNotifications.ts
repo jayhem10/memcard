@@ -161,7 +161,6 @@ export function useNotifications() {
       recentlyDismissedRef.current.add(notificationId);
       setTimeout(() => {
         recentlyDismissedRef.current.delete(notificationId);
-        console.log(`[useNotifications] 🧹 Auto-removed ${notificationId.substring(0, 8)} from recentlyDismissed after timeout`);
       }, 10 * 1000); // 10 secondes au lieu de 60
 
       // ⚠️ IMPORTANT: Ne pas modifier le state localement, utiliser les vraies données de l'API

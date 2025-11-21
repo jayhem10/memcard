@@ -17,6 +17,7 @@ import { CollectionGame } from '@/hooks/useUserGames';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/context/auth-context';
 
 type ViewMode = 'grid' | 'list';
 type FilterStatus = 'all' | 'playing' | 'completed' | 'backlog';
@@ -24,6 +25,7 @@ type FilterStatus = 'all' | 'playing' | 'completed' | 'backlog';
 function CollectorCollectionContent() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const userId = params.userId as string;
   
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -101,10 +103,10 @@ function CollectorCollectionContent() {
   // Charger les informations du profil
   useEffect(() => {
     const loadProfile = async () => {
-      if (!userId) return;
-      
+      if (!userId || !user) return;
+
       setIsLoadingProfile(true);
-      
+
       // Réinitialiser les flags quand on change d'utilisateur
       if (hasShownPrivateToastRef.current) {
         hasShownPrivateToastRef.current = false;
@@ -112,17 +114,41 @@ function CollectorCollectionContent() {
       if (hasShownErrorToastRef.current) {
         hasShownErrorToastRef.current = false;
       }
-      
+
       try {
         const { data, error } = await supabase
           .from('profiles')
           .select('id, username, avatar_url, is_public')
           .eq('id', userId)
           .single();
-        
+
         if (error) throw error;
-        
-        if (!data || !data.is_public) {
+
+        // Vérifier l'accès :
+        // 1. Si c'est le profil de l'utilisateur connecté, il peut toujours voir
+        // 2. Si les utilisateurs sont amis, l'accès est autorisé
+        // 3. Sinon, vérifier si le profil est public
+        let hasAccess = false;
+
+        if (userId === user.id) {
+          // L'utilisateur peut toujours voir son propre profil
+          hasAccess = true;
+        } else {
+          // Vérifier si les utilisateurs sont amis
+          const { data: isFriend } = await supabase
+            .rpc('are_users_friends', {
+              p_user_id: user.id,
+              p_friend_id: userId
+            });
+
+          if (isFriend) {
+            hasAccess = true;
+          } else if (data.is_public) {
+            hasAccess = true;
+          }
+        }
+
+        if (!hasAccess) {
           // Afficher le toast seulement une fois par utilisateur
           if (!hasShownPrivateToastRef.current) {
             toast.error('Ce profil est privé');
@@ -133,7 +159,7 @@ function CollectorCollectionContent() {
           router.push('/collectors');
           return;
         }
-        
+
         setIsProfilePublic(true);
         setProfile({
           id: data.id as string,
@@ -153,9 +179,9 @@ function CollectorCollectionContent() {
         setIsLoadingProfile(false);
       }
     };
-    
+
     loadProfile();
-  }, [userId, router]);
+  }, [userId, user, router]);
 
   // Gérer les erreurs de chargement des jeux (seulement si le profil est public)
   // Ne pas afficher de toast pour les erreurs de profil privé car on l'a déjà géré

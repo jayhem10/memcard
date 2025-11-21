@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { Game } from '@/types/database.types';
 import { STATUS_LABELS } from '@/types/games';
 import { CollectionGame } from '@/hooks/useUserGames';
+import { useMobile } from '@/hooks/useMobile';
+import { Circle, Play, CheckCircle2, XCircle, Heart } from 'lucide-react';
 
 export type GameGridItem = (Game | CollectionGame) & {
   status?: string;
@@ -16,22 +18,42 @@ interface GameGridProps {
   onGameClick?: (game: GameGridItem) => void;
 }
 
-function GameCard({ 
-  game, 
-  index, 
-  readonly, 
-  onGameClick 
-}: { 
-  game: GameGridItem; 
+// Fonction pour obtenir l'icône correspondant au status
+function getStatusIcon(status: string) {
+  switch (status) {
+    case 'NOT_STARTED':
+      return Circle;
+    case 'IN_PROGRESS':
+      return Play;
+    case 'COMPLETED':
+      return CheckCircle2;
+    case 'DROPPED':
+      return XCircle;
+    case 'WISHLIST':
+      return Heart;
+    default:
+      return Circle;
+  }
+}
+
+function GameCard({
+  game,
+  index,
+  readonly,
+  onGameClick
+}: {
+  game: GameGridItem;
   index: number;
   readonly?: boolean;
   onGameClick?: (game: GameGridItem) => void;
 }) {
+  const isMobile = useMobile();
+
   // Normaliser le rating (peut être string ou number)
-  const ratingValue = typeof game.rating === 'number' 
-    ? game.rating 
+  const ratingValue = typeof game.rating === 'number'
+    ? game.rating
     : (game.rating !== null && game.rating !== undefined ? Number(game.rating) : null);
-  
+
   // Normaliser le status (peut être '0' ou null pour les collections d'autres utilisateurs)
   const displayStatus = game.status && game.status !== '0' ? game.status : undefined;
 
@@ -58,9 +80,18 @@ function GameCard({
         {/* Badge de statut en haut à droite */}
         {displayStatus && (
           <div className="absolute top-2 right-2 z-10">
-            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm border border-primary/20 shadow-sm">
-              {STATUS_LABELS[displayStatus] || displayStatus}
-            </span>
+            {isMobile === true ? (
+              <div className="p-1.5 rounded-full bg-primary/90 backdrop-blur-sm border border-primary/20 shadow-sm">
+                {(() => {
+                  const StatusIcon = getStatusIcon(displayStatus);
+                  return <StatusIcon className="w-3 h-3 text-primary-foreground" />;
+                })()}
+              </div>
+            ) : (
+              <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm border border-primary/20 shadow-sm">
+                {STATUS_LABELS[displayStatus] || displayStatus}
+              </span>
+            )}
           </div>
         )}
 

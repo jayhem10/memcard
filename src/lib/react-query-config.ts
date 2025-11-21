@@ -95,5 +95,7 @@ export const queryKeys = {
   notifications: (userId?: string) => ['notifications', userId] as const,
   achievementNotifications: (userId?: string) => ['achievementNotifications', userId] as const,
   wishlistNotifications: (userId?: string) => ['wishlistNotifications', userId] as const,
+  friends: (userId?: string) => ['friends', userId] as const,
+  friendshipStatus: (userId?: string, targetUserId?: string) => ['friendship-status', userId, targetUserId] as const,
 } as const;
 

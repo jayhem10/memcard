@@ -37,6 +37,7 @@ type ApiHandler<T = any> = (
  */
 interface ApiOptions {
   requireAuth?: boolean;
+  headers?: Record<string, string>;
 }
 
 /**
@@ -87,7 +88,14 @@ export function withApi<T>(
           return result;
         }
 
-        return NextResponse.json(result);
+        // Créer la réponse avec les headers personnalisés si fournis
+        const response = NextResponse.json(result);
+        if (options.headers) {
+          Object.entries(options.headers).forEach(([key, value]) => {
+            response.headers.set(key, value);
+          });
+        }
+        return response;
       }
 
       // Route publique (pas d'authentification)
@@ -102,7 +110,14 @@ export function withApi<T>(
         return result;
       }
 
-      return NextResponse.json(result);
+      // Créer la réponse avec les headers personnalisés si fournis
+      const response = NextResponse.json(result);
+      if (options.headers) {
+        Object.entries(options.headers).forEach(([key, value]) => {
+          response.headers.set(key, value);
+        });
+      }
+      return response;
     } catch (error: any) {
       console.error('API error:', error);
 

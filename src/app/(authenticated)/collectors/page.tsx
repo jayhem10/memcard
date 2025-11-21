@@ -96,7 +96,7 @@ export default function CollectorsPage() {
             Collectionneurs
           </h1>
           <p className="mt-2 text-sm sm:text-base text-muted-foreground">
-            Découvrez les collections des autres collectionneurs
+            Découvrez les collections des autres collectionneurs qui ont choisi de rendre leur collection publique depuis leur profil
           </p>
         </div>
       </section>
@@ -183,7 +183,6 @@ export default function CollectorsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="flex-shrink-0"
                         >
                           Voir
                         </Button>

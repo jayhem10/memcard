@@ -1,0 +1,202 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
+import { Camera, X, QrCode, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+interface QrCodeScannerProps {
+  onScan: (code: string) => void;
+  onError?: (error: string) => void;
+}
+
+export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
+  const [isScanning, setIsScanning] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+
+  // Vérifier les permissions de la caméra
+  useEffect(() => {
+    const checkPermissions = async () => {
+      try {
+        const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        setHasPermission(result.state === 'granted');
+      } catch (error) {
+        // Fallback pour les navigateurs qui ne supportent pas l'API Permissions
+        setHasPermission(null);
+      }
+    };
+
+    checkPermissions();
+  }, []);
+
+  const startScanning = async () => {
+    if (!videoRef.current) return;
+
+    setIsScanning(true);
+    setIsProcessing(false);
+    setError(null);
+    codeReaderRef.current = new BrowserMultiFormatReader();
+
+    try {
+      const result = await codeReaderRef.current.decodeOnceFromVideoDevice(
+        undefined, // Utilise la caméra par défaut
+        videoRef.current
+      );
+
+      // Protection contre les doubles traitements
+      if (isProcessing) {
+        return;
+      }
+
+      setIsProcessing(true);
+
+      try {
+        const scannedText = result.getText();
+        let friendCode = scannedText;
+
+        // Si c'est une URL complète, extraire le code
+        if (scannedText.includes('/add-friend/')) {
+          friendCode = scannedText.split('/add-friend/')[1];
+        }
+
+        // Si c'est au format FRIEND:CODE
+        if (scannedText.startsWith('FRIEND:')) {
+          friendCode = scannedText.replace('FRIEND:', '');
+        }
+
+        // Nettoyer et valider le code
+        friendCode = friendCode.trim().toUpperCase();
+
+        if (friendCode.length === 8) {
+          onScan(friendCode);
+          setIsScanning(false);
+        } else {
+          const errorMsg = 'Code QR invalide. Le code doit contenir 8 caractères.';
+          setError(errorMsg);
+          onError?.(errorMsg);
+          setIsScanning(false);
+        }
+      } finally {
+        setIsProcessing(false);
+      }
+
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        const errorMsg = 'Aucun code QR détecté. Réessayez.';
+        setError(errorMsg);
+        onError?.(errorMsg);
+      } else {
+        console.error('Erreur de scan:', error);
+        const errorMsg = 'Erreur lors du scan du QR code.';
+        setError(errorMsg);
+        onError?.(errorMsg);
+      }
+      setIsScanning(false);
+    }
+  };
+
+  const stopScanning = () => {
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset();
+      codeReaderRef.current = null;
+    }
+    setIsScanning(false);
+    setError(null);
+  };
+
+  // Nettoyer au démontage
+  useEffect(() => {
+    return () => {
+      if (codeReaderRef.current) {
+        codeReaderRef.current.reset();
+      }
+    };
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      {/* Zone de scan */}
+      <div className="relative">
+        <video
+          ref={videoRef}
+          className={`w-full max-w-sm mx-auto rounded-lg border transition-all duration-300 ${
+            isScanning ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ display: isScanning ? 'block' : 'none' }}
+          muted
+          playsInline
+        />
+
+        {!isScanning && (
+          <div className="w-full max-w-sm mx-auto aspect-square bg-muted rounded-lg border-2 border-dashed flex flex-col items-center justify-center text-center p-4">
+            <QrCode className="w-12 h-12 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground font-medium">
+              {hasPermission === false
+                ? 'Caméra non autorisée'
+                : 'Prêt à scanner'
+              }
+            </p>
+            {hasPermission === false && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Autorisez l'accès à la caméra
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Overlay de ciblage */}
+        {isScanning && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="relative w-full h-full">
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <div className="relative w-48 h-48">
+                  <div className="absolute top-0 left-0 w-8 h-8 border-l-4 border-t-4 border-primary rounded-tl-lg"></div>
+                  <div className="absolute top-0 right-0 w-8 h-8 border-r-4 border-t-4 border-primary rounded-tr-lg"></div>
+                  <div className="absolute bottom-0 left-0 w-8 h-8 border-l-4 border-b-4 border-primary rounded-bl-lg"></div>
+                  <div className="absolute bottom-0 right-0 w-8 h-8 border-r-4 border-b-4 border-primary rounded-br-lg"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bouton de contrôle */}
+      <div className="flex justify-center">
+        {!isScanning ? (
+          <Button
+            onClick={startScanning}
+            disabled={hasPermission === false || isProcessing}
+            className="flex items-center gap-2"
+          >
+            <Camera className="w-4 h-4" />
+            Scanner un QR code
+          </Button>
+        ) : (
+          <Button
+            onClick={stopScanning}
+            variant="outline"
+            disabled={isProcessing}
+            className="flex items-center gap-2"
+          >
+            <X className="w-4 h-4" />
+            {isProcessing ? 'Traitement...' : 'Arrêter'}
+          </Button>
+        )}
+      </div>
+
+      {/* Messages d'erreur */}
+      {error && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+}

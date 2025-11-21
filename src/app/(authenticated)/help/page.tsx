@@ -1,15 +1,14 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Library, 
-  Gift, 
-  PlusCircle, 
-  Share2, 
-  Bell, 
-  CheckCircle2, 
-  XCircle, 
-  Mail, 
+import {
+  Library,
+  Gift,
+  PlusCircle,
+  Bell,
+  CheckCircle2,
+  XCircle,
+  Mail,
   Heart,
   Search,
   Grid2X2,
@@ -23,7 +22,9 @@ import {
   Users,
   User,
   Eye,
-  EyeOff
+  EyeOff,
+  Circle,
+  Play
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -64,12 +65,11 @@ export default function HelpPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 mt-1">
+            <div>
+              <h3 className="font-semibold mb-1 flex items-center gap-2">
                 <Library className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold mb-1">Collection</h3>
+                Collection
+              </h3>
                 <p className="text-sm text-muted-foreground mb-2">
                   Votre collection personnelle contient tous les jeux que vous possédez. 
                   Vous pouvez les organiser selon leur statut :
@@ -124,23 +124,62 @@ export default function HelpPage() {
                     <span className="text-xs text-muted-foreground">Bouton d'export Excel dans la barre d'outils</span>
                   </div>
                 </div>
-              </div>
             </div>
 
-            <div className="flex items-start gap-3 pt-3 border-t">
-              <div className="p-2 rounded-lg bg-primary/10 mt-1">
+            <div className="pt-3 border-t">
+              <h3 className="font-semibold mb-1 flex items-center gap-2">
                 <Gift className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold mb-1">Wishlist</h3>
+                Wishlist
+              </h3>
                 <p className="text-sm text-muted-foreground mb-2">
                   Votre liste de souhaits contient les jeux que vous souhaitez acquérir. 
                   C'est un endroit idéal pour garder une trace de vos envies de jeux.
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">Astuce :</strong> Vous pouvez partager votre wishlist 
-                  avec vos proches pour faciliter l'achat de cadeaux !
-                </p>
+              <p className="text-sm text-muted-foreground">
+                <strong className="text-foreground">Astuce :</strong> Vous pouvez partager votre wishlist
+                avec vos proches pour faciliter l'achat de cadeaux !
+              </p>
+            </div>
+
+            <div className="pt-3 border-t">
+              <h3 className="font-semibold mb-1 flex items-center gap-2">
+                <Play className="h-5 w-5 text-primary" />
+                Signification des icônes de statut
+              </h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                Sur mobile, les statuts de jeux sont affichés avec des icônes pour gagner de l'espace :
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-full bg-primary/10">
+                    <Circle className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">= Non commencé</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-full bg-primary/10">
+                    <Play className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">= En cours</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-full bg-primary/10">
+                    <CheckCircle2 className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">= Terminé</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-full bg-primary/10">
+                    <XCircle className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">= Abandonné</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-full bg-primary/10">
+                    <Heart className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-sm text-muted-foreground">= Liste de souhaits</span>
+                </div>
               </div>
             </div>
           </div>
@@ -163,12 +202,11 @@ export default function HelpPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 mt-1">
+            <div>
+              <h3 className="font-semibold mb-1 flex items-center gap-2">
                 <Search className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold mb-1">Page de recherche</h3>
+                Page de recherche
+              </h3>
                 <p className="text-sm text-muted-foreground mb-3">
                   Utilisez la page <Link href="/search" className="text-primary hover:underline font-medium">Rechercher</Link> pour 
                   trouver et ajouter des jeux à votre collection ou votre wishlist.
@@ -179,9 +217,8 @@ export default function HelpPage() {
                   <li>Sélectionnez la console si vous souhaitez filtrer les résultats</li>
                   <li>Parcourez les résultats et cliquez sur le jeu qui vous intéresse</li>
                   <li>Choisissez de l'ajouter à votre <strong>Collection</strong> ou à votre <strong>Wishlist</strong></li>
-                  <li>Renseignez les informations optionnelles (prix d'achat, état, etc.)</li>
-                </ol>
-              </div>
+                <li>Renseignez les informations optionnelles (prix d'achat, état, etc.)</li>
+              </ol>
             </div>
           </div>
         </CardContent>
@@ -194,7 +231,7 @@ export default function HelpPage() {
         <Card className="border-0 shadow-none bg-transparent">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Share2 className="h-5 w-5" />
+            <Users className="h-5 w-5" />
             Partager votre Wishlist
           </CardTitle>
           <CardDescription>
@@ -217,6 +254,137 @@ export default function HelpPage() {
                 <strong className="text-foreground">Note de sécurité :</strong> Vous pouvez activer ou désactiver 
                 le partage à tout moment. Le lien ne fonctionne que lorsque le partage est actif.
               </p>
+            </div>
+          </div>
+        </CardContent>
+        </Card>
+      </div>
+
+      {/* Système d'amis */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <Card className="border-0 shadow-none bg-transparent">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Système d'amis
+          </CardTitle>
+          <CardDescription>
+            Connectez-vous avec d'autres collectionneurs et partagez vos découvertes
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <div>
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <User className="h-5 w-5 text-primary" />
+                Ajouter des amis
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Il existe plusieurs façons d'ajouter des amis dans MemCard :
+              </p>
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg border">
+                  <h4 className="font-medium mb-1 flex items-center gap-2">
+                    <Users className="h-4 w-4 text-primary" />
+                    Votre code d'ami
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Chaque utilisateur possède un code unique pour être ajouté comme ami.
+                  </p>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside ml-2">
+                    <li>Allez dans votre <Link href="/friends" className="text-primary hover:underline font-medium">page amis</Link></li>
+                    <li>Cliquez sur <strong>"Mon code d'ami"</strong> pour voir votre code</li>
+                    <li>Partagez ce code avec vos amis collectionneurs</li>
+                    <li>Ils pourront vous ajouter en utilisant ce code</li>
+                  </ol>
+                </div>
+
+                <div className="p-3 rounded-lg border">
+                  <h4 className="font-medium mb-1 flex items-center gap-2">
+                    <PlusCircle className="h-4 w-4 text-primary" />
+                    Ajouter un ami par code
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Utilisez le code d'un ami pour l'ajouter à votre liste.
+                  </p>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside ml-2">
+                    <li>Cliquez sur <strong>"Ajouter un ami"</strong> dans la page amis</li>
+                    <li>Entrez le code d'ami de votre contact</li>
+                    <li>L'ami sera automatiquement ajouté à votre liste</li>
+                  </ol>
+                </div>
+
+                <div className="p-3 rounded-lg border">
+                  <h4 className="font-medium mb-1 flex items-center gap-2">
+                    <Search className="h-4 w-4 text-primary" />
+                    Scanner un QR code
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Scannez le QR code d'un ami pour l'ajouter instantanément.
+                  </p>
+                  <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside ml-2">
+                    <li>Dans la page amis, cliquez sur l'icône QR code</li>
+                    <li>Scannez le QR code affiché par votre ami</li>
+                    <li>L'ami sera automatiquement ajouté à votre liste</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" />
+                Gérer vos demandes d'ami
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Gérez les demandes d'ami entrantes et sortantes.
+              </p>
+              <div className="space-y-2">
+                <div className="p-3 rounded-lg border">
+                  <h4 className="font-medium mb-1 flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    Accepter une demande
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Cliquez sur <CheckCircle2 className="h-3 w-3 inline text-emerald-600 dark:text-emerald-400" /> pour accepter une demande d'ami.
+                    Vous pourrez alors voir sa collection et échanger.
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg border">
+                  <h4 className="font-medium mb-1 flex items-center gap-2">
+                    <XCircle className="h-4 w-4 text-destructive" />
+                    Refuser une demande
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Cliquez sur <XCircle className="h-3 w-3 inline text-destructive" /> pour refuser une demande d'ami.
+                    La personne ne sera pas notifiée du refus.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t">
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <Eye className="h-5 w-5 text-primary" />
+                Interagir avec vos amis
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Découvrez les collections de vos amis et partagez vos découvertes.
+              </p>
+              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside ml-2">
+                <li><strong>Voir les collections</strong> : Accédez aux jeux de vos amis (en lecture seule)</li>
+                <li><strong>Échanger des conseils</strong> : Discutez de vos jeux préférés</li>
+                <li><strong>Partager des découvertes</strong> : Faites connaître de nouveaux jeux à vos amis</li>
+                <li><strong>Comparer les collections</strong> : Voyez ce que vous avez en commun</li>
+              </ul>
+              <div className="mt-3 bg-muted/50 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <EyeOff className="h-4 w-4 inline mr-1" />
+                  <strong className="text-foreground">Confidentialité :</strong> Vous ne pouvez voir que les collections
+                  des personnes qui vous ont accepté comme ami. Vos amis ne peuvent pas modifier vos jeux.
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -320,36 +488,36 @@ export default function HelpPage() {
               </p>
             </div>
             <div className="space-y-2">
-              <div className="flex items-start gap-3 p-3 rounded-lg border">
-                <Bell className="h-5 w-5 text-primary mt-0.5" />
-                <div className="flex-1">
-                  <h4 className="font-medium mb-1">Recevoir une notification</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Cliquez sur l'icône <Bell className="h-4 w-4 inline" /> dans la barre de navigation 
-                    pour voir vos notifications de jeux offerts.
-                  </p>
-                </div>
+              <div className="p-3 rounded-lg border">
+                <h4 className="font-medium mb-1 flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-primary" />
+                  Recevoir une notification
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  Cliquez sur l'icône <Bell className="h-4 w-4 inline" /> dans la barre de navigation
+                  pour voir vos notifications de jeux offerts.
+                </p>
               </div>
-              <div className="flex items-start gap-3 p-3 rounded-lg border">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                <div className="flex-1">
-                  <h4 className="font-medium mb-1">Valider l'achat</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Si vous avez bien reçu le jeu, cliquez sur <CheckCircle2 className="h-4 w-4 inline text-emerald-600 dark:text-emerald-400" />. 
-                    Le jeu sera automatiquement retiré de votre wishlist et ajouté à votre collection 
-                    avec le statut <strong>"À faire"</strong>.
-                  </p>
-                </div>
+              <div className="p-3 rounded-lg border">
+                <h4 className="font-medium mb-1 flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  Valider l'achat
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  Si vous avez bien reçu le jeu, cliquez sur <CheckCircle2 className="h-4 w-4 inline text-emerald-600 dark:text-emerald-400" />.
+                  Le jeu sera automatiquement retiré de votre wishlist et ajouté à votre collection
+                  avec le statut <strong>"À faire"</strong>.
+                </p>
               </div>
-              <div className="flex items-start gap-3 p-3 rounded-lg border">
-                <XCircle className="h-5 w-5 text-destructive mt-0.5" />
-                <div className="flex-1">
-                  <h4 className="font-medium mb-1">Annuler l'achat</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Si le jeu n'a pas été acheté ou si c'était une erreur, cliquez sur <XCircle className="h-4 w-4 inline text-destructive" />. 
-                    Le jeu restera dans votre wishlist.
-                  </p>
-                </div>
+              <div className="p-3 rounded-lg border">
+                <h4 className="font-medium mb-1 flex items-center gap-2">
+                  <XCircle className="h-5 w-5 text-destructive" />
+                  Annuler l'achat
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  Si le jeu n'a pas été acheté ou si c'était une erreur, cliquez sur <XCircle className="h-4 w-4 inline text-destructive" />.
+                  Le jeu restera dans votre wishlist.
+                </p>
               </div>
             </div>
           </div>
@@ -425,43 +593,39 @@ export default function HelpPage() {
               </p>
               <div className="space-y-3">
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-start gap-3">
-                    <Heart className="h-5 w-5 text-primary mt-0.5" />
-                    <div className="flex-1">
-                      <h4 className="font-medium mb-2">Don via Ko-fi</h4>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Vous pouvez faire un don via Ko-fi pour soutenir le projet. Vous pouvez également ajouter un message personnalisé avec votre don pour nous dire ce que vous aimez dans MemCard !
-                      </p>
-                      <Button 
-                        onClick={() => setSupportDialogOpen(true)}
-                        className="w-full sm:w-auto"
-                      >
-                        <Heart className="mr-2 h-4 w-4" />
-                        Faire un don sur Ko-fi
-                      </Button>
-                    </div>
-                  </div>
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <Heart className="h-5 w-5 text-primary" />
+                    Don via Ko-fi
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Vous pouvez faire un don via Ko-fi pour soutenir le projet. Vous pouvez également ajouter un message personnalisé avec votre don pour nous dire ce que vous aimez dans MemCard !
+                  </p>
+                  <Button
+                    onClick={() => setSupportDialogOpen(true)}
+                    className="w-full sm:w-auto"
+                  >
+                    <Heart className="mr-2 h-4 w-4" />
+                    Faire un don sur Ko-fi
+                  </Button>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <div className="flex items-start gap-3">
-                    <Mail className="h-5 w-5 text-primary mt-0.5" />
-                    <div className="flex-1">
-                      <h4 className="font-medium mb-2">Retours et suggestions</h4>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Vos retours et suggestions sont également très appréciés et nous aident à améliorer l'application.
-                      </p>
-                      <Button 
-                        asChild
-                        variant="outline"
-                        className="w-full sm:w-auto"
-                      >
-                        <Link href="/contact">
-                          <Mail className="mr-2 h-4 w-4" />
-                          Nous contacter
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-primary" />
+                    Retours et suggestions
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Vos retours et suggestions sont également très appréciés et nous aident à améliorer l'application.
+                  </p>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
+                    <Link href="/contact">
+                      <Mail className="mr-2 h-4 w-4" />
+                      Nous contacter
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -485,64 +649,54 @@ export default function HelpPage() {
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
-              <div className="p-2 rounded-lg bg-primary/10 mt-0.5">
+            <div className="p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
+              <h4 className="font-medium mb-1 flex items-center gap-2">
                 <Filter className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium mb-1">Organisez avec les filtres</h4>
-                <p className="text-sm text-muted-foreground">
-                  Utilisez les filtres par console et genre pour organiser votre collection
-                </p>
-              </div>
+                Organisez avec les filtres
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Utilisez les filtres par console et genre pour organiser votre collection
+              </p>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
-              <div className="p-2 rounded-lg bg-primary/10 mt-0.5">
+            <div className="p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
+              <h4 className="font-medium mb-1 flex items-center gap-2">
                 <FileSpreadsheet className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium mb-1">Sauvegardez régulièrement</h4>
-                <p className="text-sm text-muted-foreground">
-                  Exportez régulièrement votre collection en Excel pour avoir une sauvegarde
-                </p>
-              </div>
+                Sauvegardez régulièrement
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Exportez régulièrement votre collection en Excel pour avoir une sauvegarde
+              </p>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
-              <div className="p-2 rounded-lg bg-primary/10 mt-0.5">
+            <div className="p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
+              <h4 className="font-medium mb-1 flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium mb-1">Suivez la valeur</h4>
-                <p className="text-sm text-muted-foreground">
-                  Renseignez le prix d'achat pour suivre la valeur de votre collection
-                </p>
-              </div>
+                Suivez la valeur
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Renseignez le prix d'achat pour suivre la valeur de votre collection
+              </p>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
-              <div className="p-2 rounded-lg bg-primary/10 mt-0.5">
+            <div className="p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
+              <h4 className="font-medium mb-1 flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium mb-1">Mettez à jour le statut</h4>
-                <p className="text-sm text-muted-foreground">
-                  Mettez à jour le statut de vos jeux au fur et à mesure de votre progression
-                </p>
-              </div>
+                Mettez à jour le statut
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Mettez à jour le statut de vos jeux au fur et à mesure de votre progression
+              </p>
             </div>
 
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300 md:col-span-2">
-              <div className="p-2 rounded-lg bg-primary/10 mt-0.5">
+            <div className="p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300 md:col-span-2">
+              <h4 className="font-medium mb-1 flex items-center gap-2">
                 <Gift className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium mb-1">Partagez avant les fêtes</h4>
-                <p className="text-sm text-muted-foreground">
-                  Partagez votre wishlist avant les anniversaires et fêtes pour faciliter les cadeaux
-                </p>
-              </div>
+                Partagez avant les fêtes
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Partagez votre wishlist avant les anniversaires et fêtes pour faciliter les cadeaux
+              </p>
             </div>
           </div>
         </CardContent>
