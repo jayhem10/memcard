@@ -120,9 +120,16 @@ function CollectorCollectionContent() {
           .from('profiles')
           .select('id, username, avatar_url, is_public')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
+
+        // Si le profil n'existe plus, rediriger vers la liste des collectionneurs
+        if (!data) {
+          console.log('Profil supprimé, redirection vers /collectors');
+          router.push('/collectors');
+          return;
+        }
 
         // Vérifier l'accès :
         // 1. Si c'est le profil de l'utilisateur connecté, il peut toujours voir

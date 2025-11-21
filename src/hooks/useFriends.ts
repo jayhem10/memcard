@@ -29,7 +29,13 @@ export function useFriends() {
         throw new Error('Utilisateur non authentifié');
       }
 
-      const response = await fetch('/api/friends');
+      const response = await fetch('/api/friends', {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
+        cache: 'no-store'
+      });
 
       if (!response.ok) {
         const error = await response.json();
@@ -37,7 +43,13 @@ export function useFriends() {
       }
 
       const data = await response.json();
-      return data.friends || [];
+      
+      // Filtrer côté client les profils supprimés (double sécurité)
+      const validFriends = (data.friends || []).filter((friend: Friend) =>
+        friend.username && friend.username.trim().length > 0
+      );
+      
+      return validFriends;
     },
     enabled: !!user && !authLoading,
     staleTime: 1000 * 30, // 30 secondes - données fraîches mais pas trop agressif

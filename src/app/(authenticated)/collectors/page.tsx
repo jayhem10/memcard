@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { SearchInput } from '@/components/ui/search-input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -26,61 +26,82 @@ export default function CollectorsPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const router = useRouter();
   const fetchingRef = useRef(false);
-  const lastSearchRef = useRef<string | null>(null);
-  const isInitialMountRef = useRef(true);
-  
+
   const debouncedSearch = useDebounce(searchQuery, 500);
 
-  // Consolider les deux useEffect en un seul pour éviter les appels multiples
+  // Fonction de recherche simplifiée qui récupère toujours les données fraîches
+  const searchProfiles = useCallback(async (searchTerm: string) => {
+    // Éviter seulement les appels simultanés
+    if (fetchingRef.current) {
+      return;
+    }
+
+    fetchingRef.current = true;
+    setIsLoading(true);
+
+    try {
+      // Cache-busting avec timestamp + random pour garantir l'unicité
+      const cacheBuster = `${Date.now()}_${Math.random().toString(36).substring(2)}`;
+      const url = searchTerm.trim()
+        ? `/api/profiles/search?username=${encodeURIComponent(searchTerm)}&_t=${cacheBuster}`
+        : `/api/profiles/search?_t=${cacheBuster}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
+        cache: 'no-store',
+        next: { revalidate: 0 } // Désactiver le cache Next.js
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.details || errorData.error || 'Erreur lors du chargement');
+      }
+
+      const data = await response.json();
+
+      // Filtrer uniquement les profils valides
+      const validProfiles = (data.profiles || []).filter((profile: PublicProfile) =>
+        profile.username && profile.username.trim().length > 0
+      );
+
+      setProfiles(validProfiles);
+      setHasSearched(!!searchTerm.trim());
+    } catch (error: any) {
+      console.error('Erreur lors de la recherche:', error);
+      toast.error(error.message || 'Erreur lors de la recherche de collectionneurs');
+      setProfiles([]);
+    } finally {
+      setIsLoading(false);
+      fetchingRef.current = false;
+    }
+  }, []);
+
+  // Rafraîchir les données quand l'onglet devient visible
   useEffect(() => {
-    const searchProfiles = async () => {
-      // Éviter les appels multiples simultanés
-      if (fetchingRef.current) {
-        return;
-      }
-
-      // Éviter les appels pour la même recherche (sauf au premier montage)
-      if (!isInitialMountRef.current && lastSearchRef.current === debouncedSearch) {
-        return;
-      }
-
-      // Marquer que le premier montage est terminé
-      if (isInitialMountRef.current) {
-        isInitialMountRef.current = false;
-      }
-
-      fetchingRef.current = true;
-      lastSearchRef.current = debouncedSearch;
-
-      setIsLoading(true);
-
-      try {
-        const url = debouncedSearch.trim() 
-          ? `/api/profiles/search?username=${encodeURIComponent(debouncedSearch)}`
-          : '/api/profiles/search';
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.details || errorData.error || 'Erreur lors du chargement');
-        }
-        
-        const data = await response.json();
-        setProfiles(data.profiles || []);
-        setHasSearched(!!debouncedSearch.trim());
-      } catch (error: any) {
-        console.error('Erreur lors de la recherche:', error);
-        toast.error(error.message || 'Erreur lors de la recherche de collectionneurs');
-        setProfiles([]);
-      } finally {
-        setIsLoading(false);
-        fetchingRef.current = false;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Invalider le cache du router Next.js et rafraîchir les données
+        router.refresh();
+        searchProfiles(debouncedSearch);
       }
     };
 
-    searchProfiles();
-  }, [debouncedSearch]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [debouncedSearch, searchProfiles, router]);
+
+  // Effet qui se déclenche à chaque changement de recherche
+  useEffect(() => {
+    searchProfiles(debouncedSearch);
+  }, [debouncedSearch, searchProfiles]);
+
 
   const handleProfileClick = (userId: string) => {
     router.push(`/collectors/${userId}`);
