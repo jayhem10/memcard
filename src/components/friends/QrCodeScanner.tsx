@@ -22,13 +22,6 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
   // Vérifier les permissions de la caméra et l'environnement
   useEffect(() => {
     const checkEnvironment = () => {
-      // Vérifier si on est en HTTPS (requis pour la caméra)
-      const isHttps = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
-      if (!isHttps) {
-        setError('La caméra nécessite une connexion sécurisée (HTTPS)');
-        setHasPermission(false);
-        return;
-      }
 
       // Vérifier si l'API média est disponible
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -68,6 +61,7 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
     setError(null);
 
     // Vérifier les permissions et l'environnement
+    const isHttps = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
     if (!isHttps) {
       setError('La caméra nécessite une connexion sécurisée (HTTPS)');
       setIsScanning(false);
@@ -90,8 +84,8 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
           // Fermer immédiatement le stream de test
           stream.getTracks().forEach(track => track.stop());
           setHasPermission(true);
-        } catch (permissionError: any) {
-          if (permissionError.name === 'NotAllowedError') {
+        } catch (permissionError: unknown) {
+          if (permissionError instanceof Error && permissionError.name === 'NotAllowedError') {
             setHasPermission(false);
             setError('Accès à la caméra refusé. Autorisez l\'accès et réessayez.');
           } else {
@@ -152,21 +146,23 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
 
       if (error instanceof NotFoundException) {
         errorMsg = 'Aucun code QR détecté. Assurez-vous que le code est visible et bien éclairé.';
-      } else if (error.message?.includes('Permission denied') || error.message?.includes('NotAllowedError')) {
-        errorMsg = 'Accès à la caméra refusé. Autorisez l\'accès dans les paramètres de votre navigateur.';
-        setHasPermission(false);
-      } else if (error.message?.includes('NotFoundError')) {
-        errorMsg = 'Aucune caméra détectée sur cet appareil.';
-      } else if (error.message?.includes('NotSupportedError')) {
-        errorMsg = 'Votre navigateur ne supporte pas l\'accès caméra.';
-      } else if (error.message?.includes('AbortError') || error.name === 'AbortError') {
-        // L'utilisateur a annulé le scan ou quitté la page
-        errorMsg = '';
-        shouldShowError = false;
-      } else if (error.message?.includes('The operation was aborted')) {
-        // Scan interrompu (par exemple quand on clique sur "Arrêter")
-        errorMsg = '';
-        shouldShowError = false;
+      } else if (error instanceof Error) {
+        if (error.message?.includes('Permission denied') || error.message?.includes('NotAllowedError')) {
+          errorMsg = 'Accès à la caméra refusé. Autorisez l\'accès dans les paramètres de votre navigateur.';
+          setHasPermission(false);
+        } else if (error.message?.includes('NotFoundError')) {
+          errorMsg = 'Aucune caméra détectée sur cet appareil.';
+        } else if (error.message?.includes('NotSupportedError')) {
+          errorMsg = 'Votre navigateur ne supporte pas l\'accès caméra.';
+        } else if (error.message?.includes('AbortError') || (error as any).name === 'AbortError') {
+          // L'utilisateur a annulé le scan ou quitté la page
+          errorMsg = '';
+          shouldShowError = false;
+        } else if (error.message?.includes('The operation was aborted')) {
+          // Scan interrompu (par exemple quand on clique sur "Arrêter")
+          errorMsg = '';
+          shouldShowError = false;
+        }
       }
 
       if (shouldShowError) {
