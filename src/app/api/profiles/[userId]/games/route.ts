@@ -85,7 +85,7 @@ export async function GET(
         { status: 400 }
       );
     }
-
+    
     const userGamesResult = await supabaseClient.rpc('get_user_games_filtered_paginated', {
       p_user_id: userId,
       p_console_id: consoleId && consoleId !== 'all' ? consoleId : null,

@@ -79,7 +79,18 @@ export function AddFriendByCode() {
   };
 
   const handleQrError = (error: string) => {
-    toast.error(error);
+    // Ajouter des conseils supplémentaires selon le type d'erreur
+    let fullMessage = error;
+
+    if (error.includes('autoriser l\'accès') || error.includes('Permission denied')) {
+      fullMessage += '\n\n💡 Conseil : Cliquez sur l\'icône de caméra dans la barre d\'adresse et sélectionnez "Toujours autoriser".';
+    } else if (error.includes('HTTPS')) {
+      fullMessage += '\n\n🔒 La caméra nécessite une connexion sécurisée.';
+    } else if (error.includes('navigateur ne supporte')) {
+      fullMessage += '\n\n🌐 Essayez avec un navigateur plus récent comme Chrome ou Firefox.';
+    }
+
+    toast.error(fullMessage);
   };
 
   const isValidCode = friendCode.length === 8;

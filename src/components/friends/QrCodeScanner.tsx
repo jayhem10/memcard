@@ -19,19 +19,45 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
 
-  // Vérifier les permissions de la caméra
+  // Vérifier les permissions de la caméra et l'environnement
   useEffect(() => {
+    const checkEnvironment = () => {
+      // Vérifier si on est en HTTPS (requis pour la caméra)
+      const isHttps = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+      if (!isHttps) {
+        setError('La caméra nécessite une connexion sécurisée (HTTPS)');
+        setHasPermission(false);
+        return;
+      }
+
+      // Vérifier si l'API média est disponible
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Votre navigateur ne supporte pas l\'accès caméra');
+        setHasPermission(false);
+        return;
+      }
+
+      // Essayer de vérifier les permissions
     const checkPermissions = async () => {
       try {
         const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
         setHasPermission(result.state === 'granted');
+
+          // Écouter les changements de permission
+          result.addEventListener('change', () => {
+            setHasPermission(result.state === 'granted');
+          });
       } catch (error) {
-        // Fallback pour les navigateurs qui ne supportent pas l'API Permissions
+          // Fallback: essayer d'accéder directement à la caméra
+          console.log('API Permissions non supportée, tentative d\'accès direct');
         setHasPermission(null);
       }
     };
 
     checkPermissions();
+    };
+
+    checkEnvironment();
   }, []);
 
   const startScanning = async () => {
@@ -40,9 +66,42 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
     setIsScanning(true);
     setIsProcessing(false);
     setError(null);
+
+    // Vérifier les permissions et l'environnement
+    if (!isHttps) {
+      setError('La caméra nécessite une connexion sécurisée (HTTPS)');
+      setIsScanning(false);
+      return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setError('Votre navigateur ne supporte pas l\'accès caméra');
+      setIsScanning(false);
+      return;
+    }
+
     codeReaderRef.current = new BrowserMultiFormatReader();
 
     try {
+      // Demander explicitement l'accès à la caméra si nécessaire
+      if (hasPermission === null) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          // Fermer immédiatement le stream de test
+          stream.getTracks().forEach(track => track.stop());
+          setHasPermission(true);
+        } catch (permissionError: any) {
+          if (permissionError.name === 'NotAllowedError') {
+            setHasPermission(false);
+            setError('Accès à la caméra refusé. Autorisez l\'accès et réessayez.');
+          } else {
+            setError('Erreur lors de l\'accès à la caméra.');
+          }
+          setIsScanning(false);
+          return;
+        }
+      }
+
       const result = await codeReaderRef.current.decodeOnceFromVideoDevice(
         undefined, // Utilise la caméra par défaut
         videoRef.current
@@ -86,13 +145,31 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
       }
 
     } catch (error) {
+      console.error('Erreur de scan détaillée:', error);
+
+      let errorMsg = 'Erreur lors du scan du QR code.';
+      let shouldShowError = true;
+
       if (error instanceof NotFoundException) {
-        const errorMsg = 'Aucun code QR détecté. Réessayez.';
-        setError(errorMsg);
-        onError?.(errorMsg);
-      } else {
-        console.error('Erreur de scan:', error);
-        const errorMsg = 'Erreur lors du scan du QR code.';
+        errorMsg = 'Aucun code QR détecté. Assurez-vous que le code est visible et bien éclairé.';
+      } else if (error.message?.includes('Permission denied') || error.message?.includes('NotAllowedError')) {
+        errorMsg = 'Accès à la caméra refusé. Autorisez l\'accès dans les paramètres de votre navigateur.';
+        setHasPermission(false);
+      } else if (error.message?.includes('NotFoundError')) {
+        errorMsg = 'Aucune caméra détectée sur cet appareil.';
+      } else if (error.message?.includes('NotSupportedError')) {
+        errorMsg = 'Votre navigateur ne supporte pas l\'accès caméra.';
+      } else if (error.message?.includes('AbortError') || error.name === 'AbortError') {
+        // L'utilisateur a annulé le scan ou quitté la page
+        errorMsg = '';
+        shouldShowError = false;
+      } else if (error.message?.includes('The operation was aborted')) {
+        // Scan interrompu (par exemple quand on clique sur "Arrêter")
+        errorMsg = '';
+        shouldShowError = false;
+      }
+
+      if (shouldShowError) {
         setError(errorMsg);
         onError?.(errorMsg);
       }
@@ -106,7 +183,33 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
       codeReaderRef.current = null;
     }
     setIsScanning(false);
+    setIsProcessing(false);
     setError(null);
+  };
+
+  const refreshPermissions = async () => {
+    setError(null);
+    try {
+      // Essayer d'accéder à la caméra pour déclencher la demande de permission
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      // Fermer immédiatement le stream
+      stream.getTracks().forEach(track => track.stop());
+
+      // Revérifier les permissions
+      try {
+        const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        setHasPermission(result.state === 'granted');
+      } catch (error) {
+        setHasPermission(null);
+      }
+    } catch (error: any) {
+      if (error.name === 'NotAllowedError') {
+        setHasPermission(false);
+        setError('Accès à la caméra refusé. Actualisez la page et autorisez l\'accès.');
+      } else {
+        setError('Erreur lors de l\'accès à la caméra.');
+      }
+    }
   };
 
   // Nettoyer au démontage
@@ -117,6 +220,19 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
       }
     };
   }, []);
+
+  // Réinitialiser l'erreur quand on change d'état de scan
+  useEffect(() => {
+    if (!isScanning) {
+      // Petit délai pour éviter de masquer les erreurs importantes
+      const timer = setTimeout(() => {
+        if (!isScanning) {
+          setError(null);
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isScanning]);
 
   return (
     <div className="space-y-4">
@@ -135,15 +251,22 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
         {!isScanning && (
           <div className="w-full max-w-sm mx-auto aspect-square bg-muted rounded-lg border-2 border-dashed flex flex-col items-center justify-center text-center p-4">
             <QrCode className="w-12 h-12 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground font-medium">
+            <p className="text-sm text-muted-foreground font-medium mb-2">
               {hasPermission === false
                 ? 'Caméra non autorisée'
+                : error?.includes('HTTPS')
+                ? 'HTTPS requis'
                 : 'Prêt à scanner'
               }
             </p>
             {hasPermission === false && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Autorisez l'accès à la caméra
+              <p className="text-xs text-muted-foreground">
+                Autorisez l'accès à la caméra dans les paramètres
+              </p>
+            )}
+            {error?.includes('HTTPS') && (
+              <p className="text-xs text-muted-foreground">
+                La caméra nécessite HTTPS
               </p>
             )}
           </div>
@@ -166,12 +289,13 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
         )}
       </div>
 
-      {/* Bouton de contrôle */}
+      {/* Boutons de contrôle */}
+      <div className="flex flex-col gap-2">
       <div className="flex justify-center">
         {!isScanning ? (
           <Button
             onClick={startScanning}
-            disabled={hasPermission === false || isProcessing}
+              disabled={hasPermission === false || !!error || isProcessing}
             className="flex items-center gap-2"
           >
             <Camera className="w-4 h-4" />
@@ -187,6 +311,21 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
             <X className="w-4 h-4" />
             {isProcessing ? 'Traitement...' : 'Arrêter'}
           </Button>
+          )}
+        </div>
+
+        {/* Bouton pour rafraîchir les permissions */}
+        {hasPermission === false && !isScanning && (
+          <div className="flex justify-center">
+            <Button
+              onClick={refreshPermissions}
+              variant="outline"
+              size="sm"
+              className="text-xs"
+            >
+              Actualiser les permissions
+            </Button>
+          </div>
         )}
       </div>
 

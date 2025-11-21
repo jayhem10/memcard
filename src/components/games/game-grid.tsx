@@ -36,13 +36,13 @@ function getStatusIcon(status: string) {
   }
 }
 
-function GameCard({
-  game,
-  index,
-  readonly,
-  onGameClick
-}: {
-  game: GameGridItem;
+function GameCard({ 
+  game, 
+  index, 
+  readonly, 
+  onGameClick 
+}: { 
+  game: GameGridItem; 
   index: number;
   readonly?: boolean;
   onGameClick?: (game: GameGridItem) => void;
@@ -50,10 +50,10 @@ function GameCard({
   const isMobile = useMobile();
 
   // Normaliser le rating (peut être string ou number)
-  const ratingValue = typeof game.rating === 'number'
-    ? game.rating
+  const ratingValue = typeof game.rating === 'number' 
+    ? game.rating 
     : (game.rating !== null && game.rating !== undefined ? Number(game.rating) : null);
-
+  
   // Normaliser le status (peut être '0' ou null pour les collections d'autres utilisateurs)
   const displayStatus = game.status && game.status !== '0' ? game.status : undefined;
 
@@ -88,9 +88,9 @@ function GameCard({
                 })()}
               </div>
             ) : (
-              <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm border border-primary/20 shadow-sm">
-                {STATUS_LABELS[displayStatus] || displayStatus}
-              </span>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm border border-primary/20 shadow-sm">
+              {STATUS_LABELS[displayStatus] || displayStatus}
+            </span>
             )}
           </div>
         )}

@@ -2,11 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { PlusCircle, Library, Gift, User, Users, UserPlus } from 'lucide-react';
+import { PlusCircle, Library, Gift, User, Users, UserPlus, Bell } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
-import { Notifications } from '@/components/notifications/notifications';
 
 export function BottomNavbar() {
   const pathname = usePathname();
@@ -66,19 +65,6 @@ export function BottomNavbar() {
             <span className="text-xs font-medium">Wishlist</span>
           </Link>
 
-          {/* Collectionneurs */}
-          <Link
-            href="/collectors"
-            className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition-colors ${
-              pathname?.startsWith('/collectors')
-                ? 'text-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-            title="Collectionneurs"
-          >
-            <Users className={`h-5 w-5 ${pathname?.startsWith('/collectors') ? 'text-primary' : ''}`} />
-            <span className="text-xs font-medium">Collect.</span>
-          </Link>
 
           {/* Amis */}
           <Link
@@ -110,41 +96,19 @@ export function BottomNavbar() {
 
           {/* Notifications */}
           {user && (
-            <div className="flex flex-col items-center justify-center gap-1 px-4 py-2">
-              <Notifications />
+            <div className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+              pathname?.startsWith('/notifications')
+                ? 'text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}>
+              <div className="relative">
+                <Bell className={`h-5 w-5 ${pathname?.startsWith('/notifications') ? 'text-primary' : ''}`} />
+                {/* Badge de compteur si nécessaire */}
+              </div>
+              <span className="text-xs font-medium">Notif.</span>
             </div>
           )}
 
-          {/* Profil */}
-          <Link
-            href="/profile"
-            className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition-colors ${
-              pathname === '/profile'
-                ? 'text-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-            title="Mon profil"
-          >
-            {profile ? (
-              <Avatar className="h-6 w-6">
-                <AvatarImage 
-                  src={profile.avatar_url || ''} 
-                  alt={profile.full_name || profile.username || 'Utilisateur'} 
-                />
-                <AvatarFallback className="text-xs">
-                  {(profile.full_name || profile.username || profile.email?.split('@')[0] || 'U')
-                    .split(' ')
-                    .map((n: string) => n[0])
-                    .slice(0, 2)
-                    .join('')
-                    .toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <User className={`h-5 w-5 ${pathname === '/profile' ? 'text-primary' : ''}`} />
-            )}
-            <span className="text-xs font-medium">Profil</span>
-          </Link>
         </div>
       </div>
     </nav>

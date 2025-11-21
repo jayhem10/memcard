@@ -1,14 +1,14 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Library,
-  Gift,
-  PlusCircle,
-  Bell,
-  CheckCircle2,
-  XCircle,
-  Mail,
+import { 
+  Library, 
+  Gift, 
+  PlusCircle, 
+  Bell, 
+  CheckCircle2, 
+  XCircle, 
+  Mail, 
   Heart,
   Search,
   Grid2X2,
@@ -122,8 +122,8 @@ export default function HelpPage() {
                       <path d="M10 9H8" />
                     </svg>
                     <span className="text-xs text-muted-foreground">Bouton d'export Excel dans la barre d'outils</span>
-                  </div>
                 </div>
+              </div>
             </div>
 
             <div className="pt-3 border-t">
@@ -135,10 +135,10 @@ export default function HelpPage() {
                   Votre liste de souhaits contient les jeux que vous souhaitez acquérir. 
                   C'est un endroit idéal pour garder une trace de vos envies de jeux.
                 </p>
-              <p className="text-sm text-muted-foreground">
-                <strong className="text-foreground">Astuce :</strong> Vous pouvez partager votre wishlist
-                avec vos proches pour faciliter l'achat de cadeaux !
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">Astuce :</strong> Vous pouvez partager votre wishlist 
+                  avec vos proches pour faciliter l'achat de cadeaux !
+                </p>
             </div>
 
             <div className="pt-3 border-t">
@@ -217,8 +217,8 @@ export default function HelpPage() {
                   <li>Sélectionnez la console si vous souhaitez filtrer les résultats</li>
                   <li>Parcourez les résultats et cliquez sur le jeu qui vous intéresse</li>
                   <li>Choisissez de l'ajouter à votre <strong>Collection</strong> ou à votre <strong>Wishlist</strong></li>
-                <li>Renseignez les informations optionnelles (prix d'achat, état, etc.)</li>
-              </ol>
+                  <li>Renseignez les informations optionnelles (prix d'achat, état, etc.)</li>
+                </ol>
             </div>
           </div>
         </CardContent>
@@ -493,31 +493,31 @@ export default function HelpPage() {
                   <Bell className="h-5 w-5 text-primary" />
                   Recevoir une notification
                 </h4>
-                <p className="text-sm text-muted-foreground">
-                  Cliquez sur l'icône <Bell className="h-4 w-4 inline" /> dans la barre de navigation
-                  pour voir vos notifications de jeux offerts.
-                </p>
-              </div>
+                  <p className="text-sm text-muted-foreground">
+                    Cliquez sur l'icône <Bell className="h-4 w-4 inline" /> dans la barre de navigation 
+                    pour voir vos notifications de jeux offerts.
+                  </p>
+                </div>
               <div className="p-3 rounded-lg border">
                 <h4 className="font-medium mb-1 flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                   Valider l'achat
                 </h4>
-                <p className="text-sm text-muted-foreground">
-                  Si vous avez bien reçu le jeu, cliquez sur <CheckCircle2 className="h-4 w-4 inline text-emerald-600 dark:text-emerald-400" />.
-                  Le jeu sera automatiquement retiré de votre wishlist et ajouté à votre collection
-                  avec le statut <strong>"À faire"</strong>.
-                </p>
-              </div>
+                  <p className="text-sm text-muted-foreground">
+                    Si vous avez bien reçu le jeu, cliquez sur <CheckCircle2 className="h-4 w-4 inline text-emerald-600 dark:text-emerald-400" />. 
+                    Le jeu sera automatiquement retiré de votre wishlist et ajouté à votre collection 
+                    avec le statut <strong>"À faire"</strong>.
+                  </p>
+                </div>
               <div className="p-3 rounded-lg border">
                 <h4 className="font-medium mb-1 flex items-center gap-2">
                   <XCircle className="h-5 w-5 text-destructive" />
                   Annuler l'achat
                 </h4>
-                <p className="text-sm text-muted-foreground">
-                  Si le jeu n'a pas été acheté ou si c'était une erreur, cliquez sur <XCircle className="h-4 w-4 inline text-destructive" />.
-                  Le jeu restera dans votre wishlist.
-                </p>
+                  <p className="text-sm text-muted-foreground">
+                    Si le jeu n'a pas été acheté ou si c'était une erreur, cliquez sur <XCircle className="h-4 w-4 inline text-destructive" />. 
+                    Le jeu restera dans votre wishlist.
+                  </p>
               </div>
             </div>
           </div>
@@ -597,35 +597,35 @@ export default function HelpPage() {
                     <Heart className="h-5 w-5 text-primary" />
                     Don via Ko-fi
                   </h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Vous pouvez faire un don via Ko-fi pour soutenir le projet. Vous pouvez également ajouter un message personnalisé avec votre don pour nous dire ce que vous aimez dans MemCard !
-                  </p>
-                  <Button
-                    onClick={() => setSupportDialogOpen(true)}
-                    className="w-full sm:w-auto"
-                  >
-                    <Heart className="mr-2 h-4 w-4" />
-                    Faire un don sur Ko-fi
-                  </Button>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Vous pouvez faire un don via Ko-fi pour soutenir le projet. Vous pouvez également ajouter un message personnalisé avec votre don pour nous dire ce que vous aimez dans MemCard !
+                      </p>
+                      <Button 
+                        onClick={() => setSupportDialogOpen(true)}
+                        className="w-full sm:w-auto"
+                      >
+                        <Heart className="mr-2 h-4 w-4" />
+                        Faire un don sur Ko-fi
+                      </Button>
                 </div>
                 <div className="flex flex-col gap-2">
                   <h4 className="font-medium mb-2 flex items-center gap-2">
                     <Mail className="h-5 w-5 text-primary" />
                     Retours et suggestions
                   </h4>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Vos retours et suggestions sont également très appréciés et nous aident à améliorer l'application.
-                  </p>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
-                    <Link href="/contact">
-                      <Mail className="mr-2 h-4 w-4" />
-                      Nous contacter
-                    </Link>
-                  </Button>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Vos retours et suggestions sont également très appréciés et nous aident à améliorer l'application.
+                      </p>
+                      <Button 
+                        asChild
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                      >
+                        <Link href="/contact">
+                          <Mail className="mr-2 h-4 w-4" />
+                          Nous contacter
+                        </Link>
+                      </Button>
                 </div>
               </div>
             </div>
@@ -654,9 +654,9 @@ export default function HelpPage() {
                 <Filter className="h-5 w-5 text-primary" />
                 Organisez avec les filtres
               </h4>
-              <p className="text-sm text-muted-foreground">
-                Utilisez les filtres par console et genre pour organiser votre collection
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  Utilisez les filtres par console et genre pour organiser votre collection
+                </p>
             </div>
 
             <div className="p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
@@ -664,9 +664,9 @@ export default function HelpPage() {
                 <FileSpreadsheet className="h-5 w-5 text-primary" />
                 Sauvegardez régulièrement
               </h4>
-              <p className="text-sm text-muted-foreground">
-                Exportez régulièrement votre collection en Excel pour avoir une sauvegarde
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  Exportez régulièrement votre collection en Excel pour avoir une sauvegarde
+                </p>
             </div>
 
             <div className="p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
@@ -674,9 +674,9 @@ export default function HelpPage() {
                 <DollarSign className="h-5 w-5 text-primary" />
                 Suivez la valeur
               </h4>
-              <p className="text-sm text-muted-foreground">
-                Renseignez le prix d'achat pour suivre la valeur de votre collection
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  Renseignez le prix d'achat pour suivre la valeur de votre collection
+                </p>
             </div>
 
             <div className="p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300">
@@ -684,9 +684,9 @@ export default function HelpPage() {
                 <TrendingUp className="h-5 w-5 text-primary" />
                 Mettez à jour le statut
               </h4>
-              <p className="text-sm text-muted-foreground">
-                Mettez à jour le statut de vos jeux au fur et à mesure de votre progression
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  Mettez à jour le statut de vos jeux au fur et à mesure de votre progression
+                </p>
             </div>
 
             <div className="p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300 md:col-span-2">
@@ -694,9 +694,9 @@ export default function HelpPage() {
                 <Gift className="h-5 w-5 text-primary" />
                 Partagez avant les fêtes
               </h4>
-              <p className="text-sm text-muted-foreground">
-                Partagez votre wishlist avant les anniversaires et fêtes pour faciliter les cadeaux
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  Partagez votre wishlist avant les anniversaires et fêtes pour faciliter les cadeaux
+                </p>
             </div>
           </div>
         </CardContent>

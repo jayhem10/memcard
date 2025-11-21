@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import { LogOut, User, MoreVertical, Heart, PlusCircle, Library, Shield, Trophy, Sparkles, Mail, Gift, HelpCircle, Gamepad2, Users } from 'lucide-react';
+import { LogOut, User, MoreVertical, Heart, PlusCircle, Library, Shield, Trophy, Sparkles, Mail, Gift, HelpCircle, Gamepad2, Users, UserPlus } from 'lucide-react';
 import { ThemeSelector } from '@/components/theme/theme-selector';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfile } from '@/store';
@@ -44,7 +44,7 @@ function NavbarContent() {
   const navigation = [
     { name: 'Collection', href: '/collection', icon: Library },
     { name: 'Collectionneurs', href: '/collectors', icon: Users },
-    { name: 'Amis', href: '/friends', icon: Users },
+    { name: 'Amis', href: '/friends', icon: UserPlus },
   ];
   
   // Afficher le rang si le quiz est complété, sinon afficher le bouton pour le quiz
@@ -182,6 +182,12 @@ function NavbarContent() {
                       Mes succès
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/collectors" className="cursor-pointer">
+                      <Users className="mr-2 h-4 w-4" />
+                      Collectionneurs
+                    </Link>
+                  </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="cursor-pointer">
@@ -249,6 +255,12 @@ function NavbarContent() {
                     <Link href="/achievements" className="cursor-pointer">
                       <Trophy className="mr-2 h-4 w-4" />
                       Mes succès
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/collectors" className="cursor-pointer">
+                      <Users className="mr-2 h-4 w-4" />
+                      Collectionneurs
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
@@ -356,6 +368,12 @@ function NavbarContent() {
                       Mes succès
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/collectors" className="cursor-pointer">
+                      <Users className="mr-2 h-4 w-4" />
+                      Collectionneurs
+                    </Link>
+                  </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="cursor-pointer">
@@ -423,6 +441,12 @@ function NavbarContent() {
                     <Link href="/achievements" className="cursor-pointer">
                       <Trophy className="mr-2 h-4 w-4" />
                       Mes succès
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/collectors" className="cursor-pointer">
+                      <Users className="mr-2 h-4 w-4" />
+                      Collectionneurs
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (

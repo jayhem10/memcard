@@ -1,12 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { supabase, getBaseUrl, translateSupabaseError } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 export function AuthForm() {
   const [oAuthLoading, setOAuthLoading] = useState<'google' | 'discord' | 'twitch' | null>(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Gérer les erreurs d'authentification passées dans l'URL
+    const error = searchParams.get('error');
+    if (error) {
+      let errorMessage = 'Une erreur est survenue lors de l\'authentification.';
+
+      switch (error) {
+        case 'auth_failed':
+          errorMessage = 'Échec de l\'authentification OAuth. Veuillez réessayer.';
+          break;
+        case 'no_session':
+          errorMessage = 'Session non trouvée. Veuillez réessayer.';
+          break;
+        case 'critical':
+          errorMessage = 'Erreur critique lors du traitement. Veuillez contacter le support.';
+          break;
+        default:
+          errorMessage = 'Erreur d\'authentification inconnue.';
+      }
+
+      toast.error(errorMessage);
+
+      // Nettoyer l'URL
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('error');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+  }, [searchParams]);
 
   const handleOAuthLogin = async (provider: 'google' | 'discord' | 'twitch') => {
     setOAuthLoading(provider);
@@ -23,7 +56,7 @@ export function AuthForm() {
       if (error) throw error;
     } catch (error: any) {
       console.error(`Erreur d'authentification ${provider}:`, error);
-      toast.error(translateSupabaseError(error.message) || `Erreur lors de la connexion avec ${provider}`);
+      toast.error(translateSupabaseError(error.message) || `Impossible de se connecter avec ${provider}. Veuillez réessayer.`);
       setOAuthLoading(null);
     }
   };
@@ -33,7 +66,7 @@ export function AuthForm() {
       <div className="text-center">
         <h2 className="text-2xl font-bold">Se connecter</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Connectez-vous avec votre compte Google ou Discord
+          Connectez-vous rapidement et en toute sécurité
         </p>
       </div>
 
@@ -44,7 +77,7 @@ export function AuthForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background px-2 text-muted-foreground">
-              Connexion avec
+              Se connecter via
             </span>
           </div>
         </div>
@@ -63,7 +96,7 @@ export function AuthForm() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Google...
+                Connexion...
               </span>
             ) : (
               <>
@@ -85,7 +118,7 @@ export function AuthForm() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Discord...
+                Connexion...
               </span>
             ) : (
               <>
@@ -109,7 +142,7 @@ export function AuthForm() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Twitch...
+                Connexion...
               </span>
             ) : (
               <>
