@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Game } from '@/types/database.types';
-import { STATUS_LABELS } from '@/types/games';
+import { getStatusLabels } from '@/types/games';
 import { useMobile } from '@/hooks/useMobile';
 import { Circle, Play, CheckCircle2, XCircle, Heart } from 'lucide-react';
 
@@ -34,7 +35,9 @@ function getStatusIcon(status: string) {
 }
 
 export function GameList({ games }: GameListProps) {
+  const t = useTranslations();
   const isMobile = useMobile();
+  const statusLabels = getStatusLabels((key: string) => t(key));
 
   return (
     <div className="space-y-4">
@@ -59,7 +62,7 @@ export function GameList({ games }: GameListProps) {
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-md">
-                  <span className="text-muted-foreground text-xs">No Image</span>
+                  <span className="text-muted-foreground text-xs">{t('games.noImage')}</span>
                 </div>
               )}
             </div>
@@ -108,7 +111,7 @@ export function GameList({ games }: GameListProps) {
                     </div>
                   ) : (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    {STATUS_LABELS[game.status] || game.status}
+                    {statusLabels[game.status as keyof typeof statusLabels] || game.status}
                   </span>
                   )
                 )}

@@ -5,6 +5,7 @@ import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
 import { Camera, X, QrCode, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useTranslations } from 'next-intl';
 
 interface QrCodeScannerProps {
   onScan: (code: string) => void;
@@ -12,6 +13,7 @@ interface QrCodeScannerProps {
 }
 
 export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
+  const t = useTranslations('qrCodeScanner');
   const [isScanning, setIsScanning] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -25,7 +27,7 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
 
       // Vérifier si l'API média est disponible
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setError('Votre navigateur ne supporte pas l\'accès caméra');
+        setError(t('browserNotSupportCamera'));
         setHasPermission(false);
         return;
       }
@@ -63,13 +65,13 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
     // Vérifier les permissions et l'environnement
     const isHttps = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
     if (!isHttps) {
-      setError('La caméra nécessite une connexion sécurisée (HTTPS)');
+      setError(t('cameraRequiresHttps'));
       setIsScanning(false);
       return;
     }
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setError('Votre navigateur ne supporte pas l\'accès caméra');
+      setError(t('browserNotSupportCamera'));
       setIsScanning(false);
       return;
     }
@@ -87,9 +89,9 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
         } catch (permissionError: unknown) {
           if (permissionError instanceof Error && permissionError.name === 'NotAllowedError') {
             setHasPermission(false);
-            setError('Accès à la caméra refusé. Autorisez l\'accès et réessayez.');
+            setError(t('cameraAccessDeniedRetry'));
           } else {
-            setError('Erreur lors de l\'accès à la caméra.');
+            setError(t('errorAccessingCamera'));
           }
           setIsScanning(false);
           return;
@@ -129,7 +131,7 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
           onScan(friendCode);
           setIsScanning(false);
         } else {
-          const errorMsg = 'Code QR invalide. Le code doit contenir 8 caractères.';
+          const errorMsg = t('invalidQrCode');
           setError(errorMsg);
           onError?.(errorMsg);
           setIsScanning(false);
@@ -141,19 +143,19 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
     } catch (error) {
       console.error('Erreur de scan détaillée:', error);
 
-      let errorMsg = 'Erreur lors du scan du QR code.';
+      let errorMsg = t('errorScanningQrCode');
       let shouldShowError = true;
 
       if (error instanceof NotFoundException) {
-        errorMsg = 'Aucun code QR détecté. Assurez-vous que le code est visible et bien éclairé.';
+        errorMsg = t('noQrCodeDetected');
       } else if (error instanceof Error) {
         if (error.message?.includes('Permission denied') || error.message?.includes('NotAllowedError')) {
-          errorMsg = 'Accès à la caméra refusé. Autorisez l\'accès dans les paramètres de votre navigateur.';
+          errorMsg = t('cameraAccessDeniedSettings');
           setHasPermission(false);
         } else if (error.message?.includes('NotFoundError')) {
-          errorMsg = 'Aucune caméra détectée sur cet appareil.';
+          errorMsg = t('noCameraDetected');
         } else if (error.message?.includes('NotSupportedError')) {
-          errorMsg = 'Votre navigateur ne supporte pas l\'accès caméra.';
+          errorMsg = t('browserNotSupportCamera');
         } else if (error.message?.includes('AbortError') || (error as any).name === 'AbortError') {
           // L'utilisateur a annulé le scan ou quitté la page
           errorMsg = '';
@@ -201,9 +203,9 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
     } catch (error: any) {
       if (error.name === 'NotAllowedError') {
         setHasPermission(false);
-        setError('Accès à la caméra refusé. Actualisez la page et autorisez l\'accès.');
+        setError(t('cameraAccessDeniedRetry'));
       } else {
-        setError('Erreur lors de l\'accès à la caméra.');
+        setError(t('errorAccessingCamera'));
       }
     }
   };
@@ -249,20 +251,20 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
             <QrCode className="w-12 h-12 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground font-medium mb-2">
               {hasPermission === false
-                ? 'Caméra non autorisée'
+                ? t('cameraNotAuthorized')
                 : error?.includes('HTTPS')
-                ? 'HTTPS requis'
-                : 'Prêt à scanner'
+                ? t('httpsRequired')
+                : t('readyToScan')
               }
             </p>
             {hasPermission === false && (
               <p className="text-xs text-muted-foreground">
-                Autorisez l'accès à la caméra dans les paramètres
+                {t('grantCameraAccessSettings')}
               </p>
             )}
             {error?.includes('HTTPS') && (
               <p className="text-xs text-muted-foreground">
-                La caméra nécessite HTTPS
+                {t('cameraRequiresHttpsShort')}
               </p>
             )}
           </div>
@@ -295,7 +297,7 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
             className="flex items-center gap-2"
           >
             <Camera className="w-4 h-4" />
-            Scanner un QR code
+            {t('scanQrCode')}
           </Button>
         ) : (
           <Button
@@ -305,7 +307,7 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
             className="flex items-center gap-2"
           >
             <X className="w-4 h-4" />
-            {isProcessing ? 'Traitement...' : 'Arrêter'}
+            {isProcessing ? t('processing') : t('stop')}
           </Button>
           )}
         </div>
@@ -319,7 +321,7 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
               size="sm"
               className="text-xs"
             >
-              Actualiser les permissions
+              {t('refreshPermissions')}
             </Button>
           </div>
         )}

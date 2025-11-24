@@ -30,12 +30,12 @@ export const POST = withApi(async (request: NextRequest, { user, supabase }) => 
     .single();
 
   if (profileError || !friendProfile) {
-    throw new ApiError('Code ami invalide', 404);
+    throw new ApiError('INVALID_FRIEND_CODE', 404);
   }
 
   // Vérifier que ce n'est pas l'utilisateur lui-même
   if (friendProfile.id === user.id) {
-    throw new ApiError('Vous ne pouvez pas vous ajouter vous-même en ami', 400);
+    throw new ApiError('CANNOT_ADD_YOURSELF', 400);
   }
 
   // Vérifier si ils sont déjà amis en utilisant la fonction RPC sécurisée
@@ -51,7 +51,7 @@ export const POST = withApi(async (request: NextRequest, { user, supabase }) => 
   }
 
   if (existingFriendship) {
-    throw new ApiError('Vous êtes déjà amis avec cet utilisateur', 400);
+    throw new ApiError('ALREADY_FRIENDS', 400);
   }
 
   // Créer seulement une relation (user -> friend) - les fonctions RPC gèrent la bidirectionnalité
@@ -73,12 +73,12 @@ export const POST = withApi(async (request: NextRequest, { user, supabase }) => 
 
     // Gérer les erreurs de contrainte unique (si quelqu'un d'autre a ajouté entre temps)
     if (insertError.code === '23505') {
-      throw new ApiError('Vous êtes déjà amis avec cet utilisateur', 400);
+      throw new ApiError('ALREADY_FRIENDS', 400);
     }
 
     // Gérer les erreurs de clé étrangère (utilisateur n'existe pas)
     if (insertError.code === '23503') {
-      throw new ApiError('Utilisateur introuvable', 404);
+      throw new ApiError('USER_NOT_FOUND', 404);
     }
 
     throw new ApiError(`Erreur lors de l'ajout de l'ami: ${insertError.message}`, 500);

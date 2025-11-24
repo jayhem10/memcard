@@ -1,8 +1,10 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Heart } from 'lucide-react';
 
 export function Footer() {
+  const t = useTranslations('common');
   const currentYear = new Date().getFullYear();
 
   return (
@@ -12,14 +14,14 @@ export function Footer() {
             <span className="text-lg font-bold">MemCard</span>
             <span className="text-muted-foreground">•</span>
             <span className="text-sm text-muted-foreground">
-              © {currentYear} Tous droits réservés
+              © {currentYear} {t('copyright')}
             </span>
         </div>
         <div className="mt-4 pt-4 border-t border-border/50">
           <p className="text-xs text-muted-foreground text-center">
-            MemCard est une plateforme de gestion de collection de jeux vidéo.
+            {t('footerDescription')}
             <br />
-            Toutes les marques et logos sont la propriété de leurs détenteurs respectifs.
+            {t('footerTrademark')}
           </p>
         </div>
       </div>

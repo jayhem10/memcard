@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/supabase-server';
+import { getTranslations } from 'next-intl/server';
 
 // Désactiver complètement le cache pour les amis
 export const dynamic = 'force-dynamic';
@@ -7,14 +8,16 @@ export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
 export async function GET(request: NextRequest) {
+  const t = await getTranslations('errors');
+
   try {
     // Authentification
     const { user, supabase, error: authError } = await getAuthenticatedUser(request);
 
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Non authentifié', details: authError?.message },
-        { 
+        { error: t('unauthenticated'), details: authError?.message },
+        {
           status: 401,
           headers: {
             'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -33,7 +36,7 @@ export async function GET(request: NextRequest) {
     if (friendshipsError) {
       console.error('Erreur lors de la récupération des relations:', friendshipsError);
       return NextResponse.json(
-        { error: 'Erreur lors de la récupération des amis', details: friendshipsError.message },
+        { error: t('friendsRetrievalError'), details: friendshipsError.message },
         { status: 500 }
       );
     }
@@ -59,7 +62,7 @@ export async function GET(request: NextRequest) {
     if (profilesError) {
       console.error('Erreur lors de la récupération des profils:', profilesError);
       return NextResponse.json(
-        { error: 'Erreur lors de la récupération des profils', details: profilesError.message },
+        { error: t('profilesRetrievalError'), details: profilesError.message },
         { status: 500 }
       );
     }
@@ -76,7 +79,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Erreur inattendue dans /api/friends:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: t('serverError'), details: error.message },
       { status: 500 }
     );
   }

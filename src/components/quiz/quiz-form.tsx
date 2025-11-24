@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +30,8 @@ interface QuizQuestion {
 }
 
 export default function QuizForm() {
+  const t = useTranslations('quiz');
+  const locale = useLocale();
   const router = useRouter();
   const { fetchProfile, resetProfile, profile } = useProfile();
   const { user } = useAuth();
@@ -40,6 +43,12 @@ export default function QuizForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userRank, setUserRank] = useState<Rank | null>(null);
   const [showResult, setShowResult] = useState(false);
+
+  // Helper function to get text in current locale
+  const getLocalizedText = (item: { text_en?: string; text_fr?: string; question_en?: string; question_fr?: string }) => {
+    const lang = locale === 'fr' ? 'fr' : 'en';
+    return item[`text_${lang}` as keyof typeof item] || item[`question_${lang}` as keyof typeof item] || '';
+  };
 
   useEffect(() => {
     // Charger le profil si nécessaire
@@ -97,7 +106,7 @@ export default function QuizForm() {
       
       if (error) {
         handleErrorSilently(error, 'QuizForm - fetchQuizQuestions');
-        toast.error('Erreur lors de la récupération des questions du quiz');
+        toast.error(t('quizError'));
         setIsLoading(false);
         return;
       }
@@ -120,7 +129,7 @@ export default function QuizForm() {
       setIsLoading(false);
     } catch (error) {
       handleErrorSilently(error, 'QuizForm - fetchQuizQuestions catch');
-      toast.error('Erreur lors de la récupération des questions du quiz');
+        toast.error(t('quizError'));
       setIsLoading(false);
     }
   };
@@ -163,7 +172,7 @@ export default function QuizForm() {
       const rankId = rankIdFromApi ? String(rankIdFromApi) : null;
       
       if (!rankId) {
-        throw new Error('Échec du calcul du rang. Aucun rang retourné.');
+        throw new Error('Failed to calculate rank. No rank returned.');
       }
       
       // Fetch the rank details
@@ -197,13 +206,13 @@ export default function QuizForm() {
         resetProfile(); // Réinitialiser le cache
         await fetchProfile(true); // Forcer le rechargement
         
-        toast.success('Quiz terminé avec succès ! Votre rang a été déterminé.');
+        toast.success(t('success'));
       } else {
-        throw new Error('Aucun détail de rang trouvé');
+        throw new Error('No rank details found');
       }
       
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la soumission du quiz';
+      const errorMessage = error instanceof Error ? error.message : t('submitError');
       handleErrorSilently(error, 'QuizForm - submitQuiz');
       toast.error(errorMessage);
     } finally {
@@ -233,8 +242,8 @@ export default function QuizForm() {
       >
         <Card className="w-full max-w-2xl mx-auto">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Quiz terminé</CardTitle>
-            <CardDescription>Votre rang a été déterminé</CardDescription>
+            <CardTitle className="text-2xl">{t('quizCompleted')}</CardTitle>
+            <CardDescription>{t('yourRank')}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6 py-6">
             {userRank.icon_url && (
@@ -257,15 +266,15 @@ export default function QuizForm() {
               className="text-center"
             >
               <h3 className="text-2xl font-bold mb-2">
-                {userRank.name_fr}
+                {locale === 'fr' ? userRank.name_fr : userRank.name_en}
               </h3>
               <p className="text-muted-foreground">
-                {userRank.description_fr}
+                {locale === 'fr' ? userRank.description_fr : userRank.description_en}
               </p>
             </motion.div>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <Button onClick={handleFinish}>Continuer vers le profil</Button>
+            <Button onClick={handleFinish}>{t('continueToProfile')}</Button>
           </CardFooter>
         </Card>
       </motion.div>
@@ -278,7 +287,7 @@ export default function QuizForm() {
   if (!currentQuestion) {
     return (
       <div className="text-center p-4">
-        <p>Aucune question disponible</p>
+        <p>{t('noQuestions')}</p>
       </div>
     );
   }
@@ -295,10 +304,10 @@ export default function QuizForm() {
         <Card className="w-full max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle>
-              Question {currentQuestionIndex + 1} / {questions.length}
+              {t('question')} {currentQuestionIndex + 1} / {questions.length}
             </CardTitle>
             <CardDescription>
-              {currentQuestion.question_fr}
+              {getLocalizedText(currentQuestion)}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -311,7 +320,7 @@ export default function QuizForm() {
                 <div key={option.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent">
                   <RadioGroupItem value={option.id.toString()} id={`option-${option.id}`} />
                   <Label htmlFor={`option-${option.id}`} className="flex-1 cursor-pointer">
-                    {option.text_fr}
+                    {getLocalizedText(option)}
                   </Label>
                 </div>
               ))}
@@ -328,7 +337,7 @@ export default function QuizForm() {
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  {isLastQuestion ? 'Terminer' : 'Suivant'}
+                  {isLastQuestion ? t('finish') : t('next')}
                   <ArrowRight className="h-4 w-4" />
                 </>
               )}

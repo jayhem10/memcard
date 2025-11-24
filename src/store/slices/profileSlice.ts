@@ -233,11 +233,9 @@ export const createProfileSlice: StateCreator<
       // Recharger le profil complet depuis la base pour s'assurer de la cohérence
       // Forcer le rechargement même si isLoading est true
       await get().fetchProfile(true);
-      
+
       // S'assurer que isLoading est bien à false après le rechargement
       set({ profileLoading: false });
-      
-      toast.success('Profil mis à jour avec succès');
     } catch (error: any) {
       console.error('Erreur lors de la mise à jour du profil:', error);
       set({ 

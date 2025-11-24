@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import QRCode from 'react-qr-code';
 import { Copy, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +10,7 @@ import { useMyProfile } from '@/hooks/useFriends';
 import { toast } from 'sonner';
 
 export function FriendCodeCard() {
+  const t = useTranslations('friends');
   const { data: profile, isLoading, error } = useMyProfile();
 
   const shareUrl = profile ? `${window.location.origin}/add-friend/${profile.friend_code}` : '';
@@ -18,9 +20,9 @@ export function FriendCodeCard() {
 
     try {
       await navigator.clipboard.writeText(profile.friend_code);
-      toast.success('Code ami copié !');
+      toast.success(t('codeCopied'));
     } catch (error) {
-      toast.error('Erreur lors de la copie');
+      toast.error(t('copyError'));
     }
   };
 
@@ -31,7 +33,7 @@ export function FriendCodeCard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            Mon code ami
+            {t('myFriendCode')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -54,12 +56,12 @@ export function FriendCodeCard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            Mon code ami
+            {t('myFriendCode')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center text-muted-foreground">
-            Erreur lors du chargement du code ami
+            {t('friendCodeLoadingError')}
           </div>
         </CardContent>
       </Card>
@@ -71,7 +73,7 @@ export function FriendCodeCard() {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Users className="w-4 h-4" />
-          Mon code ami
+          {t('myFriendCode')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -96,16 +98,8 @@ export function FriendCodeCard() {
           </Button>
         </div>
 
-        {/* Bouton d'action */}
-        <div className="flex justify-center">
-          <Button onClick={copyToClipboard} variant="outline" size="sm">
-            <Copy className="w-3 h-3 mr-1" />
-            Copier le code
-          </Button>
-        </div>
-
         <p className="text-xs text-muted-foreground text-center leading-tight">
-          Scannez ou partagez votre code ami !
+          {t('scanOrShare')}
         </p>
       </CardContent>
     </Card>

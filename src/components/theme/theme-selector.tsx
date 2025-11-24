@@ -8,6 +8,7 @@ import * as React from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useProfile } from '@/store';
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 const icons = {
   sun: Sun,
@@ -22,6 +23,8 @@ const icons = {
 };
 
 export function ThemeSelector() {
+  const t = useTranslations('themeSelector');
+  const themeTranslations = useTranslations('theme');
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { profile, updateProfile } = useProfile();
   const currentTheme = theme || resolvedTheme || 'light';
@@ -65,7 +68,7 @@ export function ThemeSelector() {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="w-9 px-0">
           <Icon className="h-5 w-5" />
-          <span className="sr-only">Changer de thème</span>
+          <span className="sr-only">{t('changeTheme')}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-2" align="end">
@@ -85,7 +88,7 @@ export function ThemeSelector() {
                 }}
               >
                 <ItemIcon className="h-4 w-4" />
-                <span>{t.name}</span>
+                <span>{themeTranslations(t.value)}</span>
               </Button>
             );
           })}

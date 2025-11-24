@@ -9,8 +9,10 @@ import { Input } from '@/components/ui/input';
 import { useFriends, Friend } from '@/hooks/useFriends';
 import { useRouter } from 'next/navigation';
 import { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
 export function FriendsList() {
+  const t = useTranslations('friends');
   const { friends, isLoading, error, removeFriendAsync, isRemovingFriend } = useFriends();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,12 +48,12 @@ export function FriendsList() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Mes amis</CardTitle>
+          <CardTitle>{t('friendsList')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <span className="ml-2">Chargement des amis...</span>
+            <span className="ml-2">{t('friendsLoading')}</span>
           </div>
         </CardContent>
       </Card>
@@ -62,11 +64,11 @@ export function FriendsList() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Mes amis</CardTitle>
+          <CardTitle>{t('friendsList')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
-            Erreur lors du chargement des amis
+            {t('friendsLoadingError')}
           </div>
         </CardContent>
       </Card>
@@ -76,7 +78,7 @@ export function FriendsList() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Mes amis ({(friends as Friend[]).length})</CardTitle>
+        <CardTitle className="text-lg">{t('friendsList')} ({(friends as Friend[]).length})</CardTitle>
       </CardHeader>
       <CardContent className="p-4">
         {(friends as Friend[]).length > 0 && (
@@ -84,7 +86,7 @@ export function FriendsList() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder="Rechercher un ami..."
+                placeholder={t('searchFriendPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -95,9 +97,9 @@ export function FriendsList() {
         {(friends as Friend[]).length === 0 ? (
           <div className="text-center py-6">
             <div className="text-muted-foreground">
-              <p className="text-sm">Vous n'avez pas encore d'amis</p>
+              <p className="text-sm">{t('noFriendsYet')}</p>
               <p className="text-xs mt-1">
-                Utilisez votre code ami pour en ajouter !
+                {t('noFriendsHint')}
               </p>
             </div>
           </div>
@@ -114,7 +116,7 @@ export function FriendsList() {
 
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium truncate text-sm">
-                    {friend.username || 'Utilisateur sans nom'}
+                    {friend.username || t('noFriends')}
                   </h4>
                   {friend.full_name && (
                     <p className="text-xs text-muted-foreground truncate">
@@ -129,7 +131,7 @@ export function FriendsList() {
                     size="sm"
                     onClick={() => handleViewCollection(friend.id)}
                     className="h-8 w-8 p-0"
-                    title="Voir la collection"
+                    title={t('viewCollection')}
                   >
                     <ExternalLink className="w-3 h-3" />
                   </Button>
@@ -141,26 +143,25 @@ export function FriendsList() {
                         size="sm"
                         disabled={isRemovingFriend}
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        title="Supprimer l'ami"
+                        title={t('removeFriend')}
                       >
                         <UserMinus className="w-3 h-3" />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Supprimer cet ami ?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('removeFriendTitle')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Êtes-vous sûr de vouloir supprimer {friend.username || 'cet ami'} de votre liste d'amis ?
-                          Cette action est irréversible.
+                          {t('removeFriendConfirm', { username: friend.username || t('removeFriend') })}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogCancel>{t('removeFriend')}</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => handleRemoveFriend(friend.id, friend.username || 'cet ami')}
+                          onClick={() => handleRemoveFriend(friend.id, friend.username || t('removeFriend'))}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                          Supprimer
+                          {t('removeFriend')}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>

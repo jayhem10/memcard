@@ -13,6 +13,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/auth-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface OtherUserGameModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ interface OtherUserGameModalProps {
 }
 
 export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: OtherUserGameModalProps) {
+  const t = useTranslations('otherUserGameModal');
   // Utiliser les hooks personnalisés pour la logique métier
   const { gameStatus, isChecking } = useGameStatus(game, isOpen);
   const { addToWishlist, isAdding } = useAddToWishlist();
@@ -87,7 +89,7 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
       );
 
       if (!matchingGame) {
-        toast.error('Jeu non trouvé dans votre collection');
+        toast.error(t('gameNotFound'));
         return;
       }
 
@@ -115,10 +117,10 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
       queryClient.invalidateQueries({ queryKey: ['userGames', user.id] });
       
       const isWishlist = matchingGame.status?.toUpperCase() === 'WISHLIST' || matchingGame.status?.toUpperCase() === 'wishlist';
-      toast.success(isWishlist ? 'Jeu supprimé de votre liste de souhaits' : 'Jeu supprimé de votre collection');
+      toast.success(isWishlist ? t('gameRemovedFromWishlist') : t('gameRemovedFromCollection'));
     } catch (error: any) {
       console.error('Erreur lors de la suppression:', error);
-      toast.error(error.message || 'Erreur lors de la suppression');
+      toast.error(error.message || t('errorRemovingGame'));
     } finally {
       setIsRemoving(false);
     }
@@ -137,10 +139,10 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
       <DialogContent className="sm:max-w-[500px] !w-[calc(100vw-2rem)] sm:!w-full max-h-[85vh] p-0 flex flex-col">
         <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6 pb-3 sm:pb-4 flex-shrink-0">
           <DialogTitle className="text-lg sm:text-xl md:text-2xl pr-8 break-words">
-            {game.title || 'Jeu sans titre'}
+            {game.title || t('untitledGame')}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            Détails du jeu {game.title}
+            {t('gameDetails')} {game.title}
           </DialogDescription>
         </DialogHeader>
 
@@ -159,7 +161,7 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
                 {game.cover_url ? (
                   <Image
                     src={game.cover_url}
-                    alt={game.title || 'Jaquette du jeu'}
+                    alt={game.title || t('gameCover')}
                     fill
                     className="object-cover"
                     sizes="(max-width: 640px) 160px, 160px"
@@ -171,7 +173,7 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
-                    <span className="text-muted-foreground text-sm text-center px-2">Pas d'image</span>
+                    <span className="text-muted-foreground text-sm text-center px-2">{t('noImage')}</span>
                   </div>
                 )}
               </div>
@@ -179,29 +181,29 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
               {/* Infos du jeu */}
               <div className="flex-1 space-y-3 sm:space-y-4 min-w-0">
                 <div>
-                  <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Informations</h3>
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">{t('information')}</h3>
                   <div className="space-y-2 sm:space-y-2.5 text-sm">
                     {game.console_name && (
                       <div>
-                        <span className="font-medium">Plateforme :</span>{' '}
+                        <span className="font-medium">{t('platform')}</span>{' '}
                         <span className="text-muted-foreground">{game.console_name}</span>
                       </div>
                     )}
                     {game.developer && (
                       <div className="break-words">
-                        <span className="font-medium">Développeur :</span>{' '}
+                        <span className="font-medium">{t('developer')}</span>{' '}
                         <span className="text-muted-foreground">{game.developer}</span>
                       </div>
                     )}
                     {game.publisher && (
                       <div className="break-words">
-                        <span className="font-medium">Éditeur :</span>{' '}
+                        <span className="font-medium">{t('publisher')}</span>{' '}
                         <span className="text-muted-foreground">{game.publisher}</span>
                       </div>
                     )}
                     {game.release_date && (
                       <div>
-                        <span className="font-medium">Date de sortie :</span>{' '}
+                        <span className="font-medium">{t('releaseDate')}</span>{' '}
                         <span className="text-muted-foreground">
                           {new Date(game.release_date).toLocaleDateString('fr-FR')}
                         </span>
@@ -209,7 +211,7 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
                     )}
                     {game.genres && game.genres.length > 0 && (
                       <div className="break-words">
-                        <span className="font-medium">Genres :</span>{' '}
+                        <span className="font-medium">{t('genres')}</span>{' '}
                         <span className="text-muted-foreground">
                           {game.genres.map(g => g.name).join(', ')}
                         </span>
@@ -217,7 +219,7 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
                     )}
                     {(!game.developer && !game.publisher && !game.release_date && (!game.genres || game.genres.length === 0)) && (
                       <div className="text-muted-foreground italic">
-                        Aucune information supplémentaire disponible
+{t('noAdditionalInfo')}
                       </div>
                     )}
                   </div>
@@ -228,7 +230,7 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
             {/* Description */}
             {(game.description_fr || game.description_en) && (
               <div>
-                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Description</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">{t('description')}</h3>
                 <div className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   <p className="whitespace-pre-wrap break-words">
                     {game.description_fr || game.description_en}
@@ -240,7 +242,7 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
             {/* Avis du propriétaire */}
             {game.review && (
               <div>
-                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">Avis du collectionneur</h3>
+                <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">{t('ownerReview')}</h3>
                 <div className="p-3 sm:p-4 rounded-lg bg-muted/50 border border-border/50">
                   <p className="text-sm sm:text-base whitespace-pre-wrap break-words leading-relaxed">
                     {game.review}
@@ -263,7 +265,7 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
                 className="h-9 px-2 sm:px-3 gap-1 sm:gap-2 flex-1 cursor-not-allowed"
               >
                 <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm hidden sm:inline">Dans ma collection</span>
+                <span className="text-sm hidden sm:inline">{t('inMyCollection')}</span>
               </Button>
             ) : localGameStatus === 'in_wishlist' ? (
               <Button
@@ -276,12 +278,12 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
                 {isRemoving ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-                    <span className="text-sm hidden sm:inline">Suppression...</span>
+                    <span className="text-sm hidden sm:inline">{t('removing')}</span>
                   </>
                 ) : (
                   <>
                     <Trash2 className="h-4 w-4 flex-shrink-0" />
-                    <span className="text-sm hidden sm:inline">Retirer de ma wishlist</span>
+                    <span className="text-sm hidden sm:inline">{t('removeFromWishlist')}</span>
                   </>
                 )}
               </Button>
@@ -296,18 +298,18 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
                 {isAdding ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-                    <span className="text-sm hidden sm:inline">Ajout en cours...</span>
+                    <span className="text-sm hidden sm:inline">{t('adding')}</span>
                   </>
                 ) : (
                   <>
                     <Gift className="h-4 w-4 flex-shrink-0" />
-                    <span className="text-sm hidden sm:inline">Ajouter à ma wishlist</span>
+                    <span className="text-sm hidden sm:inline">{t('addToWishlist')}</span>
                   </>
                 )}
               </Button>
             )}
             <Button onClick={onClose} variant="outline" className="h-9 px-3 flex-1">
-              Fermer
+{t('close')}
             </Button>
           </DialogFooter>
         )}

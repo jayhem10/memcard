@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, TrendingUp, TrendingDown, Tag, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,13 +15,14 @@ interface GamePriceDisplayProps {
 }
 
 export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDisplayProps) {
+  const t = useTranslations('gameDetails');
   const { data: priceData, isLoading: loading, error } = useGamePrices(gameId);
   const [disclaimerOpen, setDisclaimerOpen] = useState(false);
   
   // Formater la date
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'Non disponible';
-    
+    if (!dateString) return t('priceNotAvailable');
+
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('fr-FR', {
       day: '2-digit',
@@ -44,7 +46,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
     return (
       <Card className={`${className} min-h-[200px] overflow-hidden`}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Prix du marché</CardTitle>
+          <CardTitle className="text-lg">{t('marketPrice')}</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-[150px]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -58,11 +60,11 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
     return (
       <Card className={`${className} overflow-hidden`}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Prix du marché</CardTitle>
+          <CardTitle className="text-lg">{t('marketPrice')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-4">
-            {error.message || 'Erreur lors de la récupération des prix'}
+            {error.message || t('priceError')}
           </p>
         </CardContent>
       </Card>
@@ -76,17 +78,17 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <Tag className="h-4 w-4" />
-            Prix du marché
+            {t('marketPrice')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-6 text-center">
             <Info className="h-8 w-8 text-muted-foreground mb-2" />
             <p className="text-muted-foreground text-sm">
-              Aucune donnée de prix disponible pour ce jeu.
+              {t('noPriceData')}
             </p>
             <p className="text-muted-foreground text-xs mt-2">
-              Les prix seront mis à jour automatiquement depuis eBay.
+              {t('priceAutoUpdate')}
             </p>
           </div>
         </CardContent>
@@ -99,7 +101,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
           <Tag className="h-4 w-4" />
-          Prix du marché
+          {t('marketPrice')}
         </CardTitle>
         <CardDescription>
           Dernière mise à jour: {formatDate(priceData.last_updated)}
@@ -183,7 +185,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
           >
             <span className="flex items-center gap-2">
               <Info className="h-3.5 w-3.5" />
-              <strong>Informations sur ces prix (eBay - indicatif)</strong>
+              <strong>{t('priceInfoTitle')}</strong>
             </span>
             {disclaimerOpen ? (
               <ChevronUp className="h-3.5 w-3.5" />
@@ -204,17 +206,17 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
                 <Alert className="mt-2 bg-blue-50/50 dark:bg-blue-950/20 border-blue-200/50 dark:border-blue-800/50">
                   <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   <AlertDescription className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
-                    <p className="mb-2">Ces prix proviennent d'<strong>eBay</strong> et sont à <strong>titre indicatif uniquement</strong>.</p>
-                    <p className="mb-1.5">La côte peut varier selon :</p>
+                    <p className="mb-2" dangerouslySetInnerHTML={{ __html: t('priceInfoDescription') }} />
+                    <p className="mb-1.5">{t('priceInfoCriteria')}</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-2 text-xs">
-                      <li><strong>État :</strong> Neuf, très bon état, bon état, état correct</li>
-                      <li><strong>Complétude :</strong> Complet (CIB), jeu seul, ou intermédiaire</li>
-                      <li><strong>Région :</strong> PAL/EUR, NTSC/US, ou autres</li>
-                      <li><strong>Rareté :</strong> Édition limitée, promo, ou standard</li>
-                      <li><strong>Boîte :</strong> Parfait état, abîmée, ou manquante</li>
-                      <li><strong>Livraison :</strong> Frais non inclus</li>
+                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoCondition') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoCompleteness') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoRegion') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoRarity') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoBox') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoShipping') }} />
                     </ul>
-                    <p className="mt-1.5 text-xs italic">Les prix réels peuvent différer selon ces critères.</p>
+                    <p className="mt-1.5 text-xs italic">{t('priceInfoDisclaimer')}</p>
                   </AlertDescription>
                 </Alert>
               </motion.div>

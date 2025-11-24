@@ -3,6 +3,7 @@
 import { useEffect, Suspense, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { LogOut, User, MoreVertical, Heart, PlusCircle, Library, Shield, Trophy, Sparkles, Mail, Gift, HelpCircle, Gamepad2, Users, UserPlus } from 'lucide-react';
@@ -13,6 +14,7 @@ import { useAuth } from '@/context/auth-context';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Notifications } from '@/components/notifications/notifications';
 import { SupportDialog } from '@/components/ui/support-dialog';
+import { LanguageSelector } from '@/components/ui/language-selector';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,13 +25,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 function NavbarContent() {
+  const t = useTranslations('navigation');
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { profile, isLoading, fetchProfile } = useProfile();
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const [supportDialogOpen, setSupportDialogOpen] = useState(false);
-  
+
   const tabParam = searchParams.get('tab');
   const isWishlistActive = pathname === '/collection' && tabParam === 'wishlist';
   const isCollectionActive = pathname === '/collection' && (tabParam === null || tabParam !== 'wishlist');
@@ -42,9 +45,9 @@ function NavbarContent() {
   }, [user?.id]); // Ne dépendre que de user.id pour éviter les boucles infinies
 
   const navigation = [
-    { name: 'Collection', href: '/collection', icon: Library },
-    { name: 'Collectionneurs', href: '/collectors', icon: Users },
-    { name: 'Amis', href: '/friends', icon: UserPlus },
+    { name: t('collection'), href: '/collection', icon: Library },
+    { name: t('collectors'), href: '/collectors', icon: Users },
+    { name: t('friends'), href: '/friends', icon: UserPlus },
   ];
   
   // Afficher le rang si le quiz est complété, sinon afficher le bouton pour le quiz
@@ -97,9 +100,9 @@ function NavbarContent() {
               }`}
             >
               <Gift className="h-4 w-4" />
-              Wishlist
+              {t('wishlist')}
             </Link>
-            
+
             {/* Bouton Ajouter un jeu */}
             <Link
               href="/search"
@@ -110,7 +113,7 @@ function NavbarContent() {
               }`}
             >
               <PlusCircle className="h-4 w-4" />
-              Ajouter un jeu
+              {t('addGame')}
             </Link>
             
             {/* Notifications */}
@@ -121,6 +124,11 @@ function NavbarContent() {
               <ThemeSelector />
             </div>
 
+            {/* Sélecteur de langue */}
+            <div className="ml-2">
+              <LanguageSelector />
+            </div>
+
             {/* Menu déroulant avec Avatar */}
             {profile ? (
               <DropdownMenu>
@@ -129,7 +137,7 @@ function NavbarContent() {
                     <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
                       <AvatarImage 
                         src={profile.avatar_url || ''} 
-                        alt={profile.full_name || profile.username || 'Utilisateur'} 
+                        alt={profile.full_name || profile.username || t('user')} 
                       />
                       <AvatarFallback>
                         {(profile.full_name || profile.username || profile.email?.split('@')[0] || 'U')
@@ -160,39 +168,39 @@ function NavbarContent() {
                     <DropdownMenuItem asChild>
                       <Link href="/quiz" className="cursor-pointer">
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Découvrir mon rang
+                        {t('discoverRank')}
                       </Link>
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem disabled className="opacity-100 cursor-default">
                       <Trophy className="mr-2 h-4 w-4" />
-                      <span className="font-medium">{userRank || "Rang non défini"}</span>
+                      <span className="font-medium">{userRank || t('rankNotDefined')}</span>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
-                      Mon profil
+                      {t('profile')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/achievements" className="cursor-pointer">
                       <Trophy className="mr-2 h-4 w-4" />
-                      Mes succès
+                      {t('achievements')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/collectors" className="cursor-pointer">
                       <Users className="mr-2 h-4 w-4" />
-                      Collectionneurs
+                      {t('collectors')}
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="cursor-pointer">
                         <Shield className="mr-2 h-4 w-4" />
-                        Administration
+                        {t('admin')}
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -201,24 +209,24 @@ function NavbarContent() {
                     className="cursor-pointer"
                   >
                     <Heart className="mr-2 h-4 w-4" />
-                    Soutenir
+                    {t('support')}
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/contact" className="cursor-pointer">
                       <Mail className="mr-2 h-4 w-4" />
-                      Contact
+                      {t('contact')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/help" className="cursor-pointer">
                       <HelpCircle className="mr-2 h-4 w-4" />
-                      Aide
+                      {t('help')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Déconnexion
+                    {t('signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -227,7 +235,7 @@ function NavbarContent() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <MoreVertical className="h-4 w-4" />
-                    <span className="sr-only">Ouvrir le menu</span>
+                    <span className="sr-only">{t('openMenu')}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -235,39 +243,39 @@ function NavbarContent() {
                     <DropdownMenuItem asChild>
                       <Link href="/quiz" className="cursor-pointer">
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Découvrir mon rang
+                        {t('discoverRank')}
                       </Link>
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem disabled className="opacity-100 cursor-default">
                       <Trophy className="mr-2 h-4 w-4" />
-                      <span className="font-medium">{userRank || "Rang non défini"}</span>
+                      <span className="font-medium">{userRank || t('rankNotDefined')}</span>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
-                      Mon profil
+                      {t('profile')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/achievements" className="cursor-pointer">
                       <Trophy className="mr-2 h-4 w-4" />
-                      Mes succès
+                      {t('achievements')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/collectors" className="cursor-pointer">
                       <Users className="mr-2 h-4 w-4" />
-                      Collectionneurs
+                      {t('collectors')}
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="cursor-pointer">
                         <Shield className="mr-2 h-4 w-4" />
-                        Administration
+                        {t('admin')}
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -276,24 +284,24 @@ function NavbarContent() {
                     className="cursor-pointer"
                   >
                     <Heart className="mr-2 h-4 w-4" />
-                    Soutenir
+                    {t('support')}
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/contact" className="cursor-pointer">
                       <Mail className="mr-2 h-4 w-4" />
-                      Contact
+                      {t('contact')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/help" className="cursor-pointer">
                       <HelpCircle className="mr-2 h-4 w-4" />
-                      Aide
+                      {t('help')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Déconnexion
+                    {t('signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -306,6 +314,11 @@ function NavbarContent() {
             <div className="mr-1">
               <ThemeSelector />
             </div>
+
+            {/* Sélecteur de langue */}
+            <div className="mr-1">
+              <LanguageSelector />
+            </div>
             
             {/* Menu déroulant avec Avatar sur mobile */}
             {profile ? (
@@ -315,7 +328,7 @@ function NavbarContent() {
                     <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
                       <AvatarImage 
                         src={profile.avatar_url || ''} 
-                        alt={profile.full_name || profile.username || 'Utilisateur'} 
+                        alt={profile.full_name || profile.username || t('user')} 
                       />
                       <AvatarFallback>
                         {(profile.full_name || profile.username || profile.email?.split('@')[0] || 'U')
@@ -346,39 +359,39 @@ function NavbarContent() {
                     <DropdownMenuItem asChild>
                       <Link href="/quiz" className="cursor-pointer">
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Découvrir mon rang
+                        {t('discoverRank')}
                       </Link>
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem disabled className="opacity-100 cursor-default">
                       <Trophy className="mr-2 h-4 w-4" />
-                      <span className="font-medium">{userRank || "Rang non défini"}</span>
+                      <span className="font-medium">{userRank || t('rankNotDefined')}</span>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
-                      Mon profil
+                      {t('profile')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/achievements" className="cursor-pointer">
                       <Trophy className="mr-2 h-4 w-4" />
-                      Mes succès
+                      {t('achievements')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/collectors" className="cursor-pointer">
                       <Users className="mr-2 h-4 w-4" />
-                      Collectionneurs
+                      {t('collectors')}
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="cursor-pointer">
                         <Shield className="mr-2 h-4 w-4" />
-                        Administration
+                        {t('admin')}
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -387,24 +400,24 @@ function NavbarContent() {
                     className="cursor-pointer"
                   >
                     <Heart className="mr-2 h-4 w-4" />
-                    Soutenir
+                    {t('support')}
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/contact" className="cursor-pointer">
                       <Mail className="mr-2 h-4 w-4" />
-                      Contact
+                      {t('contact')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/help" className="cursor-pointer">
                       <HelpCircle className="mr-2 h-4 w-4" />
-                      Aide
+                      {t('help')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Déconnexion
+                    {t('signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -413,7 +426,7 @@ function NavbarContent() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <MoreVertical className="h-4 w-4" />
-                    <span className="sr-only">Ouvrir le menu</span>
+                    <span className="sr-only">{t('openMenu')}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -421,39 +434,39 @@ function NavbarContent() {
                     <DropdownMenuItem asChild>
                       <Link href="/quiz" className="cursor-pointer">
                         <Sparkles className="mr-2 h-4 w-4" />
-                        Découvrir mon rang
+                        {t('discoverRank')}
                       </Link>
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem disabled className="opacity-100 cursor-default">
                       <Trophy className="mr-2 h-4 w-4" />
-                      <span className="font-medium">{userRank || "Rang non défini"}</span>
+                      <span className="font-medium">{userRank || t('rankNotDefined')}</span>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
-                      Mon profil
+                      {t('profile')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/achievements" className="cursor-pointer">
                       <Trophy className="mr-2 h-4 w-4" />
-                      Mes succès
+                      {t('achievements')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/collectors" className="cursor-pointer">
                       <Users className="mr-2 h-4 w-4" />
-                      Collectionneurs
+                      {t('collectors')}
                     </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="cursor-pointer">
                         <Shield className="mr-2 h-4 w-4" />
-                        Administration
+                        {t('admin')}
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -462,24 +475,24 @@ function NavbarContent() {
                     className="cursor-pointer"
                   >
                     <Heart className="mr-2 h-4 w-4" />
-                    Soutenir
+                    {t('support')}
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/contact" className="cursor-pointer">
                       <Mail className="mr-2 h-4 w-4" />
-                      Contact
+                      {t('contact')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/help" className="cursor-pointer">
                       <HelpCircle className="mr-2 h-4 w-4" />
-                      Aide
+                      {t('help')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
-                    Déconnexion
+                    {t('signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

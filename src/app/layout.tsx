@@ -6,19 +6,20 @@ import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { WebSiteSchema, OrganizationSchema, WebApplicationSchema } from "@/components/schema-org";
+import { getLocale } from 'next-intl/server';
 import "@fontsource/press-start-2p";
 import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.memcard.fr'),
-  
+
   title: {
     default: "MemCard - Votre Bibliothèque de Jeux Vidéo Personnelle",
     template: "%s | MemCard"
   },
-  
+
   description: "Gérez et suivez votre collection de jeux vidéo avec MemCard. Catalogue complet, suivi des prix, liste de souhaits et bien plus encore.",
-  
+
   keywords: [
     "jeux vidéo",
     "collection",
@@ -33,11 +34,11 @@ export const metadata: Metadata = {
     "Nintendo",
     "PC gaming"
   ],
-  
+
   authors: [{ name: "MemCard" }],
   creator: "MemCard",
   publisher: "MemCard",
-  
+
   robots: {
     index: true,
     follow: true,
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  
+
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -65,9 +66,9 @@ export const metadata: Metadata = {
     ],
     shortcut: "/favicon.ico",
   },
-  
+
   manifest: "/manifest.json",
-  
+
   openGraph: {
     type: "website",
     locale: "fr_FR",
@@ -85,7 +86,7 @@ export const metadata: Metadata = {
       },
     ],
   },
-  
+
   twitter: {
     card: "summary_large_image",
     title: "MemCard - Votre Bibliothèque de Jeux Vidéo Personnelle",
@@ -93,14 +94,14 @@ export const metadata: Metadata = {
     images: ["/memcard.png"],
     creator: "@memcard",
   },
-  
+
   category: "gaming",
-  
+
   verification: {
     // Ajoutez vos codes de vérification Google Search Console ici
     // google: 'votre-code-de-verification-google',
   },
-  
+
   alternates: {
     canonical: "/",
   },
@@ -121,9 +122,11 @@ interface RootLayoutProps {
   children: React.ReactNode;
 }
 
-export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
+export default async function RootLayout({ children }: Readonly<RootLayoutProps>) {
+  const locale = await getLocale();
+  
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
@@ -133,9 +136,9 @@ export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
       </head>
       <body className="font-sans antialiased min-h-screen bg-background">
         <AuthProvider>
-          <ThemeProvider 
-            attribute="class" 
-            defaultTheme="light" 
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
             disableTransitionOnChange
             forcedTheme={undefined}
             themes={["light", "dark", "cyberpunk", "retro", "fantasy", "nintendo", "playstation", "xbox"]}

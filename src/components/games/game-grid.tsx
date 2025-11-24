@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Game } from '@/types/database.types';
-import { STATUS_LABELS } from '@/types/games';
+import { getStatusLabels } from '@/types/games';
 import { CollectionGame } from '@/hooks/useUserGames';
 import { useMobile } from '@/hooks/useMobile';
 import { Circle, Play, CheckCircle2, XCircle, Heart } from 'lucide-react';
@@ -36,18 +37,20 @@ function getStatusIcon(status: string) {
   }
 }
 
-function GameCard({ 
-  game, 
-  index, 
-  readonly, 
-  onGameClick 
-}: { 
-  game: GameGridItem; 
+function GameCard({
+  game,
+  index,
+  readonly,
+  onGameClick
+}: {
+  game: GameGridItem;
   index: number;
   readonly?: boolean;
   onGameClick?: (game: GameGridItem) => void;
 }) {
+  const t = useTranslations();
   const isMobile = useMobile();
+  const statusLabels = getStatusLabels((key: string) => t(key));
 
   // Normaliser le rating (peut être string ou number)
   const ratingValue = typeof game.rating === 'number' 
@@ -73,7 +76,7 @@ function GameCard({
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
-            <span className="text-muted-foreground text-sm">No Image</span>
+            <span className="text-muted-foreground text-sm">{t('games.noImage')}</span>
           </div>
         )}
 
@@ -89,7 +92,7 @@ function GameCard({
               </div>
             ) : (
             <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm border border-primary/20 shadow-sm">
-              {STATUS_LABELS[displayStatus] || displayStatus}
+              {statusLabels[displayStatus as keyof typeof statusLabels] || displayStatus}
             </span>
             )}
           </div>
@@ -118,7 +121,7 @@ function GameCard({
 
         {/* Console */}
         <span className="text-xs text-muted-foreground truncate block">
-          {game.console_name || 'Console inconnue'}
+          {game.console_name || t('games.unknownConsole')}
         </span>
       </div>
     </>

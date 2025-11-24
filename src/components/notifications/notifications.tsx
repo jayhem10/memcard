@@ -15,8 +15,11 @@ import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslations, useLocale } from 'next-intl';
 
 export function Notifications() {
+  const t = useTranslations('notifications');
+  const locale = useLocale();
   const router = useRouter();
   const { notifications, count, wishlistCount, achievementCount, dismiss, markAsRead, validate, refuse, refresh } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
@@ -32,7 +35,7 @@ export function Notifications() {
     try {
       const success = await dismiss(notificationId);
       if (!success) {
-        toast.error('Erreur lors de la suppression de la notification');
+        toast.error(t('dismissError'));
       }
     } finally {
       setProcessing(prev => {
@@ -53,9 +56,9 @@ export function Notifications() {
     try {
       const result = await validate(notificationId);
       if (result.success) {
-        toast.success(result.message || 'Jeu ajouté à votre collection');
+        toast.success(result.message || t('gameAddedToCollection'));
       } else {
-        toast.error(result.error || 'Erreur lors de la validation');
+        toast.error(result.error || t('validationError'));
       }
     } finally {
       setProcessing(prev => {
@@ -76,9 +79,9 @@ export function Notifications() {
     try {
       const result = await refuse(notificationId);
       if (result.success) {
-        toast.success(result.message || 'Jeu laissé en wishlist');
+        toast.success(result.message || t('gameLeftInWishlist'));
       } else {
-        toast.error(result.error || 'Erreur lors du refus');
+        toast.error(result.error || t('refuseError'));
       }
     } finally {
       setProcessing(prev => {
@@ -132,7 +135,7 @@ export function Notifications() {
 
       <DropdownMenuContent align="end" className="w-80 max-h-[500px] overflow-y-auto">
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
+          <span>{t('title')}</span>
           {count > 0 && (
             <Badge variant="secondary" className="ml-2">
               {count}
@@ -144,7 +147,7 @@ export function Notifications() {
 
         {count === 0 ? (
           <div className="p-4 text-center text-sm text-muted-foreground">
-            Aucune notification
+            {t('noNotifications')}
           </div>
         ) : (
           <>
@@ -152,7 +155,7 @@ export function Notifications() {
               <>
                 <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center gap-2">
                   <ShoppingCart className="h-3 w-3" />
-                  Wishlist ({wishlistCount})
+                  {t('wishlistLabel')} ({wishlistCount})
                 </DropdownMenuLabel>
                 {notifications
                   .filter(n => n.type === 'wishlist')
@@ -181,7 +184,7 @@ export function Notifications() {
                             {notification.game?.title}
                           </p>
                           <p className="text-xs text-muted-foreground mb-2">
-                            Quelqu'un a acheté ce jeu
+                            {t('someoneBoughtGame')}
                           </p>
                           <div className="flex gap-2 mt-2">
                             <Button
@@ -192,7 +195,7 @@ export function Notifications() {
                               disabled={isProcessing}
                             >
                               <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Valider
+                              {t('validate')}
                             </Button>
                             <Button
                               variant="outline"
@@ -202,7 +205,7 @@ export function Notifications() {
                               disabled={isProcessing}
                             >
                               <XCircle className="h-3 w-3 mr-1" />
-                              Refuser
+                              {t('refuse')}
                             </Button>
                           </div>
                         </div>
@@ -217,7 +220,7 @@ export function Notifications() {
               <>
                 <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center gap-2">
                   <Trophy className="h-3 w-3" />
-                  Succès ({achievementCount})
+                  {t('achievementsLabel')} ({achievementCount})
                 </DropdownMenuLabel>
                 {notifications
                   .filter(n => n.type === 'achievement')
@@ -233,7 +236,7 @@ export function Notifications() {
                       {notification.achievement?.icon_url ? (
                         <img
                           src={notification.achievement.icon_url}
-                          alt={notification.achievement.name_fr}
+                          alt={locale === 'fr' ? notification.achievement.name_fr : notification.achievement.name_en}
                           className="w-12 h-12 object-cover rounded"
                         />
                       ) : (
@@ -246,7 +249,7 @@ export function Notifications() {
                           {notification.achievement?.name_fr || notification.achievement?.name_en}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          +{notification.achievement?.points} points
+                          +{notification.achievement?.points} {t('points')}
                         </p>
                       </div>
                       <Button

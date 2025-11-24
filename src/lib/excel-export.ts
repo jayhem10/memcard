@@ -20,7 +20,7 @@ export interface GameExportData {
   buy_price?: number | null;
 }
 
-export function exportCollectionToExcel(games: GameExportData[], filename: string = 'ma_collection') {
+export function exportCollectionToExcel(games: GameExportData[], filename: string = 'ma_collection', isFrench: boolean = true) {
   // Séparer les jeux possédés et la wishlist
   const ownedGames = games.filter(game => 
     game.status && !['wishlist', 'WISHLIST'].includes(game.status)
@@ -41,7 +41,7 @@ export function exportCollectionToExcel(games: GameExportData[], filename: strin
     'Date de sortie': game.release_date ? new Date(game.release_date).toLocaleDateString('fr-FR') : '',
     'Plateforme': game.console_name || '',
     'Genres': game.genres.map(g => g.name).join(', '),
-    'Statut': getStatusLabel(game.status || ''),
+    'Statut': getStatusLabel(game.status || '', isFrench),
     'Note': game.rating || '',
     'Temps de jeu (heures)': game.play_time || '',
     'Pourcentage de completion': game.completion_percentage ? `${game.completion_percentage}%` : '',
@@ -122,8 +122,8 @@ export function exportCollectionToExcel(games: GameExportData[], filename: strin
   XLSX.writeFile(workbook, fileName);
 }
 
-function getStatusLabel(status: string): string {
-  const statusLabels: Record<string, string> = {
+export function getStatusLabel(status: string, isFrench: boolean = true): string {
+  const frenchLabels: Record<string, string> = {
     'NOT_STARTED': 'À faire',
     'IN_PROGRESS': 'En cours',
     'COMPLETED': 'Terminé',
@@ -135,6 +135,20 @@ function getStatusLabel(status: string): string {
     'dropped': 'Abandonné',
     'wishlist': 'Liste de souhaits'
   };
-  
-  return statusLabels[status] || status;
+
+  const englishLabels: Record<string, string> = {
+    'NOT_STARTED': 'To do',
+    'IN_PROGRESS': 'In progress',
+    'COMPLETED': 'Completed',
+    'DROPPED': 'Dropped',
+    'WISHLIST': 'Wishlist',
+    'not_started': 'To do',
+    'in_progress': 'In progress',
+    'completed': 'Completed',
+    'dropped': 'Dropped',
+    'wishlist': 'Wishlist'
+  };
+
+  const labels = isFrench ? frenchLabels : englishLabels;
+  return labels[status] || status;
 }

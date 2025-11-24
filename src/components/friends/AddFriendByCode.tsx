@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,9 +11,26 @@ import { useFriends } from '@/hooks/useFriends';
 import { toast } from 'sonner';
 import { Code, QrCode, CheckCircle } from 'lucide-react';
 
+// Fonction utilitaire pour traduire les codes d'erreur du backend
+function getFriendErrorMessage(errorCode: string | undefined, t: (key: string) => string): string {
+  switch (errorCode) {
+    case 'INVALID_FRIEND_CODE':
+      return t('invalidFriendCode');
+    case 'CANNOT_ADD_YOURSELF':
+      return t('cannotAddYourself');
+    case 'ALREADY_FRIENDS':
+      return t('alreadyFriends');
+    case 'USER_NOT_FOUND':
+      return t('userNotFound');
+    default:
+      return t('addFriendError');
+  }
+}
+
 type AddFriendMode = 'code' | 'qr';
 
 export function AddFriendByCode() {
+  const t = useTranslations('friends');
   const [mode, setMode] = useState<AddFriendMode>('code');
   const [friendCode, setFriendCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,14 +50,14 @@ export function AddFriendByCode() {
     }
 
     if (!friendCode.trim()) {
-      toast.error('Veuillez saisir un code ami');
+      toast.error(t('enterCodeError'));
       return;
     }
 
     const normalizedCode = friendCode.trim().toUpperCase();
 
     if (normalizedCode.length !== 8) {
-      toast.error('Le code ami doit contenir 8 caractères');
+      toast.error(t('codeLengthError'));
       return;
     }
 
@@ -48,10 +66,11 @@ export function AddFriendByCode() {
     try {
       await addFriendAsync(normalizedCode);
       setFriendCode('');
-      toast.success('Ami ajouté avec succès !');
+      toast.success(t('friendAdded'));
     } catch (error: any) {
       // Afficher toujours un toast d'erreur
-      toast.error(error?.message || 'Erreur lors de l\'ajout de l\'ami');
+      const errorMessage = getFriendErrorMessage(error?.message, t);
+      toast.error(errorMessage);
       console.error('Erreur lors de l\'ajout:', error);
     } finally {
       setIsSubmitting(false);
@@ -68,10 +87,11 @@ export function AddFriendByCode() {
 
     try {
       await addFriendAsync(scannedCode);
-      toast.success('Ami ajouté avec succès !');
+      toast.success(t('friendAdded'));
     } catch (error: any) {
       // Afficher toujours un toast d'erreur
-      toast.error(error?.message || 'Erreur lors de l\'ajout de l\'ami');
+      const errorMessage = getFriendErrorMessage(error?.message, t);
+      toast.error(errorMessage);
       console.error('Erreur lors de l\'ajout:', error);
     } finally {
       setIsSubmitting(false);
@@ -83,11 +103,11 @@ export function AddFriendByCode() {
     let fullMessage = error;
 
     if (error.includes('autoriser l\'accès') || error.includes('Permission denied')) {
-      fullMessage += '\n\n💡 Conseil : Cliquez sur l\'icône de caméra dans la barre d\'adresse et sélectionnez "Toujours autoriser".';
+      fullMessage += '\n\n' + t('qrPermissionTip');
     } else if (error.includes('HTTPS')) {
-      fullMessage += '\n\n🔒 La caméra nécessite une connexion sécurisée.';
+      fullMessage += '\n\n' + t('qrHttpsTip');
     } else if (error.includes('navigateur ne supporte')) {
-      fullMessage += '\n\n🌐 Essayez avec un navigateur plus récent comme Chrome ou Firefox.';
+      fullMessage += '\n\n' + t('qrBrowserTip');
     }
 
     toast.error(fullMessage);
@@ -98,7 +118,7 @@ export function AddFriendByCode() {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg">Ajouter un ami</CardTitle>
+        <CardTitle className="text-lg">{t('addFriend')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Boutons de sélection du mode */}
@@ -110,7 +130,7 @@ export function AddFriendByCode() {
             className="flex-1"
           >
             <Code className="w-4 h-4 mr-2" />
-            Code ami
+            {t('friendCode')}
           </Button>
           <Button
             variant={mode === 'qr' ? 'default' : 'outline'}
@@ -119,7 +139,7 @@ export function AddFriendByCode() {
             className="flex-1"
           >
             <QrCode className="w-4 h-4 mr-2" />
-            Scanner QR
+            {t('scanQr')}
           </Button>
         </div>
 
@@ -128,7 +148,7 @@ export function AddFriendByCode() {
           <form onSubmit={handleCodeSubmit} className="space-y-3">
             <div className="space-y-2">
               <Input
-                placeholder="Entrez le code ami"
+                placeholder={t('enterFriendCode')}
                 value={friendCode}
                 onChange={(e) => setFriendCode(e.target.value.toUpperCase().slice(0, 8))}
                 maxLength={8}
@@ -140,10 +160,10 @@ export function AddFriendByCode() {
                   {isValidCode ? (
                     <>
                       <CheckCircle className="w-3 h-3 mr-1" />
-                      Code valide
+                      {t('validCode')}
                     </>
                   ) : (
-                    `${friendCode.length}/8 caractères`
+                    t('codeCharacters', { count: friendCode.length })
                   )}
                 </Badge>
               </div>
@@ -153,7 +173,7 @@ export function AddFriendByCode() {
               className="w-full"
               disabled={!isValidCode || isAddingFriend || isSubmitting}
             >
-              {isAddingFriend || isSubmitting ? 'Ajout en cours...' : 'Ajouter l\'ami'}
+              {isAddingFriend || isSubmitting ? t('addingFriend') : t('addFriendButton')}
             </Button>
           </form>
         )}

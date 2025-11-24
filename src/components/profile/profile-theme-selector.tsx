@@ -8,6 +8,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sun, Moon, Zap, Gamepad, Sword, Circle, Square, X } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 
 const icons = {
   sun: Sun,
@@ -21,6 +23,8 @@ const icons = {
 };
 
 export function ProfileThemeSelector() {
+  const t = useTranslations('profile');
+  const themeTranslations = useTranslations('theme');
   const { theme, setTheme } = useTheme();
   const { profile, updateProfile } = useProfile();
   const [mounted, setMounted] = useState(false);
@@ -38,6 +42,7 @@ export function ProfileThemeSelector() {
     if (profile) {
       try {
         await updateProfile({ theme: value });
+        toast.success(t('profileUpdated'));
         // Marquer que le thème du profil a été appliqué pour cette session
         if (typeof window !== 'undefined') {
           sessionStorage.setItem('profileThemeApplied', 'true');
@@ -78,9 +83,9 @@ export function ProfileThemeSelector() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Thème préféré</CardTitle>
+        <CardTitle>{themeTranslations('preferredTheme')}</CardTitle>
         <CardDescription>
-          Choisissez votre thème préféré qui sera appliqué à chaque connexion
+          {themeTranslations('chooseTheme')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -100,8 +105,8 @@ export function ProfileThemeSelector() {
                 >
                   <ItemIcon className="h-4 w-4 transition-colors group-hover:text-accent-foreground" />
                   <div>
-                    <div className="font-medium transition-colors group-hover:text-accent-foreground">{t.name}</div>
-                    <div className="text-xs text-muted-foreground transition-colors group-hover:text-accent-foreground group-hover:opacity-90">{t.description}</div>
+                    <div className="font-medium transition-colors group-hover:text-accent-foreground">{themeTranslations(t.value)}</div>
+                    <div className="text-xs text-muted-foreground transition-colors group-hover:text-accent-foreground group-hover:opacity-90">{themeTranslations(`descriptions.${t.value}`)}</div>
                   </div>
                 </Label>
               </div>

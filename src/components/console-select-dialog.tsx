@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import { useTranslations } from 'next-intl';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog';
@@ -41,6 +42,7 @@ interface ConsoleSelectDialogProps {
 }
 
 export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gamePlatforms }: ConsoleSelectDialogProps) {
+  const t = useTranslations('consoleSelectDialog');
   // S'assurer qu'on a accès au nom du jeu et platformes
   const [consoles, setConsoles] = useState<Console[]>([]);
   const [selectedConsoleId, setSelectedConsoleId] = useState<string>('');
@@ -99,7 +101,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
       }
     } catch (error) {
       console.error('Error fetching consoles:', error);
-      toast.error('Erreur lors de la récupération des consoles');
+      toast.error(t('fetchConsolesError'));
     } finally {
       setIsLoading(false);
     }
@@ -139,7 +141,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
       }
     } catch (error) {
       console.error('Error creating default console:', error);
-      toast.error('Erreur lors de la création de la console par défaut');
+      toast.error(t('createDefaultConsoleError'));
     }
   };
 
@@ -177,15 +179,15 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
       <DialogContent className="sm:max-w-[500px] !w-[calc(100vw-2rem)] sm:!w-full max-h-[85vh] overflow-y-auto overflow-x-hidden p-0 flex flex-col">
         <DialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6 flex-shrink-0">
           <DialogTitle>
-            Sélectionnez une console
+            {t('selectConsole')}
           </DialogTitle>
           <DialogDescription>
-            Choisissez la console pour &quot;{gameName || 'ce jeu'}&quot;
+            {t('selectConsoleDescription', { game: gameName || 'ce jeu' })}
           </DialogDescription>
           {gamePlatforms && gamePlatforms.length > 0 && (
             <div className="mt-3 pt-3 border-t border-border">
               <p className="text-xs text-muted-foreground">
-                <span className="font-medium">Plateformes disponibles:</span>{' '}
+                <span className="font-medium">{t('availablePlatforms')}</span>{' '}
                 {gamePlatforms.map(p => p.abbreviation || p.name).join(', ')}
               </p>
             </div>
@@ -199,19 +201,19 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
         ) : (
           <div className="py-2 sm:py-4 space-y-3 sm:space-y-4 px-4 sm:px-6 overflow-x-hidden">
             <div className="space-y-2">
-              <Label htmlFor="console">Console</Label>
+              <Label htmlFor="console">{t('consoleLabel')}</Label>
               <Select
                 value={selectedConsoleId}
                 onValueChange={setSelectedConsoleId}
               >
                 <SelectTrigger id="console" className="w-full">
-                  <SelectValue placeholder="Sélectionnez une console" />
+                  <SelectValue placeholder={t('consolePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {/* Afficher d'abord les consoles qui correspondent aux plateformes du jeu */}
                   {gamePlatforms && gamePlatforms.length > 0 && (
                     <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                      Plateformes compatibles
+                      {t('compatiblePlatforms')}
                     </div>
                   )}
                   {consoles
@@ -228,10 +230,10 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                     ))}
                   
                   {/* Ligne de séparation si nous avons des plateformes compatibles et d'autres consoles */}
-                  {gamePlatforms && gamePlatforms.length > 0 && 
+                  {gamePlatforms && gamePlatforms.length > 0 &&
                     consoles.some(c => !c.igdb_platform_id || !gamePlatforms.some(p => p.id === c.igdb_platform_id)) && (
                       <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">
-                        Autres consoles
+                        {t('otherConsoles')}
                       </div>
                   )}
                   
@@ -258,14 +260,14 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-2"
               />
               <Label htmlFor="wishlist" className="text-sm font-medium cursor-pointer">
-                Ajouter à la liste de souhaits
+                {t('addToWishlist')}
               </Label>
             </div>
 
             {/* Statut - désactivé si wishlist */}
             <div className="space-y-2">
               <Label htmlFor="status" className={isWishlist ? 'text-muted-foreground' : ''}>
-                Statut {isWishlist && '(non disponible pour la wishlist)'}
+                {t('statusLabel')} {isWishlist && t('statusNotAvailable')}
               </Label>
               <Select
                 value={selectedStatus}
@@ -273,12 +275,12 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                 disabled={isWishlist}
               >
                 <SelectTrigger id="status" className={isWishlist ? 'opacity-50 cursor-not-allowed' : ''}>
-                  <SelectValue placeholder="Sélectionnez un statut" />
+                  <SelectValue placeholder={t('statusPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="NOT_STARTED">Non commencé</SelectItem>
-                  <SelectItem value="IN_PROGRESS">En cours</SelectItem>
-                  <SelectItem value="COMPLETED">Terminé</SelectItem>
+                  <SelectItem value="NOT_STARTED">{t('notStarted')}</SelectItem>
+                  <SelectItem value="IN_PROGRESS">{t('inProgress')}</SelectItem>
+                  <SelectItem value="COMPLETED">{t('completed')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -286,7 +288,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
             {/* État - désactivé si wishlist */}
             <div className="space-y-2">
               <Label htmlFor="condition" className={isWishlist ? 'text-muted-foreground' : ''}>
-                État (optionnel) {isWishlist && '(non disponible pour la wishlist)'}
+                {t('conditionLabel')} {isWishlist && t('conditionNotAvailable')}
               </Label>
               <Select
                 value={condition}
@@ -294,28 +296,28 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                 disabled={isWishlist}
               >
                 <SelectTrigger id="condition" className={isWishlist ? 'opacity-50 cursor-not-allowed' : ''}>
-                  <SelectValue placeholder="Sélectionnez l'état du jeu" />
+                  <SelectValue placeholder={t('conditionPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="neuf">Neuf</SelectItem>
-                  <SelectItem value="comme neuf">Comme neuf</SelectItem>
-                  <SelectItem value="très bon état">Très bon état</SelectItem>
-                  <SelectItem value="bon état">Bon état</SelectItem>
-                  <SelectItem value="état moyen">État moyen</SelectItem>
-                  <SelectItem value="mauvais état">Mauvais état</SelectItem>
+                  <SelectItem value="neuf">{t('conditionNew')}</SelectItem>
+                  <SelectItem value="comme neuf">{t('conditionLikeNew')}</SelectItem>
+                  <SelectItem value="très bon état">{t('conditionVeryGood')}</SelectItem>
+                  <SelectItem value="bon état">{t('conditionGood')}</SelectItem>
+                  <SelectItem value="état moyen">{t('conditionFair')}</SelectItem>
+                  <SelectItem value="mauvais état">{t('conditionPoor')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Édition */}
             <div className="space-y-2">
-              <Label htmlFor="edition">Édition (optionnel)</Label>
+              <Label htmlFor="edition">{t('editionLabel')}</Label>
               <Select
                 value={edition}
                 onValueChange={setEdition}
               >
                 <SelectTrigger id="edition" className="w-full">
-                  <SelectValue placeholder="Standard" />
+                  <SelectValue placeholder={t('editionPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {EDITION_OPTIONS.map((option) => (
@@ -327,7 +329,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
               </Select>
               {edition === 'autres' && (
                 <Input
-                  placeholder="Précisez l'édition"
+                  placeholder={t('editionOtherPlaceholder')}
                   value={editionOther}
                   onChange={(e) => setEditionOther(e.target.value)}
                   className="w-full"
@@ -338,7 +340,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
             {/* Prix d'achat - désactivé si wishlist */}
             <div className="space-y-2">
               <Label htmlFor="buyPrice" className={isWishlist ? 'text-muted-foreground' : ''}>
-                Prix d'achat (optionnel) {isWishlist && '(non disponible pour la wishlist)'}
+                {t('buyPriceLabel')} {isWishlist && t('buyPriceNotAvailable')}
               </Label>
               <Input
                 id="buyPrice"
@@ -347,7 +349,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
                 min="0"
                 value={buyPrice}
                 onChange={(e) => setBuyPrice(e.target.value)}
-                placeholder="0.00"
+                placeholder={t('buyPricePlaceholder')}
                 className="w-full"
                 disabled={isWishlist}
               />
@@ -357,10 +359,10 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
         
         <DialogFooter className="gap-2 sm:gap-0 sticky bottom-0 bg-background px-4 pb-4 pt-2 sm:px-6 sm:pb-6 sm:pt-4">
           <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
-            Annuler
+            {t('cancel')}
           </Button>
           <Button onClick={handleConfirm} disabled={!selectedConsoleId || isLoading} className="w-full sm:w-auto">
-            Ajouter à la collection
+            {t('addToCollection')}
           </Button>
         </DialogFooter>
       </DialogContent>

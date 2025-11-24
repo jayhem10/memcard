@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { PlusCircle, Library, Gift, User, Users, UserPlus, Bell } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfile } from '@/store';
 import { useAuth } from '@/context/auth-context';
 
 export function BottomNavbar() {
+  const t = useTranslations('navigation');
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { profile } = useProfile();
@@ -45,10 +47,10 @@ export function BottomNavbar() {
                 ? 'text-primary'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
-            title="Collection"
+            title={t('collection')}
           >
             <Library className={`h-5 w-5 ${isCollectionActive ? 'text-primary' : ''}`} />
-            <span className="text-xs font-medium">Collection</span>
+            <span className="text-xs font-medium">{t('collection')}</span>
           </Link>
 
           {/* Wishlist */}
@@ -74,10 +76,10 @@ export function BottomNavbar() {
                 ? 'text-primary'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
-            title="Amis"
+            title={t('friends')}
           >
             <UserPlus className={`h-5 w-5 ${pathname?.startsWith('/friends') ? 'text-primary' : ''}`} />
-            <span className="text-xs font-medium">Amis</span>
+            <span className="text-xs font-medium">{t('friends')}</span>
           </Link>
 
           {/* Ajouter un jeu */}
@@ -88,10 +90,10 @@ export function BottomNavbar() {
                 ? 'text-primary'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
-            title="Ajouter un jeu"
+            title={t('addGame')}
           >
             <PlusCircle className={`h-5 w-5 ${pathname === '/search' ? 'text-primary' : ''}`} />
-            <span className="text-xs font-medium">Ajouter</span>
+            <span className="text-xs font-medium">{t('addGameShort')}</span>
           </Link>
 
           {/* Notifications */}

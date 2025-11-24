@@ -5,6 +5,7 @@ import { Download, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { exportCollectionToExcel, GameExportData } from '@/lib/excel-export';
 import { toast } from 'sonner';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface ExportButtonProps {
   games: GameExportData[];
@@ -22,8 +23,8 @@ interface ExportButtonProps {
   consoleName?: string; // Nom de la console pour l'affichage
 }
 
-export function ExportButton({ 
-  games, 
+export function ExportButton({
+  games,
   activeTab = 'collection',
   filename = 'export',
   variant = 'outline',
@@ -32,11 +33,14 @@ export function ExportButton({
   filters = {},
   consoleName
 }: ExportButtonProps) {
+  const t = useTranslations('common');
+  const locale = useLocale();
+  const isFrench = locale === 'fr';
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
     if (games.length === 0) {
-      toast.error('Aucun jeu à exporter');
+      toast.error(t('noGamesFound'));
       return;
     }
 
@@ -54,7 +58,7 @@ export function ExportButton({
       });
 
       if (filteredGames.length === 0) {
-        toast.error(`Aucun jeu dans ${activeTab === 'collection' ? 'la collection' : 'la wishlist'}`);
+        toast.error(activeTab === 'collection' ? t('noGamesInCollection') : t('noGamesInWishlist'));
         return;
       }
 
@@ -83,11 +87,11 @@ export function ExportButton({
       const filterSuffix = filterParts.length > 0 ? `_${filterParts.join('_')}` : '';
       const finalFilename = `${filename}_${tabSuffix}${filterSuffix}_${timestamp}`;
 
-      exportCollectionToExcel(filteredGames, finalFilename);
-      toast.success(`${activeTab === 'collection' ? 'Collection' : 'Wishlist'} exportée avec succès !`);
+      exportCollectionToExcel(filteredGames, finalFilename, isFrench);
+      toast.success(activeTab === 'collection' ? t('collectionExported') : t('wishlistExported'));
     } catch (error) {
       console.error('Erreur lors de l\'export:', error);
-      toast.error('Erreur lors de l\'export');
+      toast.error(t('exportError'));
     } finally {
       setIsExporting(false);
     }
@@ -104,14 +108,14 @@ export function ExportButton({
       {isExporting ? (
         <>
           <Loader2 className="h-4 w-4 mr-1 sm:mr-2 animate-spin" />
-          <span className="hidden sm:inline">Export en cours...</span>
-          <span className="sm:hidden">Export...</span>
+          <span className="hidden sm:inline">{t('exporting')}</span>
+          <span className="sm:hidden">{t('exportingShort')}</span>
         </>
       ) : (
         <>
           <FileSpreadsheet className="h-4 w-4 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Exporter Excel</span>
-          <span className="sm:hidden">Exporter</span>
+          <span className="hidden sm:inline">{t('exportExcel')}</span>
+          <span className="sm:hidden">{t('export')}</span>
         </>
       )}
     </Button>
