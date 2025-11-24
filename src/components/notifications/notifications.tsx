@@ -1,7 +1,7 @@
 'use client';
 
 import { useNotifications } from '@/hooks/useNotifications';
-import { Bell, X, Trophy, ShoppingCart, CheckCircle2, XCircle } from 'lucide-react';
+import { Bell, X, Trophy, ShoppingCart, CheckCircle2, XCircle, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -21,7 +21,7 @@ export function Notifications() {
   const t = useTranslations('notifications');
   const locale = useLocale();
   const router = useRouter();
-  const { notifications, count, wishlistCount, achievementCount, dismiss, markAsRead, validate, refuse, refresh } = useNotifications();
+  const { notifications, count, wishlistCount, achievementCount, friendCount, dismiss, markAsRead, validate, refuse, refresh } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const [processing, setProcessing] = useState<Set<string>>(new Set());
 
@@ -106,6 +106,8 @@ export function Notifications() {
       router.push(`/games/${notification.game?.id}`);
     } else if (notification.type === 'achievement') {
       router.push('/achievements');
+    } else if (notification.type === 'friend') {
+      router.push('/friends');
     }
 
     setIsOpen(false);
@@ -264,6 +266,58 @@ export function Notifications() {
                     </DropdownMenuItem>
                     );
                   })}
+              </>
+            )}
+
+            {friendCount > 0 && (
+              <>
+                <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center gap-2">
+                  <Users className="h-3 w-3" />
+                  {t('friendsLabel')} ({friendCount})
+                </DropdownMenuLabel>
+                {notifications
+                  .filter(n => n.type === 'friend')
+                  .map(notification => {
+                    const isProcessing = processing.has(notification.id);
+                    return (
+                      <DropdownMenuItem
+                        key={notification.id}
+                        className="cursor-pointer flex items-start gap-3 p-3"
+                        onClick={(e) => handleNotificationClick(notification, e)}
+                        disabled={isProcessing}
+                      >
+                        {notification.friend?.avatar_url ? (
+                          <img
+                            src={notification.friend.avatar_url}
+                            alt={notification.friend.username || notification.friend.full_name || 'Friend'}
+                            className="w-12 h-12 object-cover rounded-full shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center shrink-0">
+                            <Users className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {notification.friend?.username || notification.friend?.full_name || t('friend')}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {t('friendAdded')}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 shrink-0"
+                          onClick={(e) => handleDismiss(notification.id, e)}
+                          disabled={isProcessing}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                <DropdownMenuSeparator />
               </>
             )}
           </>

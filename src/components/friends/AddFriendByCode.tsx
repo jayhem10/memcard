@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { QrCodeScanner } from './QrCodeScanner';
 import { useFriends } from '@/hooks/useFriends';
+import { useAuth } from '@/context/auth-context';
 import { toast } from 'sonner';
 import { Code, QrCode, CheckCircle } from 'lucide-react';
 
@@ -31,6 +32,7 @@ type AddFriendMode = 'code' | 'qr';
 
 export function AddFriendByCode() {
   const t = useTranslations('friends');
+  const { user } = useAuth();
   const [mode, setMode] = useState<AddFriendMode>('code');
   const [friendCode, setFriendCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +66,25 @@ export function AddFriendByCode() {
     setIsSubmitting(true);
 
     try {
-      await addFriendAsync(normalizedCode);
+      const result = await addFriendAsync(normalizedCode);
+
+      // Créer une notification pour l'utilisateur ajouté
+      try {
+        await fetch('/api/notifications/friends/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            friendId: result.friendId, // L'ID de l'utilisateur ajouté
+            addedById: result.addedById || user?.id, // L'ID de l'utilisateur qui ajoute
+          }),
+        });
+      } catch (notificationError) {
+        console.error('Erreur lors de la création de la notification ami:', notificationError);
+        // Ne pas échouer l'ajout d'ami si la notification échoue
+      }
+
       setFriendCode('');
       toast.success(t('friendAdded'));
     } catch (error: any) {
@@ -86,7 +106,25 @@ export function AddFriendByCode() {
     setIsSubmitting(true);
 
     try {
-      await addFriendAsync(scannedCode);
+      const result = await addFriendAsync(scannedCode);
+
+      // Créer une notification pour l'utilisateur ajouté
+      try {
+        await fetch('/api/notifications/friends/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            friendId: result.friendId, // L'ID de l'utilisateur ajouté
+            addedById: result.addedById || user?.id, // L'ID de l'utilisateur qui ajoute
+          }),
+        });
+      } catch (notificationError) {
+        console.error('Erreur lors de la création de la notification ami:', notificationError);
+        // Ne pas échouer l'ajout d'ami si la notification échoue
+      }
+
       toast.success(t('friendAdded'));
     } catch (error: any) {
       // Afficher toujours un toast d'erreur

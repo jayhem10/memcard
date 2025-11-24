@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 
 export interface Notification {
   id: string;
-  type: 'wishlist' | 'achievement';
+  type: 'wishlist' | 'achievement' | 'friend';
   created_at: string;
   is_read: boolean;
   is_dismissed: boolean;
@@ -31,6 +31,14 @@ export interface Notification {
     points: number;
   };
   unlocked_at?: string;
+  // Friend specific
+  friend_id?: string;
+  friend?: {
+    id: string;
+    username: string | null;
+    full_name: string | null;
+    avatar_url: string | null;
+  };
 }
 
 interface NotificationsResponse {
@@ -38,6 +46,7 @@ interface NotificationsResponse {
   count: number;
   wishlistCount: number;
   achievementCount: number;
+  friendCount: number;
 }
 
 export function useNotifications() {
@@ -47,6 +56,7 @@ export function useNotifications() {
   const [count, setCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [achievementCount, setAchievementCount] = useState(0);
+  const [friendCount, setFriendCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const recentlyDismissedRef = useRef<Set<string>>(new Set());
@@ -93,11 +103,13 @@ export function useNotifications() {
       // Calculer les compteurs une seule fois
       const wishlistCount = activeNotifications.filter(n => n.type === 'wishlist').length;
       const achievementCount = activeNotifications.filter(n => n.type === 'achievement').length;
+      const friendCount = activeNotifications.filter(n => n.type === 'friend').length;
       
       setNotifications(activeNotifications);
       setCount(activeNotifications.length);
       setWishlistCount(wishlistCount);
       setAchievementCount(achievementCount);
+      setFriendCount(friendCount);
       setError(null);
     } catch (err) {
       console.error('[useNotifications] Error fetching:', err);
@@ -336,6 +348,7 @@ export function useNotifications() {
     count,
     wishlistCount,
     achievementCount,
+    friendCount,
     isLoading,
     error,
     markAsRead,

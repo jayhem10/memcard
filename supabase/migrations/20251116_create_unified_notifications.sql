@@ -9,7 +9,7 @@
 CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK (type IN ('wishlist', 'achievement')),
+  type TEXT NOT NULL CHECK (type IN ('wishlist', 'achievement', 'friend')),
   reference_id UUID NOT NULL, -- user_game_id pour wishlist, user_achievement_id pour achievement
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   read_at TIMESTAMPTZ NULL, -- NULL = non lu, sinon date de lecture
@@ -194,7 +194,7 @@ GRANT EXECUTE ON FUNCTION dismiss_notification(UUID) TO authenticated;
 -- 8. COMMENTAIRES POUR DOCUMENTATION
 -- ============================================
 COMMENT ON TABLE notifications IS 'Table unifiée pour toutes les notifications (wishlist, achievements, etc.)';
-COMMENT ON COLUMN notifications.type IS 'Type de notification: wishlist, achievement';
+COMMENT ON COLUMN notifications.type IS 'Type de notification: wishlist, achievement, friend';
 COMMENT ON COLUMN notifications.reference_id IS 'ID de référence: user_game_id pour wishlist, user_achievement_id pour achievement';
 COMMENT ON COLUMN notifications.read_at IS 'Date de lecture. NULL = non lu';
 COMMENT ON COLUMN notifications.dismissed_at IS 'Date de suppression. NULL = actif, sinon supprimé/archivé';

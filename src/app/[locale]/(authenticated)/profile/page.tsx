@@ -207,7 +207,7 @@ export default function ProfilePage() {
                 {t('email')}
                 {profile?.provider !== 'email' && (
                   <span className="ml-2 text-xs font-normal normal-case text-muted-foreground">
-                    {t('emailManagedBy', { provider: profile?.provider })}
+                    {t('emailManagedBy', { provider: profile?.provider || 'unknown' })}
                   </span>
                 )}
               </label>
@@ -220,7 +220,7 @@ export default function ProfilePage() {
               />
               {profile?.provider !== 'email' && (
                 <p className="text-xs text-muted-foreground">
-                  {t('emailCannotBeModified', { provider: profile?.provider })}
+                  {t('emailCannotBeModified', { provider: profile?.provider || 'unknown' })}
                 </p>
               )}
               {errors.email && (
@@ -288,7 +288,7 @@ export default function ProfilePage() {
             {profile?.provider !== 'email' && (
               <div className="pt-4 p-4 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50">
                 <h3 className="text-base font-semibold mb-2">{t('security')}</h3>
-                <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('accountConnectedVia', { provider: profile?.provider }) }} />
+                <p className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('accountConnectedVia', { provider: profile?.provider || 'unknown' }) }} />
               </div>
             )}
 

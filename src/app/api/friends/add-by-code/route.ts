@@ -86,6 +86,8 @@ export const POST = withApi(async (request: NextRequest, { user, supabase }) => 
 
   return {
     success: true,
-    message: `${friendProfile.username} ajouté à vos amis !`
+    message: `${friendProfile.username} ajouté à vos amis !`,
+    friendId: friendProfile.id,
+    addedById: user.id
   };
 });

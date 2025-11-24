@@ -36,12 +36,12 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
       type,
       user_game_id,
       user_achievement_id,
+      friend_id,
       created_at,
       is_read,
       is_dismissed,
       read_at,
-      dismissed_at,
-      metadata
+      dismissed_at
     `)
     .eq('user_id', user.id)
     .eq('is_dismissed', false)
@@ -189,6 +189,58 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
           achievement_id: userAchievementId,
           achievement: userAchievement.achievements,
           unlocked_at: userAchievement.unlocked_at,
+        };
+      }
+
+      if (notif.type === 'friend') {
+        const friendId = notif.friend_id;
+
+        if (!friendId) {
+          // Dismiss automatiquement si pas d'ID
+          await supabaseAdmin
+            .from('notifications')
+            .update({
+              is_dismissed: true,
+              dismissed_at: new Date().toISOString()
+            })
+            .eq('id', notif.id);
+          return null;
+        }
+
+        // Récupérer les infos de l'ami
+        const { data: friendProfile, error: friendError } = await supabaseAdmin
+          .from('profiles')
+          .select(`
+            id,
+            username,
+            full_name,
+            avatar_url
+          `)
+          .eq('id', friendId)
+          .single();
+
+        if (friendError || !friendProfile) {
+          // Dismiss si erreur ou profil introuvable
+          await supabaseAdmin
+            .from('notifications')
+            .update({
+              is_dismissed: true,
+              dismissed_at: new Date().toISOString()
+            })
+            .eq('id', notif.id);
+          return null;
+        }
+
+        return {
+          id: notif.id,
+          type: 'friend' as const,
+          created_at: notif.created_at,
+          is_read: notif.is_read,
+          is_dismissed: notif.is_dismissed,
+          read_at: notif.read_at,
+          dismissed_at: notif.dismissed_at,
+          friend_id: friendId,
+          friend: friendProfile,
         };
       }
 
