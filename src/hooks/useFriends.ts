@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { queryKeys } from '@/lib/react-query-config';
@@ -123,6 +124,45 @@ export function useFriends() {
       queryClient.invalidateQueries({ queryKey: queryKeys.friends(user?.id) });
     },
   });
+
+  // Souscription Realtime pour les mises à jour instantanées de la liste d'amis
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`friends:${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_friends',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          // Refetch immédiat quand quelqu'un nous ajoute ou nous supprime
+          queryClient.invalidateQueries({ queryKey: queryKeys.friends(user.id) });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_friends',
+          filter: `friend_id=eq.${user.id}`,
+        },
+        () => {
+          // Refetch immédiat quand quelqu'un nous ajoute ou nous supprime
+          queryClient.invalidateQueries({ queryKey: queryKeys.friends(user.id) });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   return {
     friends: query.data || [],
