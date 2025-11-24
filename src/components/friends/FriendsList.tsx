@@ -156,7 +156,7 @@ export function FriendsList() {
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>{t('removeFriend')}</AlertDialogCancel>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleRemoveFriend(friend.id, friend.username || t('removeFriend'))}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

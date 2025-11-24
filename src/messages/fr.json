@@ -138,6 +138,8 @@
     "noFriendsYet": "Vous n'avez pas encore d'amis",
     "noFriendsHint": "Utilisez votre code ami pour en ajouter !",
     "viewCollection": "Voir la collection",
+    "removeFriend": "Supprimer",
+    "cancel": "Annuler",
     "removeFriendTitle": "Supprimer cet ami ?",
     "removeFriendConfirm": "Êtes-vous sûr de vouloir supprimer {username} de votre liste d'amis ? Cette action est irréversible.",
     "friendRemoved": "Ami supprimé avec succès",

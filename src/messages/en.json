@@ -138,6 +138,8 @@
     "noFriendsYet": "You don't have any friends yet",
     "noFriendsHint": "Use your friend code to add some!",
     "viewCollection": "View collection",
+    "removeFriend": "Remove",
+    "cancel": "Cancel",
     "removeFriendTitle": "Remove this friend?",
     "removeFriendConfirm": "Are you sure you want to remove {username} from your friends list? This action is irreversible.",
     "friendRemoved": "Friend removed successfully",
