@@ -657,7 +657,7 @@ export default function SearchPage() {
               }}
             />
             <Button 
-              className="absolute right-0 top-0 h-full rounded-l-none rounded-lg shadow-md hover:shadow-lg transition-all"
+              className="absolute right-0 top-0 h-full rounded-l-none rounded-lg shadow-md hover:shadow-lg transition-all px-3 sm:px-4"
               onClick={() => {
                 if (searchQuery.trim() !== '') {
                   setShouldSearch(true);
@@ -671,7 +671,8 @@ export default function SearchPage() {
                 }
               }}
             >
-              {t('searchButton')}
+              <Search className="h-4 w-4 sm:hidden" />
+              <span className="hidden sm:inline">{t('searchButton')}</span>
             </Button>
           </div>
           <div className="flex flex-col gap-1">
