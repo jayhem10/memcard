@@ -25,17 +25,18 @@ export function useLanguageDetection() {
 
         // Liste des pays francophones et anglophones
         const frenchCountries = ['fr', 'be', 'ch', 'ca', 'lu', 'mc', 'sn', 'ci', 'cm', 'ma', 'tn', 'dz'];
-        const englishCountries = ['us', 'gb', 'ca', 'au', 'nz', 'ie'];
+        const englishCountries = ['us', 'gb', 'ca', 'au', 'nz', 'ie', 'uk'];
 
-        let detectedLanguage = 'fr'; // Par défaut français
+        // Priorité à la langue du navigateur (plus fiable que l'IP avec VPN)
+        let detectedLanguage = 'en'; // Par défaut anglais pour les VPN
 
-        // Détection par langue du navigateur
-        if (browserLang.startsWith('en')) {
-          detectedLanguage = 'en';
-        } else if (browserLang.startsWith('fr')) {
+        // Détection par langue du navigateur (priorité haute)
+        if (browserLang.startsWith('fr')) {
           detectedLanguage = 'fr';
+        } else if (browserLang.startsWith('en')) {
+          detectedLanguage = 'en';
         } else {
-          // Essayer de détecter par pays si disponible
+          // Essayer de détecter par pays si disponible (priorité basse)
           try {
             const response = await fetch('https://ipapi.co/json/');
             if (response.ok) {

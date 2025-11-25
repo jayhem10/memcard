@@ -2,6 +2,8 @@
 
 import { useTheme } from 'next-themes';
 import { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
+import './login-hero.css';
 
 interface Shape {
   x: number;
@@ -270,6 +272,7 @@ function MatrixShapes() {
 export function LoginHero() {
   const { theme, resolvedTheme } = useTheme();
   const currentTheme = theme || resolvedTheme || 'light';
+  const t = useTranslations('auth');
   
   // Theme-specific styles
   const getThemeStyles = () => {
@@ -359,11 +362,16 @@ export function LoginHero() {
         
         <div className={styles.overlay}>
           <div className="flex flex-col justify-center items-center h-full p-8 relative z-10">
-            <h1 className={styles.title}>
-              MemCard
+            <h1 className={`${styles.title} elegant-title`}>
+              <span className="elegant-text">MemCard</span>
+              <div className="elegant-particles">
+                <div className="particle particle-1"></div>
+                <div className="particle particle-2"></div>
+                <div className="particle particle-3"></div>
+              </div>
             </h1>
             <p className={styles.description}>
-              Gérez votre collection de jeux vidéo en toute simplicité
+              {t('heroDescription')}
             </p>
           </div>
         </div>

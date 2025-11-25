@@ -1,0 +1,152 @@
+/* Effets élégants pour le titre MemCard */
+
+.elegant-title {
+  position: relative;
+  display: inline-block;
+  overflow: visible;
+}
+
+.elegant-text {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(135deg,
+    currentColor 0%,
+    rgba(255,255,255,0.9) 25%,
+    currentColor 50%,
+    rgba(255,255,255,0.9) 75%,
+    currentColor 100%);
+  background-size: 300% 300%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: elegant-shimmer 8s ease-in-out infinite;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.elegant-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.6;
+  animation: particle-float 6s ease-in-out infinite;
+}
+
+.particle-1 {
+  top: -10px;
+  left: 20%;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  top: 60%;
+  right: -10px;
+  animation-delay: 2s;
+  width: 3px;
+  height: 3px;
+}
+
+.particle-3 {
+  bottom: -5px;
+  left: 70%;
+  animation-delay: 4s;
+  width: 5px;
+  height: 5px;
+  opacity: 0.4;
+}
+
+/* Animations */
+@keyframes elegant-shimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translateY(-15px) translateX(5px) scale(1.1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-25px) translateX(-5px) scale(0.9);
+    opacity: 0.4;
+  }
+  75% {
+    transform: translateY(-15px) translateX(3px) scale(1.05);
+    opacity: 0.7;
+  }
+}
+
+/* Variations thématiques élégantes */
+[data-theme="cyberpunk"] .elegant-text {
+  background: linear-gradient(135deg,
+    #00ff88 0%,
+    rgba(255,255,255,0.9) 25%,
+    #00ff88 50%,
+    rgba(255,255,255,0.9) 75%,
+    #00ff88 100%);
+}
+
+[data-theme="retro"] .elegant-text {
+  background: linear-gradient(135deg,
+    #ff6b35 0%,
+    rgba(255,255,255,0.9) 25%,
+    #ff6b35 50%,
+    rgba(255,255,255,0.9) 75%,
+    #ff6b35 100%);
+  font-family: 'Courier New', monospace;
+}
+
+[data-theme="nintendo"] .elegant-text {
+  background: linear-gradient(135deg,
+    #e4000f 0%,
+    rgba(255,255,255,0.9) 25%,
+    #e4000f 50%,
+    rgba(255,255,255,0.9) 75%,
+    #e4000f 100%);
+}
+
+[data-theme="playstation"] .elegant-text {
+  background: linear-gradient(135deg,
+    #003087 0%,
+    rgba(255,255,255,0.9) 25%,
+    #003087 50%,
+    rgba(255,255,255,0.9) 75%,
+    #003087 100%);
+}
+
+[data-theme="xbox"] .elegant-text {
+  background: linear-gradient(135deg,
+    #107c10 0%,
+    rgba(255,255,255,0.9) 25%,
+    #107c10 50%,
+    rgba(255,255,255,0.9) 75%,
+    #107c10 100%);
+}
+
+[data-theme="dark"] .elegant-text {
+  background: linear-gradient(135deg,
+    #60a5fa 0%,
+    rgba(255,255,255,0.9) 25%,
+    #60a5fa 50%,
+    rgba(255,255,255,0.9) 75%,
+    #60a5fa 100%);
+}

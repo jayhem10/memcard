@@ -3,6 +3,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales } from '@/lib/i18n/routing';
 import { setRequestLocale } from 'next-intl/server';
+import { LanguageDetector } from '@/components/ui/language-detector';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -29,6 +30,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
+      <LanguageDetector />
       {children}
     </NextIntlClientProvider>
   );
