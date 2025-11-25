@@ -53,6 +53,7 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
   }
 
   const notificationsRawFiltered = notificationsRaw || [];
+  console.log('Notifications trouvées:', notificationsRawFiltered.map(n => ({ id: n.id, type: n.type, friend_id: n.friend_id })));
 
   // Enrichir les notifications avec les données associées
   const enrichedNotifications = await Promise.all(
@@ -222,6 +223,7 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
           .single();
 
         if (friendError || !friendProfile) {
+          console.log('Erreur récupération profil ami:', friendError);
           // Dismiss si erreur ou profil introuvable
           await supabaseAdmin
             .from('notifications')
@@ -233,6 +235,7 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
           return null;
         }
 
+        console.log('Notification ami enrichie:', { friend: friendProfile.username });
         return {
           id: notif.id,
           type: 'friend' as const,
@@ -253,7 +256,7 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
   // Filtrer les notifications null et calculer les compteurs
   const validNotifications = enrichedNotifications.filter((notif) => notif !== null) as Array<{
     id: string;
-    type: 'wishlist' | 'achievement';
+    type: 'wishlist' | 'achievement' | 'friend';
     created_at: string;
     is_read: boolean;
     is_dismissed: boolean;
@@ -264,15 +267,19 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
     achievement_id?: string;
     achievement?: any;
     unlocked_at?: string;
+    friend_id?: string;
+    friend?: { id: string; username: string | null; full_name: string | null; avatar_url: string | null };
   }>;
   const wishlistCount = validNotifications.filter((n) => n.type === 'wishlist').length;
   const achievementCount = validNotifications.filter((n) => n.type === 'achievement').length;
+  const friendCount = validNotifications.filter((n) => n.type === 'friend').length;
 
   const result = {
     notifications: validNotifications,
     count: validNotifications.length,
     wishlistCount,
     achievementCount,
+    friendCount,
   };
 
   return NextResponse.json(result, {

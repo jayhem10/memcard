@@ -83,25 +83,25 @@ export const POST = withApi(async (request: NextRequest, { user, supabase }) => 
 
   // Créer une notification pour l'utilisateur ajouté via RPC sécurisée
   try {
-    console.log('Création notification ami:', {
-      user_id: friendProfile.id, // L'utilisateur qui reçoit la notification
-      type: 'friend',
-      friend_id: user.id, // L'utilisateur qui a ajouté
-      friend_username: friendProfile.username
+    console.log('Appel RPC create_friend_notification:', {
+      friend_user_id: friendProfile.id,
+      adder_user_id: user.id
     });
 
     // Utiliser une fonction RPC qui gère la création côté serveur
-    const { error: notificationError } = await supabase
+    const { data: rpcResult, error: notificationError } = await supabase
       .rpc('create_friend_notification', {
         friend_user_id: friendProfile.id,
         adder_user_id: user.id
       });
 
+    console.log('Résultat RPC:', { data: rpcResult, error: notificationError });
+
     if (notificationError) {
       console.error('Erreur lors de la création de la notification ami:', notificationError);
       // Ne pas échouer l'ajout d'ami si la notification échoue
     } else {
-      console.log('Notification ami créée avec succès via RPC');
+      console.log('Notification ami créée avec succès');
     }
   } catch (error) {
     console.error('Erreur lors de la création de la notification:', error);
