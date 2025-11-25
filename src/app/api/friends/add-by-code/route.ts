@@ -1,11 +1,24 @@
 import { withApi, ApiError } from '@/lib/api-wrapper';
 import { NextRequest } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
 export const POST = withApi(async (request: NextRequest, { user, supabase }) => {
   if (!user || !supabase) {
     throw new ApiError('Non authentifié', 401);
   }
 
+
+  // Créer un client admin pour les opérations système
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  );
 
   const { friendCode } = await request.json();
 
@@ -81,27 +94,30 @@ export const POST = withApi(async (request: NextRequest, { user, supabase }) => 
     throw new ApiError(`Erreur lors de l'ajout de l'ami: ${insertError.message}`, 500);
   }
 
-  // Créer une notification pour l'utilisateur ajouté via RPC sécurisée
+  // Créer une notification pour l'utilisateur ajouté via insert direct (TEMPORAIRE)
   try {
-    console.log('Appel RPC create_friend_notification:', {
+    console.log('Création notification ami via insert direct:', {
       friend_user_id: friendProfile.id,
       adder_user_id: user.id
     });
 
-    // Utiliser une fonction RPC qui gère la création côté serveur
-    const { data: rpcResult, error: notificationError } = await supabase
-      .rpc('create_friend_notification', {
-        friend_user_id: friendProfile.id,
-        adder_user_id: user.id
-      });
+    // TEMPORAIRE : Insert direct jusqu'à ce que la RPC soit déployée en prod
+    const { data: insertData, error: notificationError } = await supabaseAdmin
+      .from('notifications')
+      .insert({
+        user_id: friendProfile.id, // L'utilisateur qui reçoit la notification
+        type: 'friend',
+        friend_id: user.id // L'utilisateur qui a ajouté
+      })
+      .select();
 
-    console.log('Résultat RPC:', { data: rpcResult, error: notificationError });
+    console.log('Résultat insert direct:', { data: insertData, error: notificationError });
 
     if (notificationError) {
       console.error('Erreur lors de la création de la notification ami:', notificationError);
       // Ne pas échouer l'ajout d'ami si la notification échoue
     } else {
-      console.log('Notification ami créée avec succès');
+      console.log('Notification ami créée avec succès via insert direct');
     }
   } catch (error) {
     console.error('Erreur lors de la création de la notification:', error);
