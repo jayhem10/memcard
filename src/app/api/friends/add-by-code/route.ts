@@ -84,6 +84,35 @@ export const POST = withApi(async (request: NextRequest, { user, supabase }) => 
     throw new ApiError(`Erreur lors de l'ajout de l'ami: ${insertError.message}`, 500);
   }
 
+  // Créer une notification pour l'utilisateur ajouté
+  try {
+    console.log('Création notification ami:', {
+      user_id: friendProfile.id, // L'utilisateur qui reçoit la notification
+      type: 'friend',
+      friend_id: user.id, // L'utilisateur qui a ajouté
+      friend_username: friendProfile.username
+    });
+
+    const { data: notificationData, error: notificationError } = await supabaseAdmin
+      .from('notifications')
+      .insert({
+        user_id: friendProfile.id, // L'utilisateur qui reçoit la notification
+        type: 'friend',
+        friend_id: user.id // L'utilisateur qui a ajouté
+      })
+      .select();
+
+    if (notificationError) {
+      console.error('Erreur lors de la création de la notification ami:', notificationError);
+      // Ne pas échouer l'ajout d'ami si la notification échoue
+    } else {
+      console.log('Notification ami créée avec succès:', notificationData);
+    }
+  } catch (error) {
+    console.error('Erreur lors de la création de la notification:', error);
+    // Ne pas échouer l'ajout d'ami si la notification échoue
+  }
+
   return {
     success: true,
     message: `${friendProfile.username} ajouté à vos amis !`,

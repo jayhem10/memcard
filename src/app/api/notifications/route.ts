@@ -193,9 +193,11 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
       }
 
       if (notif.type === 'friend') {
+        console.log('Traitement notification ami:', { notifId: notif.id, friendId: notif.friend_id });
         const friendId = notif.friend_id;
 
         if (!friendId) {
+          console.log('Notification ami sans friend_id, dismiss automatique');
           // Dismiss automatiquement si pas d'ID
           await supabaseAdmin
             .from('notifications')
