@@ -26,6 +26,16 @@
     "noResults": "No results",
     "optional": "optional",
     "exportExcel": "Export Excel",
+    "exporting": "Exporting...",
+    "export": "Export",
+    "exporting": "Exporting...",
+    "exportingShort": "Export...",
+    "exportError": "Export failed",
+    "collectionExported": "Collection exported successfully!",
+    "wishlistExported": "Wishlist exported successfully!",
+    "noGamesFound": "No games found",
+    "noGamesInCollection": "No games in collection",
+    "noGamesInWishlist": "No games in wishlist",
     "copyright": "All rights reserved",
     "footerDescription": "MemCard is a video game collection management platform.",
     "footerTrademark": "All trademarks and logos are the property of their respective owners."
@@ -1016,5 +1026,18 @@
     "deletePermanently": "Delete permanently",
     "accountDeleted": "Account deleted successfully",
     "errorDeletingAccount": "Error deleting account"
+  },
+  "themeSelector": {
+    "title": "Theme",
+    "changeTheme": "Change theme",
+    "light": "Light",
+    "dark": "Dark",
+    "cyberpunk": "Cyberpunk",
+    "retro": "Retro",
+    "colorblind": "Colorblind",
+    "nintendo": "Nintendo",
+    "playstation": "PlayStation",
+    "xbox": "Xbox",
+    "fantasy": "Fantasy"
   }
 }

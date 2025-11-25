@@ -1,8 +1,5 @@
 import { withApi, ApiError } from '@/lib/api-wrapper';
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-export const dynamic = 'force-dynamic';
 
 export const POST = withApi(async (request: NextRequest, { user, supabase }) => {
   if (!user || !supabase) {
@@ -84,7 +81,7 @@ export const POST = withApi(async (request: NextRequest, { user, supabase }) => 
     throw new ApiError(`Erreur lors de l'ajout de l'ami: ${insertError.message}`, 500);
   }
 
-  // Créer une notification pour l'utilisateur ajouté
+  // Créer une notification pour l'utilisateur ajouté via RPC sécurisée
   try {
     console.log('Création notification ami:', {
       user_id: friendProfile.id, // L'utilisateur qui reçoit la notification
@@ -93,20 +90,18 @@ export const POST = withApi(async (request: NextRequest, { user, supabase }) => 
       friend_username: friendProfile.username
     });
 
-    const { data: notificationData, error: notificationError } = await supabaseAdmin
-      .from('notifications')
-      .insert({
-        user_id: friendProfile.id, // L'utilisateur qui reçoit la notification
-        type: 'friend',
-        friend_id: user.id // L'utilisateur qui a ajouté
-      })
-      .select();
+    // Utiliser une fonction RPC qui gère la création côté serveur
+    const { error: notificationError } = await supabase
+      .rpc('create_friend_notification', {
+        friend_user_id: friendProfile.id,
+        adder_user_id: user.id
+      });
 
     if (notificationError) {
       console.error('Erreur lors de la création de la notification ami:', notificationError);
       // Ne pas échouer l'ajout d'ami si la notification échoue
     } else {
-      console.log('Notification ami créée avec succès:', notificationData);
+      console.log('Notification ami créée avec succès via RPC');
     }
   } catch (error) {
     console.error('Erreur lors de la création de la notification:', error);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, TrendingUp, TrendingDown, Tag, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,16 +15,17 @@ interface GamePriceDisplayProps {
 }
 
 export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDisplayProps) {
-  const t = useTranslations('gameDetails');
+  const t = useTranslations();
+  const locale = useLocale();
   const { data: priceData, isLoading: loading, error } = useGamePrices(gameId);
   const [disclaimerOpen, setDisclaimerOpen] = useState(false);
-  
+
   // Formater la date
   const formatDate = (dateString: string) => {
-    if (!dateString) return t('priceNotAvailable');
+    if (!dateString) return t('gameDetails.priceNotAvailable');
 
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fr-FR', {
+    return new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -46,7 +47,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
     return (
       <Card className={`${className} min-h-[200px] overflow-hidden`}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">{t('marketPrice')}</CardTitle>
+          <CardTitle className="text-lg">{t('gameDetails.marketPrice')}</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-[150px]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -60,11 +61,11 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
     return (
       <Card className={`${className} overflow-hidden`}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">{t('marketPrice')}</CardTitle>
+          <CardTitle className="text-lg">{t('gameDetails.marketPrice')}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-4">
-            {error.message || t('priceError')}
+            {error.message || t('gameDetails.priceError')}
           </p>
         </CardContent>
       </Card>
@@ -78,17 +79,17 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <Tag className="h-4 w-4" />
-            {t('marketPrice')}
+            {t('gameDetails.marketPrice')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-6 text-center">
             <Info className="h-8 w-8 text-muted-foreground mb-2" />
             <p className="text-muted-foreground text-sm">
-              {t('noPriceData')}
+              {t('gameDetails.noPriceData')}
             </p>
             <p className="text-muted-foreground text-xs mt-2">
-              {t('priceAutoUpdate')}
+              {t('gameDetails.priceAutoUpdate')}
             </p>
           </div>
         </CardContent>
@@ -101,12 +102,12 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
           <Tag className="h-4 w-4" />
-          {t('marketPrice')}
+          {t('gameDetails.marketPrice')}
         </CardTitle>
         <CardDescription>
-          Dernière mise à jour: {formatDate(priceData.last_updated)}
+          {t('gameDetails.lastUpdated', { date: formatDate(priceData.last_updated) })}
           {!isPriceRecent(priceData.last_updated) && (
-            <span className="text-amber-500 ml-2 text-xs">(Prix potentiellement obsolètes)</span>
+            <span className="text-amber-500 ml-2 text-xs">{t('gameDetails.outdatedPrices')}</span>
           )}
         </CardDescription>
       </CardHeader>
@@ -119,7 +120,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
           >
             <div className="text-sm text-green-700 dark:text-green-300 font-medium flex items-center gap-1">
               <TrendingDown className="h-3 w-3" />
-              Minimum
+              {t('gameDetails.minimum')}
             </div>
             <div className="text-xl font-bold text-green-800 dark:text-green-200 mt-1 break-all" title={`${priceData.min_price.toFixed(2)}€`}>
               {priceData.min_price.toFixed(2)}€
@@ -133,7 +134,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
           >
             <div className="text-sm text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1">
               <Tag className="h-3 w-3" />
-              Moyen
+              {t('gameDetails.average')}
             </div>
             <div className="text-xl font-bold text-blue-800 dark:text-blue-200 mt-1 break-all" title={`${priceData.average_price.toFixed(2)}€`}>
               {priceData.average_price.toFixed(2)}€
@@ -147,7 +148,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
           >
             <div className="text-sm text-purple-700 dark:text-purple-300 font-medium flex items-center gap-1">
               <Tag className="h-3 w-3" />
-              Neuf
+              {t('gameDetails.new')}
             </div>
             <div className="text-xl font-bold text-purple-800 dark:text-purple-200 mt-1 break-all">
               {priceData.new_price > 0 ? (
@@ -155,7 +156,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
                   {priceData.new_price.toFixed(2)}€
                 </span>
               ) : (
-                <span className="text-muted-foreground text-base font-normal">Pas de données</span>
+                <span className="text-muted-foreground text-base font-normal">{t('gameDetails.noData')}</span>
               )}
             </div>
           </motion.div>
@@ -167,7 +168,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
           >
             <div className="text-sm text-red-700 dark:text-red-300 font-medium flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
-              Maximum
+              {t('gameDetails.maximum')}
             </div>
             <div className="text-xl font-bold text-red-800 dark:text-red-200 mt-1 break-all" title={`${priceData.max_price.toFixed(2)}€`}>
               {priceData.max_price.toFixed(2)}€
@@ -185,7 +186,7 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
           >
             <span className="flex items-center gap-2">
               <Info className="h-3.5 w-3.5" />
-              <strong>{t('priceInfoTitle')}</strong>
+              <strong>{t('gameDetails.priceInfoTitle')}</strong>
             </span>
             {disclaimerOpen ? (
               <ChevronUp className="h-3.5 w-3.5" />
@@ -206,17 +207,17 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
                 <Alert className="mt-2 bg-blue-50/50 dark:bg-blue-950/20 border-blue-200/50 dark:border-blue-800/50">
                   <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   <AlertDescription className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
-                    <p className="mb-2" dangerouslySetInnerHTML={{ __html: t('priceInfoDescription') }} />
-                    <p className="mb-1.5">{t('priceInfoCriteria')}</p>
+                    <p className="mb-2" dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoDescription') }} />
+                    <p className="mb-1.5">{t('gameDetails.priceInfoCriteria')}</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-2 text-xs">
-                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoCondition') }} />
-                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoCompleteness') }} />
-                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoRegion') }} />
-                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoRarity') }} />
-                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoBox') }} />
-                      <li dangerouslySetInnerHTML={{ __html: t('priceInfoShipping') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoCondition') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoCompleteness') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoRegion') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoRarity') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoBox') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoShipping') }} />
                     </ul>
-                    <p className="mt-1.5 text-xs italic">{t('priceInfoDisclaimer')}</p>
+                    <p className="mt-1.5 text-xs italic">{t('gameDetails.priceInfoDisclaimer')}</p>
                   </AlertDescription>
                 </Alert>
               </motion.div>

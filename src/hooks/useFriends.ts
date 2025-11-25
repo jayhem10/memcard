@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { queryKeys } from '@/lib/react-query-config';
+import { useTranslations } from 'next-intl';
 
 export interface Friend {
   id: string;
