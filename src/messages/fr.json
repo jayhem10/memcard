@@ -482,7 +482,10 @@
     "all": "Tous",
     "playing": "En cours",
     "completed": "Terminé",
-    "backlog": "À jouer"
+    "backlog": "À jouer",
+    "allGenres": "Tous les genres",
+    "allConsoles": "Toutes les consoles",
+    "selectConsole": "Sélectionner une console"
   },
   "help": {
     "title": "Centre d'aide",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -30,6 +31,7 @@ interface ConsoleFilterProps {
 }
 
 export function ConsoleFilter({ consoles, selectedConsoleId, onSelect }: ConsoleFilterProps) {
+  const t = useTranslations('collection');
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
 
@@ -66,9 +68,9 @@ export function ConsoleFilter({ consoles, selectedConsoleId, onSelect }: Console
           className="w-full sm:w-[250px] justify-between"
         >
           <span className="truncate">
-            {selectedConsoleId === 'all' 
-              ? 'Toutes les consoles' 
-              : selectedConsole?.name || 'Sélectionner une console'}
+            {selectedConsoleId === 'all'
+              ? t('allConsoles')
+              : selectedConsole?.name || t('selectConsole')}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>

@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { sortGamesByTitle } from '@/lib/game-utils';
+import { translatePlatform, translateGenre } from '@/lib/platform-translations';
 
 // Types de données
 type ViewMode = 'grid' | 'list';
@@ -552,7 +553,7 @@ function CollectionPageContent() {
                       }`}
                       onClick={() => setConsoleFilter(console.id)}
                     >
-                      <span className={consoleFilter !== console.id ? 'group-hover:text-primary transition-colors' : ''}>{console.name}</span>
+                      <span className={consoleFilter !== console.id ? 'group-hover:text-primary transition-colors' : ''}>{translatePlatform(console.name)}</span>
                       <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${consoleFilter === console.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
                         {console.count}
                       </span>
@@ -629,7 +630,7 @@ function CollectionPageContent() {
                       }`}
                       onClick={() => setGenreFilter(genre.id)}
                     >
-                      <span className={genreFilter !== genre.id ? 'group-hover:text-primary transition-colors' : ''}>{genre.name}</span>
+                      <span className={genreFilter !== genre.id ? 'group-hover:text-primary transition-colors' : ''}>{translateGenre(genre.name)}</span>
                       <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${genreFilter === genre.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
                         {genre.count}
                       </span>

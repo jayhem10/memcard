@@ -482,7 +482,10 @@
     "all": "All",
     "playing": "Playing",
     "completed": "Completed",
-    "backlog": "Backlog"
+    "backlog": "Backlog",
+    "allGenres": "All genres",
+    "allConsoles": "All consoles",
+    "selectConsole": "Select a console"
   },
   "help": {
     "title": "Help Center",

@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/lib/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth-context';
+import { translatePlatform, translateGenre } from '@/lib/platform-translations';
 import { useTranslations } from 'next-intl';
 
 type ViewMode = 'grid' | 'list';
@@ -475,7 +476,7 @@ function CollectorCollectionContent() {
                           <Badge variant="secondary" className="mr-2">
                             {console.count}
                           </Badge>
-                          {console.name}
+                          {translatePlatform(console.name)}
                         </Button>
                       ))}
                     </div>
@@ -500,7 +501,7 @@ function CollectorCollectionContent() {
                           <Badge variant="secondary" className="mr-2">
                             {genre.count}
                           </Badge>
-                          {genre.name}
+                          {translateGenre(genre.name)}
                         </Button>
                       ))}
                     </div>

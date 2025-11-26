@@ -6,6 +6,8 @@ import { useAuth } from '@/context/auth-context';
 import { USER_GAME_WITH_RELATIONS_SELECT } from '@/lib/supabase-queries';
 import { handleSupabaseError } from '@/lib/error-handler';
 import { queryKeys, collectionQueryOptions } from '@/lib/react-query-config';
+import { useTranslations } from 'next-intl';
+
 
 export type CollectionGame = {
   id: string;
@@ -47,6 +49,7 @@ export interface UserGamesFilters {
 // Hook séparé pour récupérer les stats complètes (tous les jeux pour les compteurs)
 export function useUserGamesStats(tab: 'collection' | 'wishlist' = 'collection') {
   const { user, isLoading: authLoading } = useAuth();
+  const t = useTranslations('collection');
 
   const query = useQuery<{ consoles: Array<{ id: string; name: string; count: number }>; genres: Array<{ id: string; name: string; count: number }> }, Error>({
     queryKey: ['userGamesStats', user?.id, tab],
@@ -90,7 +93,7 @@ export function useUserGamesStats(tab: 'collection' | 'wishlist' = 'collection')
 
       // Calculer les stats des consoles
       const consoleMap = new Map<string, { id: string; name: string; count: number }>();
-      consoleMap.set('all', { id: 'all', name: 'Toutes les consoles', count: filteredData.length });
+      consoleMap.set('all', { id: 'all', name: t('allConsoles'), count: filteredData.length });
 
       filteredData.forEach((userGame: any) => {
         const game = userGame.games;
@@ -106,7 +109,7 @@ export function useUserGamesStats(tab: 'collection' | 'wishlist' = 'collection')
 
       // Calculer les stats des genres
       const genreMap = new Map<string, { id: string; name: string; count: number }>();
-      genreMap.set('all', { id: 'all', name: 'Tous les genres', count: filteredData.length });
+      genreMap.set('all', { id: 'all', name: t('allGenres'), count: filteredData.length });
 
       filteredData.forEach((userGame: any) => {
         const game = userGame.games;
