@@ -34,8 +34,8 @@ function NavbarContent() {
   const [supportDialogOpen, setSupportDialogOpen] = useState(false);
 
   const tabParam = searchParams.get('tab');
-  const isWishlistActive = pathname === '/collection' && tabParam === 'wishlist';
-  const isCollectionActive = pathname === '/collection' && (tabParam === null || tabParam !== 'wishlist');
+  const isWishlistActive = pathname.endsWith('/collection') && tabParam === 'wishlist';
+  const isCollectionActive = pathname.endsWith('/collection') && (tabParam === null || tabParam !== 'wishlist');
 
   useEffect(() => {
     if (user && !profile && !isLoading) {
@@ -73,15 +73,15 @@ function NavbarContent() {
           <div className="hidden md:flex md:items-center md:space-x-2">
             {navigation.map((item) => {
               const Icon = item.icon;
-              const isActive = item.href === '/collection' ? isCollectionActive : pathname === item.href;
+              const isActive = item.href === '/collection' ? isCollectionActive : pathname.endsWith(item.href);
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 relative ${
                     isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                      ? 'text-primary underline underline-offset-4 decoration-2 decoration-primary'
+                      : 'text-foreground hover:text-accent-foreground'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -93,10 +93,10 @@ function NavbarContent() {
             {/* Bouton Wishlist */}
             <Link
               href="/collection?tab=wishlist"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 relative ${
                 isWishlistActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                  ? 'text-primary underline underline-offset-4 decoration-2 decoration-primary'
+                  : 'text-foreground hover:text-accent-foreground'
               }`}
             >
               <Gift className="h-4 w-4" />
@@ -107,7 +107,7 @@ function NavbarContent() {
             <Link
               href="/search"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
-                pathname === '/search'
+                pathname.endsWith('/search')
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-primary text-primary-foreground hover:bg-primary/90'
               }`}

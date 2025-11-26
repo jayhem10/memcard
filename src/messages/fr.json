@@ -477,11 +477,12 @@
     "loadingMore": "Chargement...",
     "noGamesInWishlist": "Aucun jeu dans votre liste de souhaits pour le moment",
     "noGamesInCollection": "Aucun jeu dans votre collection pour le moment",
+    "noSearchResults": "Aucun résultat pour votre recherche",
     "addGame": "Ajouter un jeu",
     "all": "Tous",
     "playing": "En cours",
     "completed": "Terminé",
-    "backlog": "Arriéré"
+    "backlog": "À jouer"
   },
   "help": {
     "title": "Centre d'aide",
@@ -493,7 +494,7 @@
     "allGames": "Tous : Tous vos jeux, quel que soit le statut",
     "inProgress": "En cours : Jeux que vous êtes en train de jouer",
     "completed": "Terminés : Jeux que vous avez finis",
-    "backlog": "Arriéré : Jeux que vous n'avez pas commencés",
+    "backlog": "À jouer : Jeux que vous n'avez pas commencés",
     "gridMode": "Mode grille",
     "listMode": "Mode liste",
     "availableFilters": "Filtres disponibles :",
@@ -881,7 +882,7 @@
     "all": "Tous",
     "playing": "En cours",
     "completed": "Terminé",
-    "backlog": "Arriéré",
+    "backlog": "À jouer",
     "platforms": "Plateformes",
     "genres": "Genres",
     "loadingMore": "Chargement...",

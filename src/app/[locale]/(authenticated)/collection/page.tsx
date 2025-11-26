@@ -322,18 +322,21 @@ function CollectionPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, user]);
 
-  // Invalider les queries quand les filtres changent pour forcer un refetch
+  // Invalider les queries de jeux quand les filtres changent
   useEffect(() => {
     queryClient.invalidateQueries({
       queryKey: ['userGames', user?.id],
       exact: false, // Invalider toutes les queries userGames pour cet utilisateur
     });
-    // Invalider aussi les stats quand l'onglet change
+  }, [searchQuery, statusFilter, consoleFilter, genreFilter, activeTab, sortOrder, queryClient, user?.id]);
+
+  // Invalider les stats seulement quand l'onglet change (pas quand searchQuery change)
+  useEffect(() => {
     queryClient.invalidateQueries({
       queryKey: ['userGamesStats', user?.id],
       exact: false,
     });
-  }, [searchQuery, statusFilter, consoleFilter, genreFilter, activeTab, sortOrder, queryClient, user?.id]);
+  }, [activeTab, queryClient, user?.id]);
 
   // Forcer un refetch spécifique quand l'onglet change
   useEffect(() => {
@@ -418,55 +421,60 @@ function CollectionPageContent() {
               )}
             </>
           )}
-          {loading ? (
-            // Skeleton pour le bouton Export pendant le chargement
-            <div className="relative h-9 w-24 sm:w-28 bg-muted rounded-md overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-            </div>
-          ) : (
-            <ExportButton 
-              games={preparedGamesForGrid as GameExportData[]}
-              activeTab={activeTab}
-              filename="ma_collection"
-              size="sm"
-              filters={{
-                console: consoleFilter,
-                genre: genreFilter,
-                status: statusFilter,
-                search: searchQuery
-              }}
-              consoleName={consoleFilter !== 'all' ? consoles.find((c: { id: string; name: string; count: number }) => c.id === consoleFilter)?.name : undefined}
-            />
+          {totalGames > 0 && (
+            <>
+              {loading ? (
+                // Skeleton pour le bouton Export pendant le chargement
+                <div className="relative h-9 w-24 sm:w-28 bg-muted rounded-md overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                </div>
+              ) : (
+                <ExportButton
+                  games={preparedGamesForGrid as GameExportData[]}
+                  activeTab={activeTab}
+                  filename="ma_collection"
+                  size="sm"
+                  filters={{
+                    console: consoleFilter,
+                    genre: genreFilter,
+                    status: statusFilter,
+                    search: searchQuery
+                  }}
+                  consoleName={consoleFilter !== 'all' ? consoles.find((c: { id: string; name: string; count: number }) => c.id === consoleFilter)?.name : undefined}
+                />
+              )}
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="icon"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid2X2 className="h-5 w-5" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="icon"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-5 w-5" />
+              </Button>
+            </>
           )}
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => setViewMode('grid')}
-          >
-            <Grid2X2 className="h-5 w-5" />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="h-5 w-5" />
-          </Button>
           </div>
         </div>
       </section>
 
-      {/* Barre de recherche et filtres */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="relative flex-1">
-          <SearchInput
-            placeholder={t('searchPlaceholder')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onClear={() => setSearchQuery('')}
-          />
-        </div>
-        {activeTab === 'collection' && !loading && (
+      {/* Barre de recherche et filtres - seulement si l'utilisateur a des jeux */}
+      {totalGames > 0 && (
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
+          <div className="relative flex-1 md:max-w-2xl">
+            <SearchInput
+              placeholder={t('searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onClear={() => setSearchQuery('')}
+            />
+          </div>
+          {activeTab === 'collection' && totalGames > 0 && (
           <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
             {filterButtons.map((button) => (
               <Button
@@ -484,151 +492,156 @@ function CollectionPageContent() {
             ))}
           </div>
         )}
-      </div>
+        </div>
+      )}
 
-      {/* Filtrage par consoles */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-5">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-muted-foreground" />
-              <h3 className="font-bold text-base">{t('platforms')}</h3>
+      {/* Filtrage par consoles - seulement si l'utilisateur a des jeux */}
+      {totalGames > 0 && (
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-5">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+              <div className="flex items-center gap-2">
+                <Database className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-bold text-base">{t('platforms')}</h3>
+              </div>
+            </div>
+
+            {/* Mode mobile : sélecteur optimisé */}
+            <div className="md:hidden">
+              {statsLoading ? (
+                <div className="relative h-10 bg-muted rounded-md overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                </div>
+              ) : (
+                <MobileFilterSelector
+                  label={t('platform')}
+                  options={consoles.map((c: { id: string; name: string; count: number }) => ({ id: c.id, name: c.name, count: c.count }))}
+                  selectedId={consoleFilter}
+                  onSelect={setConsoleFilter}
+                  placeholder={t('selectPlatform')}
+                />
+              )}
+            </div>
+
+            {/* Mode desktop : badges horizontaux */}
+            <div className="hidden md:block">
+              <ScrollArea className="h-16 whitespace-nowrap">
+                <div className="flex flex-wrap gap-2 pb-1">
+                {statsLoading ? (
+                  // Skeletons avec effet shimmer pendant le chargement
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="relative h-7 bg-muted rounded-full overflow-hidden"
+                      style={{ width: `${80 + i * 20}px` }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                    </div>
+                  ))
+                ) : (
+                  consoles.map((console: { id: string; name: string; count: number }) => (
+                    <Badge
+                      key={console.id}
+                      variant={consoleFilter === console.id ? "default" : "outline"}
+                      className={`group cursor-pointer text-sm flex items-center gap-1.5 transition-all duration-300 ${
+                        consoleFilter === console.id
+                          ? 'hover:bg-primary/90 text-primary-foreground'
+                          : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:bg-secondary/60 hover:from-primary/10 hover:to-primary/5'
+                      }`}
+                      onClick={() => setConsoleFilter(console.id)}
+                    >
+                      <span className={consoleFilter !== console.id ? 'group-hover:text-primary transition-colors' : ''}>{console.name}</span>
+                      <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${consoleFilter === console.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
+                        {console.count}
+                      </span>
+                    </Badge>
+                  ))
+                )}
+                </div>
+              </ScrollArea>
             </div>
           </div>
-          
-          {/* Mode mobile : sélecteur optimisé */}
-          <div className="md:hidden">
-            {statsLoading ? (
-              <div className="relative h-10 bg-muted rounded-md overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-              </div>
-            ) : (
-              <MobileFilterSelector
-                label={t('platform')}
-                options={consoles.map((c: { id: string; name: string; count: number }) => ({ id: c.id, name: c.name, count: c.count }))}
-                selectedId={consoleFilter}
-                onSelect={setConsoleFilter}
-                placeholder={t('selectPlatform')}
-              />
-            )}
-          </div>
-
-          {/* Mode desktop : badges horizontaux */}
-          <div className="hidden md:block">
-            <ScrollArea className="h-16 whitespace-nowrap">
-              <div className="flex flex-wrap gap-2 pb-1">
-              {statsLoading ? (
-                // Skeletons avec effet shimmer pendant le chargement
-                Array.from({ length: 5 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="relative h-7 bg-muted rounded-full overflow-hidden"
-                    style={{ width: `${80 + i * 20}px` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                  </div>
-                ))
-              ) : (
-                consoles.map((console: { id: string; name: string; count: number }) => (
-                  <Badge 
-                    key={console.id} 
-                    variant={consoleFilter === console.id ? "default" : "outline"}
-                    className={`group cursor-pointer text-sm flex items-center gap-1.5 transition-all duration-300 ${
-                      consoleFilter === console.id 
-                        ? 'hover:bg-primary/90 text-primary-foreground' 
-                        : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:bg-secondary/60 hover:from-primary/10 hover:to-primary/5'
-                    }`}
-                    onClick={() => setConsoleFilter(console.id)}
-                  >
-                    <span className={consoleFilter !== console.id ? 'group-hover:text-primary transition-colors' : ''}>{console.name}</span>
-                    <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${consoleFilter === console.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
-                      {console.count}
-                    </span>
-                  </Badge>
-                ))
-              )}
-              </div>
-            </ScrollArea>
-          </div>
         </div>
-      </div>
+      )}
 
-      {/* Filtrage par genres */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-5">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
-            <div className="flex items-center gap-2">
-              <svg className="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-                <path d="M5 3v4" />
-                <path d="M19 17v4" />
-                <path d="M3 5h4" />
-                <path d="M17 19h4" />
-              </svg>
-              <h3 className="font-bold text-base">{t('genres')}</h3>
+      {/* Filtrage par genres - seulement si l'utilisateur a des jeux */}
+      {totalGames > 0 && (
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm p-5">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
+              <div className="flex items-center gap-2">
+                <svg className="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                  <path d="M5 3v4" />
+                  <path d="M19 17v4" />
+                  <path d="M3 5h4" />
+                  <path d="M17 19h4" />
+                </svg>
+                <h3 className="font-bold text-base">{t('genres')}</h3>
+              </div>
+            </div>
+
+            {/* Mode mobile : sélecteur optimisé */}
+            <div className="md:hidden">
+              {statsLoading ? (
+                <div className="relative h-10 bg-muted rounded-md overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                </div>
+              ) : (
+                <MobileFilterSelector
+                  label={t('genre')}
+                  options={genres.map((g: { id: string; name: string; count: number }) => ({ id: g.id, name: g.name, count: g.count }))}
+                  selectedId={genreFilter}
+                  onSelect={setGenreFilter}
+                  placeholder={t('selectGenre')}
+                />
+              )}
+            </div>
+
+            {/* Mode desktop : badges horizontaux */}
+            <div className="hidden md:block">
+              <ScrollArea className="h-16 whitespace-nowrap">
+                <div className="flex flex-wrap gap-2 pb-1">
+                {statsLoading ? (
+                  // Skeletons avec effet shimmer pendant le chargement
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="relative h-7 bg-muted rounded-full overflow-hidden"
+                      style={{ width: `${60 + i * 15}px` }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                    </div>
+                  ))
+                ) : (
+                  genres.map((genre: { id: string; name: string; count: number }) => (
+                    <Badge
+                      key={genre.id}
+                      variant={genreFilter === genre.id ? "default" : "outline"}
+                      className={`group cursor-pointer text-sm flex items-center gap-1.5 transition-all duration-300 ${
+                        genreFilter === genre.id
+                          ? 'hover:bg-primary/90 text-primary-foreground'
+                          : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:bg-secondary/60 hover:from-primary/10 hover:to-primary/5'
+                      }`}
+                      onClick={() => setGenreFilter(genre.id)}
+                    >
+                      <span className={genreFilter !== genre.id ? 'group-hover:text-primary transition-colors' : ''}>{genre.name}</span>
+                      <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${genreFilter === genre.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
+                        {genre.count}
+                      </span>
+                    </Badge>
+                  ))
+                )}
+                </div>
+              </ScrollArea>
             </div>
           </div>
-          
-          {/* Mode mobile : sélecteur optimisé */}
-          <div className="md:hidden">
-            {statsLoading ? (
-              <div className="relative h-10 bg-muted rounded-md overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-              </div>
-            ) : (
-              <MobileFilterSelector
-                label={t('genre')}
-                options={genres.map((g: { id: string; name: string; count: number }) => ({ id: g.id, name: g.name, count: g.count }))}
-                selectedId={genreFilter}
-                onSelect={setGenreFilter}
-                placeholder={t('selectGenre')}
-              />
-            )}
-          </div>
-
-          {/* Mode desktop : badges horizontaux */}
-          <div className="hidden md:block">
-            <ScrollArea className="h-16 whitespace-nowrap">
-              <div className="flex flex-wrap gap-2 pb-1">
-              {statsLoading ? (
-                // Skeletons avec effet shimmer pendant le chargement
-                Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="relative h-7 bg-muted rounded-full overflow-hidden"
-                    style={{ width: `${60 + i * 15}px` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                  </div>
-                ))
-              ) : (
-                genres.map((genre: { id: string; name: string; count: number }) => (
-                  <Badge 
-                    key={genre.id} 
-                    variant={genreFilter === genre.id ? "default" : "outline"}
-                    className={`group cursor-pointer text-sm flex items-center gap-1.5 transition-all duration-300 ${
-                      genreFilter === genre.id 
-                        ? 'hover:bg-primary/90 text-primary-foreground' 
-                        : 'bg-gradient-to-r from-muted/30 to-muted/10 border-border/50 hover:border-primary/50 hover:bg-secondary/60 hover:from-primary/10 hover:to-primary/5'
-                    }`}
-                    onClick={() => setGenreFilter(genre.id)}
-                  >
-                    <span className={genreFilter !== genre.id ? 'group-hover:text-primary transition-colors' : ''}>{genre.name}</span>
-                    <span className={`inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-medium ${genreFilter === genre.id ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-primary/20'}`}>
-                      {genre.count}
-                    </span>
-                  </Badge>
-                ))
-              )}
-              </div>
-            </ScrollArea>
-          </div>
         </div>
-      </div>
+      )}
 
       {/* Sélecteur de tri */}
       {!loading && sortedGames.length > 0 && (
@@ -716,16 +729,20 @@ function CollectionPageContent() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-50" />
             <div className="relative flex flex-col items-center justify-center gap-4 text-center">
               <p className="text-muted-foreground text-lg">
-                {activeTab === 'wishlist' 
-                  ? t('noGamesInWishlist')
-                  : t('noGamesInCollection')
+                {searchQuery.trim() !== ''
+                  ? t('noSearchResults')
+                  : activeTab === 'wishlist'
+                    ? t('noGamesInWishlist')
+                    : t('noGamesInCollection')
                 }
               </p>
-              <Link href="/search" className="inline-block">
-                <Button variant="outline" className="rounded-lg shadow-md hover:shadow-lg transition-all">
-                  {t('addGame')}
-                </Button>
-              </Link>
+              {searchQuery.trim() === '' && (
+                <Link href="/search" className="inline-block">
+                  <Button variant="outline" className="rounded-lg shadow-md hover:shadow-lg transition-all">
+                    {t('addGame')}
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         )}
