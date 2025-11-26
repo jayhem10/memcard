@@ -575,6 +575,13 @@ export default function SearchPage() {
       
       // Attendre un peu pour que l'invalidation se propage
       await queryClient.refetchQueries({ queryKey: queryKeys.userGames(user?.id) });
+
+      // Invalider le cache des stats pour mettre à jour les "recent games" sur la page d'accueil
+      const { useStore } = await import('@/store');
+      const statsStore = useStore.getState();
+      statsStore.resetStats();
+      // Recharger les stats pour l'utilisateur actuel
+      statsStore.fetchUserStats(user.id);
       
       // Message personnalisé selon le cas
       if (isNewConsole) {

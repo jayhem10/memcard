@@ -113,6 +113,13 @@ export function useAddToWishlist() {
       
       // Invalider le cache pour qu'il se mette à jour via Realtime
       queryClient.invalidateQueries({ queryKey: queryKeys.userGames(user.id) });
+
+      // Invalider le cache des stats pour mettre à jour les "recent games" sur la page d'accueil
+      const { useStore } = await import('@/store');
+      const statsStore = useStore.getState();
+      statsStore.resetStats();
+      // Recharger les stats pour l'utilisateur actuel
+      statsStore.fetchUserStats(user.id);
       
       // Mettre à jour le cache localement si il existe pour un feedback immédiat
       const cachedGames = queryClient.getQueryData<CollectionGame[]>(queryKeys.userGames(user.id));

@@ -218,9 +218,18 @@ export default function GameDetailPage() {
       const { queryKeys } = await import('@/lib/react-query-config');
       queryClient.invalidateQueries({ queryKey: queryKeys.userGames(user?.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.game(gameId || '', user?.id) });
-      
+
       // Attendre un peu pour que l'invalidation se propage
       await queryClient.refetchQueries({ queryKey: ['userGames', user?.id] });
+
+      // Invalider le cache des stats pour mettre à jour les "recent games" sur la page d'accueil
+      if (user?.id) {
+        const { useStore } = await import('@/store');
+        const statsStore = useStore.getState();
+        statsStore.resetStats();
+        // Recharger les stats pour l'utilisateur actuel
+        statsStore.fetchUserStats(user.id);
+      }
       
       if (data.isWishlist) {
         toast.success('Jeu supprimé de votre liste de souhaits');
