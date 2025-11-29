@@ -493,6 +493,7 @@
     "selectGenre": "Sélectionner un genre...",
     "alphabetical": "Alphabétique",
     "dateDesc": "Date (plus récent d'abord)",
+    "ratingDesc": "Note IGDB (plus haute d'abord)",
     "loadingMore": "Chargement...",
     "noGamesInWishlist": "Aucun jeu dans votre liste de souhaits pour le moment",
     "noGamesInCollection": "Aucun jeu dans votre collection pour le moment",

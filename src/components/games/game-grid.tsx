@@ -5,12 +5,14 @@ import { Game } from '@/types/database.types';
 import { getStatusLabels } from '@/types/games';
 import { CollectionGame } from '@/hooks/useUserGames';
 import { useMobile } from '@/hooks/useMobile';
-import { Circle, Play, CheckCircle2, XCircle, Heart } from 'lucide-react';
+import { Circle, Play, CheckCircle2, XCircle, Heart, Euro } from 'lucide-react';
 
 export type GameGridItem = (Game | CollectionGame) & {
   status?: string;
   rating?: number | null;
   console_name?: string;
+  buy_price?: number | null;
+  average_rating?: number | null;
 };
 
 interface GameGridProps {
@@ -80,25 +82,35 @@ function GameCard({
           </div>
         )}
 
-        {/* Badge de statut en haut à droite */}
+        {/* Badge de statut en haut à droite - toujours avec icône */}
         {displayStatus && (
           <div className="absolute top-2 right-2 z-10">
-            {isMobile === true ? (
-              <div className="p-1.5 rounded-full bg-primary/90 backdrop-blur-sm border border-primary/20 shadow-sm">
-                {(() => {
-                  const StatusIcon = getStatusIcon(displayStatus);
-                  return <StatusIcon className="w-3 h-3 text-primary-foreground" />;
-                })()}
-              </div>
-            ) : (
-            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm border border-primary/20 shadow-sm">
-              {statusLabels[displayStatus as keyof typeof statusLabels] || displayStatus}
-            </span>
-            )}
+            <div className="p-1.5 rounded-full bg-primary/90 backdrop-blur-sm border border-primary/20 shadow-sm">
+              {(() => {
+                const StatusIcon = getStatusIcon(displayStatus);
+                return <StatusIcon className="w-3 h-3 text-primary-foreground" />;
+              })()}
+            </div>
           </div>
         )}
 
-        {/* Rating en haut à gauche */}
+        {/* Indicateur de prix en bas à droite - uniquement pour la collection (pas wishlist) */}
+        {/* Icône Euro toujours visible, prix complet au hover sur desktop */}
+        {game.buy_price !== null && 
+         game.buy_price !== undefined && 
+         game.buy_price > 0 && 
+         displayStatus !== 'WISHLIST' && (
+          <div className="absolute bottom-2 right-2 z-10">
+            <div className="flex items-center gap-1 px-1.5 py-1 rounded-md bg-primary/90 backdrop-blur-sm border border-primary/20 shadow-sm">
+              <Euro className="w-3 h-3 text-primary-foreground flex-shrink-0" />
+              <span className={`text-xs font-semibold text-primary-foreground transition-all duration-200 ${isMobile ? 'opacity-100' : 'opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[60px] overflow-hidden'}`}>
+                {game.buy_price % 1 === 0 ? game.buy_price.toFixed(0) : game.buy_price.toFixed(2)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Rating personnel en haut à gauche */}
         {ratingValue !== null && ratingValue > 0 && (
           <div className="absolute top-2 left-2 z-10 flex items-center gap-0.5 px-1.5 py-1 rounded-md bg-black/70 backdrop-blur-sm border border-white/20">
             <svg
@@ -108,6 +120,23 @@ function GameCard({
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
             <span className="text-xs font-semibold text-white">{ratingValue}</span>
+          </div>
+        )}
+
+        {/* Note IGDB en bas à gauche - icône toujours visible, note au hover sur desktop */}
+        {game.average_rating !== null && game.average_rating !== undefined && game.average_rating > 0 && (
+          <div className="absolute bottom-2 left-2 z-10">
+            <div className="flex items-center gap-1 px-1.5 py-1 rounded-md bg-primary/90 backdrop-blur-sm border border-primary/20 shadow-sm">
+              <svg
+                className="w-3 h-3 text-primary-foreground fill-current flex-shrink-0"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              <span className={`text-xs font-semibold text-primary-foreground transition-all duration-200 ${isMobile ? 'opacity-100' : 'opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[50px] overflow-hidden'}`}>
+                {game.average_rating % 1 === 0 ? game.average_rating.toFixed(0) : game.average_rating.toFixed(1)}
+              </span>
+            </div>
           </div>
         )}
       </div>

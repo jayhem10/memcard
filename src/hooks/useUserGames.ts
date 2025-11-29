@@ -44,7 +44,7 @@ export interface UserGamesFilters {
   genre_id?: string;
   search?: string;
   tab?: 'collection' | 'wishlist';
-  sortOrder?: 'alphabetical' | 'date-desc';
+  sortOrder?: 'alphabetical' | 'date-desc' | 'rating-desc';
 }
 
 // Hook séparé pour récupérer les stats complètes (tous les jeux pour les compteurs)
@@ -174,7 +174,8 @@ export function useUserGames(filters?: UserGamesFilters) {
         p_status_filter: filters?.status || 'all',
         p_tab: filters?.tab || 'collection',
         p_sort_order: filters?.sortOrder === 'date-desc' ? 'date_desc' :
-                     filters?.sortOrder === 'alphabetical' ? 'alphabetical' : 'date_desc',
+                     filters?.sortOrder === 'alphabetical' ? 'alphabetical' :
+                     filters?.sortOrder === 'rating-desc' ? 'rating_desc' : 'date_desc',
         p_offset: offset,
         p_limit: pageSize
       });

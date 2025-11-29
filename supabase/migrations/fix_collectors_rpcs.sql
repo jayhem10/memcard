@@ -63,6 +63,7 @@ AS $$
       'description_fr', g.description_fr,
       'cover_url', g.cover_url,
       'console_id', g.console_id,
+      'average_rating', g.average_rating,
       'consoles', jsonb_build_object('id', c.id, 'name', c.name),
       'game_genres', COALESCE(
         (
@@ -112,13 +113,10 @@ AS $$
        g.developer ILIKE '%' || trim(p_search_term) || '%')
     ELSE true END
   ORDER BY
-    CASE p_sort_order
-      WHEN 'date_desc' THEN ug.created_at END DESC,
-    CASE p_sort_order
-      WHEN 'date_asc' THEN ug.created_at END ASC,
-    CASE p_sort_order
-      WHEN 'alphabetical' THEN g.title END ASC,
-    ug.created_at DESC
+    CASE WHEN p_sort_order = 'rating_desc' THEN g.average_rating END DESC NULLS LAST,
+    CASE WHEN p_sort_order = 'date_desc' THEN ug.created_at END DESC,
+    CASE WHEN p_sort_order = 'date_asc' THEN ug.created_at END ASC,
+    CASE WHEN p_sort_order = 'alphabetical' THEN g.title END ASC
   LIMIT p_limit
   OFFSET p_offset;
 $$;

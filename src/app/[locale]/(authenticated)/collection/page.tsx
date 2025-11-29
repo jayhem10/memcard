@@ -34,7 +34,7 @@ import { translatePlatform, translateGenre } from '@/lib/platform-translations';
 type ViewMode = 'grid' | 'list';
 type FilterStatus = 'all' | 'playing' | 'completed' | 'backlog' | 'wishlist';
 type CollectionTab = 'collection' | 'wishlist';
-type SortOrder = 'alphabetical' | 'date-desc';
+type SortOrder = 'alphabetical' | 'date-desc' | 'rating-desc';
 
 function CollectionPageContent() {
   const t = useTranslations('collection');
@@ -653,14 +653,17 @@ function CollectionPageContent() {
                 <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
                 {sortOrder === 'alphabetical' ? (
                   <span className="hidden sm:inline">{t('alphabetical')}</span>
-                ) : (
+                ) : sortOrder === 'date-desc' ? (
                   <span className="hidden sm:inline">{t('dateDesc')}</span>
+                ) : (
+                  <span className="hidden sm:inline">{t('ratingDesc')}</span>
                 )}
               </div>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="alphabetical">{t('alphabetical')}</SelectItem>
               <SelectItem value="date-desc">{t('dateDesc')}</SelectItem>
+              <SelectItem value="rating-desc">{t('ratingDesc')}</SelectItem>
             </SelectContent>
           </Select>
         </div>

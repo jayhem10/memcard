@@ -493,6 +493,7 @@
     "selectGenre": "Select genre...",
     "alphabetical": "Alphabetical",
     "dateDesc": "Date (newest first)",
+    "ratingDesc": "IGDB Rating (highest first)",
     "loadingMore": "Loading more...",
     "noGamesInWishlist": "No games in your wishlist yet",
     "noGamesInCollection": "No games in your collection yet",
