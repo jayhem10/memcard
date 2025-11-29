@@ -53,7 +53,6 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
   }
 
   const notificationsRawFiltered = notificationsRaw || [];
-  console.log('Notifications trouvées:', notificationsRawFiltered.map(n => ({ id: n.id, type: n.type, friend_id: n.friend_id })));
 
   // Enrichir les notifications avec les données associées
   const enrichedNotifications = await Promise.all(
@@ -194,11 +193,9 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
       }
 
       if (notif.type === 'friend') {
-        console.log('Traitement notification ami:', { notifId: notif.id, friendId: notif.friend_id });
         const friendId = notif.friend_id;
 
         if (!friendId) {
-          console.log('Notification ami sans friend_id, dismiss automatique');
           // Dismiss automatiquement si pas d'ID
           await supabaseAdmin
             .from('notifications')
@@ -223,8 +220,6 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
           .single();
 
         if (friendError || !friendProfile) {
-          console.log('Erreur récupération profil ami:', friendError);
-          // Dismiss si erreur ou profil introuvable
           await supabaseAdmin
             .from('notifications')
             .update({
@@ -235,7 +230,6 @@ export const GET = withApi(async (request: NextRequest, { user }) => {
           return null;
         }
 
-        console.log('Notification ami enrichie:', { friend: friendProfile.username });
         return {
           id: notif.id,
           type: 'friend' as const,

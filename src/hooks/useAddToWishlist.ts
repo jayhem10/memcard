@@ -137,6 +137,7 @@ export function useAddToWishlist() {
           cover_url: game.cover_url,
           console_id: game.console_id,
           console_name: game.console_name,
+          average_rating: game.average_rating,
           genres: game.genres,
           status: 'WISHLIST',
         };

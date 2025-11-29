@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { STATUS_LABELS } from '@/types/games';
+import { TranslatedGameStatus } from './TranslatedGameStatus';
 import { CollectionGame } from '@/hooks/useUserGames';
 
 interface GameListReadonlyProps {
@@ -76,7 +76,7 @@ export function GameListReadonly({ games, onGameClick }: GameListReadonlyProps) 
             <div className="mt-2 flex items-center space-x-4 text-sm">
               {game.status && game.status !== '0' && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                  {STATUS_LABELS[game.status] || game.status}
+                  <TranslatedGameStatus status={game.status} showAsBadge />
                 </span>
               )}
               {game.completion_percentage !== undefined && (

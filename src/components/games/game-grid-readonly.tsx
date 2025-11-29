@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { STATUS_LABELS } from '@/types/games';
+import { TranslatedGameStatus } from './TranslatedGameStatus';
 import { CollectionGame } from '@/hooks/useUserGames';
 
 interface GameGridReadonlyProps {
@@ -44,7 +44,7 @@ export function GameGridReadonly({ games, onGameClick }: GameGridReadonlyProps) 
               </h3>
               {game.status && game.status !== '0' && (
                 <span className="inline-block px-2 py-1 mt-2 text-xs rounded-full bg-primary/80 text-primary-foreground">
-                  {STATUS_LABELS[game.status] || game.status}
+                  <TranslatedGameStatus status={game.status} />
                 </span>
               )}
               {(() => {

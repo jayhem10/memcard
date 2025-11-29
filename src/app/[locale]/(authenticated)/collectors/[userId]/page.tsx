@@ -129,7 +129,6 @@ function CollectorCollectionContent() {
 
         // Si le profil n'existe plus, rediriger vers la liste des collectionneurs
         if (!data) {
-          console.log('Profil supprimé, redirection vers /collectors');
           router.push('/collectors');
           return;
         }

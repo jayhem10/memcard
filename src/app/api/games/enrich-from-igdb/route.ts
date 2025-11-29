@@ -2,7 +2,7 @@ import { withApi, ApiError } from '@/lib/api-wrapper';
 import { validateBody } from '@/lib/validation';
 import { queryIGDB, IGDB_CONFIG, getIGDBGameName, getIGDBGameSummary } from '@/lib/igdb';
 import { formatIGDBReleaseDate } from '@/lib/date-utils';
-import { getIGDBImageUrl } from '@/lib/game-utils';
+import { getIGDBImageUrl, translateTextWithStatus } from '@/lib/game-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +23,7 @@ export const POST = withApi(async (request, { supabase }) => {
       fields name, cover.image_id, first_release_date, summary, 
         involved_companies.company.name, involved_companies.developer, 
         involved_companies.publisher, platforms.id, platforms.name, genres.name,
+        rating, total_rating, rating_count,
         alternative_names.name, alternative_names.comment;
       search "${query}";
       ${platformId ? `where platforms = (${platformId}) & version_parent = null;` : 'where version_parent = null;'}
@@ -114,6 +115,29 @@ export const POST = withApi(async (request, { supabase }) => {
           const gameName = getIGDBGameName(igdbGame);
           const gameSummary = getIGDBGameSummary(igdbGame);
           
+          // Calculer la note moyenne IGDB (priorité : total_rating > rating)
+          const averageRating = igdbGame.total_rating 
+            ? Math.round(igdbGame.total_rating * 10) / 10  // Arrondir à 1 décimale
+            : (igdbGame.rating ? Math.round(igdbGame.rating * 10) / 10 : null);
+          
+          // Traduire automatiquement la description en français
+          let descriptionFr = null;
+          if (gameSummary) {
+            try {
+              console.log(`🌐 Traduction automatique de "${gameName}"...`);
+              const { translated, success } = await translateTextWithStatus(gameSummary, 'en', 'fr');
+              if (success) {
+                descriptionFr = translated;
+                console.log(`✅ Traduction réussie pour "${gameName}"`);
+              } else {
+                console.log(`⚠️ Traduction échouée pour "${gameName}" - jeu ajouté sans traduction`);
+              }
+            } catch (error) {
+              console.warn(`⚠️ Erreur traduction pour "${gameName}":`, error);
+              // Continue sans traduction en cas d'erreur
+            }
+          }
+          
           const { data: newGame, error: gameError } = await supabase
             .from('games')
             .insert({
@@ -123,11 +147,12 @@ export const POST = withApi(async (request, { supabase }) => {
               developer: developer || 'Unknown',
               publisher: publisher || 'Unknown',
               description_en: gameSummary,
-              description_fr: null, // Sera traduit plus tard via le bouton admin
+              description_fr: descriptionFr, // Traduction automatique ou null si échec
               cover_url: igdbGame.cover
                 ? getIGDBImageUrl(igdbGame.cover.image_id, '720p')
                 : null,
-              console_id: consoleData.id
+              console_id: consoleData.id,
+              average_rating: averageRating
             })
             .select()
             .single();

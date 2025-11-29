@@ -20,6 +20,17 @@ interface RecentGame {
   status: string;
 }
 
+interface TopRatedGame {
+  id: number;
+  game_id: number;
+  title: string;
+  cover_url: string;
+  console_name: string;
+  average_rating: number | null; // Note moyenne IGDB (0-100)
+  rating: number | null; // Note personnelle de l'utilisateur (0-5)
+  status: string;
+}
+
 interface UserStats {
   total: number;
   completed: number;
@@ -28,6 +39,7 @@ interface UserStats {
   wishlist: number;
   platforms: Platform[];
   recentGames: RecentGame[];
+  topRatedGames: TopRatedGame[];
   isLoading: boolean;
   error: string | null;
 }
@@ -46,6 +58,7 @@ interface GameData {
   id: number;
   title: string;
   cover_url: string;
+  average_rating: number | null;
   console: {
     name: string;
   };
@@ -68,6 +81,7 @@ export interface StatsSlice {
   wishlist: number;
   platforms: Platform[];
   recentGames: RecentGame[];
+  topRatedGames: TopRatedGame[];
   statsLoading: boolean;
   statsError: string | null;
   lastUserId: string | null;
@@ -85,6 +99,7 @@ const initialState: UserStats & { lastUserId: string | null } = {
   wishlist: 0,
   platforms: [],
   recentGames: [],
+  topRatedGames: [],
   isLoading: false,
   error: null,
   lastUserId: null
@@ -127,7 +142,8 @@ export const createStatsSlice: StateCreator<
       notStarted: 0,
       wishlist: 0,
       platforms: [],
-      recentGames: []
+      recentGames: [],
+      topRatedGames: []
     }));
 
     try {
@@ -241,6 +257,58 @@ export const createStatsSlice: StateCreator<
         // Filtrer les éléments null
         const recentGames = mappedGames.filter((game): game is RecentGame => game !== null);
 
+        // Récupérer les meilleurs jeux selon la note moyenne IGDB (exclure la wishlist)
+        const { data: topRatedData, error: topRatedError } = await supabase
+          .from('user_games')
+          .select(`
+            id,
+            game_id,
+            rating,
+            status,
+            game:game_id(id, title, cover_url, average_rating, console:console_id(name))
+          `)
+          .eq('user_id', userId)
+          .neq('status', 'WISHLIST') // Exclure les jeux de la wishlist
+          .not('game.average_rating', 'is', null); // Uniquement les jeux avec une note moyenne IGDB
+
+        if (topRatedError) {
+          console.error('Error fetching top rated games:', topRatedError);
+          // Ne pas throw, juste logger l'erreur pour ne pas bloquer le reste
+        }
+
+        // Créer le tableau des meilleurs jeux notés
+        const mappedTopRated = topRatedData
+          ? (topRatedData as unknown as Array<{
+              id: number;
+              game_id: number;
+              rating: number | null;
+              status: string;
+              game?: GameData;
+            }>).map((item: any) => {
+              const hasValidGame = item?.game && typeof item.game === 'object';
+              if (!hasValidGame) {
+                return null;
+              }
+              
+              return {
+                id: item.id,
+                game_id: hasValidGame ? (item.game?.id || item.game_id || 0) : (item.game_id || 0),
+                title: hasValidGame ? (item.game?.title || 'Jeu sans titre') : 'Jeu sans titre',
+                cover_url: hasValidGame ? (item.game?.cover_url || '') : '',
+                console_name: hasValidGame ? (item.game?.console?.name || 'Console inconnue') : 'Console inconnue',
+                average_rating: hasValidGame ? (item.game?.average_rating || null) : null,
+                rating: item.rating !== undefined && item.rating !== null ? Number(item.rating) : null,
+                status: item.status
+              };
+            })
+          : [];
+          
+        // Filtrer les éléments null et trier par average_rating décroissant
+        const topRatedGames = mappedTopRated
+          .filter((game): game is TopRatedGame => game !== null && game.average_rating !== null)
+          .sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
+          .slice(0, 5);
+
         // Mettre à jour le state
         set({
           total,
@@ -250,6 +318,7 @@ export const createStatsSlice: StateCreator<
           wishlist,
           platforms,
           recentGames,
+          topRatedGames,
           statsLoading: false,
           lastUserId: userId
         });

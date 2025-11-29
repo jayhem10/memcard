@@ -14,6 +14,7 @@ import { useAuth } from '@/context/auth-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { TranslatedGameDescription } from './TranslatedGameDescription';
 
 interface OtherUserGameModalProps {
   isOpen: boolean;
@@ -232,9 +233,11 @@ export function OtherUserGameModal({ isOpen, onClose, game, ownerUserId }: Other
               <div>
                 <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">{t('description')}</h3>
                 <div className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                  <p className="whitespace-pre-wrap break-words">
-                    {game.description_fr || game.description_en}
-                  </p>
+                  <TranslatedGameDescription
+                    description_en={game.description_en}
+                    description_fr={game.description_fr}
+                    className="whitespace-pre-wrap break-words"
+                  />
                 </div>
               </div>
             )}

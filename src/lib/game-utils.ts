@@ -2,6 +2,149 @@
 
 import { GameData, UserGameData } from '@/types/games';
 
+/**
+ * Traduit un texte en utilisant l'API MyMemory (gratuite)
+ * Version simple qui retourne toujours une string (pour compatibilité)
+ */
+export async function translateText(text: string, from: string = 'en', to: string = 'fr'): Promise<string> {
+  const result = await translateTextWithStatus(text, from, to);
+  return result.translated;
+}
+
+/**
+ * Traduit un texte en utilisant différentes APIs de traduction
+ * Priorité : DeepL (meilleur) > MyMemory (fallback gratuit)
+ */
+export async function translateTextWithStatus(text: string, from: string = 'en', to: string = 'fr'): Promise<{ translated: string; success: boolean }> {
+  if (!text || text.trim().length === 0) return { translated: text, success: true };
+  if (from === to) return { translated: text, success: true }; // Pas besoin de traduire
+
+  // 1. Essayer d'abord DeepL (meilleure qualité, 500k caractères/mois gratuits)
+  const deeplApiKey = process.env.DEEPL_API_KEY;
+  if (deeplApiKey) {
+    try {
+      // Déterminer l'URL de l'API (Free vs Pro)
+      const isFreeKey = deeplApiKey.endsWith(':fx');
+      const baseUrl = isFreeKey 
+        ? 'https://api-free.deepl.com/v2/translate'
+        : 'https://api.deepl.com/v2/translate';
+
+      console.log(`🌐 DeepL: Tentative de traduction...`);
+      const response = await fetch(baseUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `DeepL-Auth-Key ${deeplApiKey}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          text: text,
+          source_lang: from.toUpperCase(),
+          target_lang: to.toUpperCase(),
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.translations && data.translations[0]?.text) {
+          const translatedText = data.translations[0].text;
+          const isDifferent = translatedText.trim().toLowerCase() !== text.trim().toLowerCase();
+          console.log(`✅ DeepL: Traduction réussie`);
+          return { translated: translatedText, success: isDifferent };
+        } else {
+          console.warn('⚠️ DeepL: Réponse invalide (pas de traduction dans la réponse)');
+        }
+      } else {
+        const errorText = await response.text().catch(() => '');
+        if (response.status === 456) {
+          console.warn('⚠️ DeepL: Quota dépassé (456), fallback vers MyMemory');
+        } else if (response.status === 403) {
+          console.warn('⚠️ DeepL: Accès refusé (403) - vérifier la clé API, fallback vers MyMemory');
+        } else {
+          console.warn(`⚠️ DeepL error ${response.status}: ${errorText.substring(0, 100)}, fallback vers MyMemory`);
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ DeepL failed (erreur réseau ou autre):', error instanceof Error ? error.message : error);
+    }
+  } else {
+    console.warn('⚠️ DEEPL_API_KEY non trouvée dans les variables d\'environnement, utilisation directe de MyMemory');
+  }
+
+  // 2. Fallback vers MyMemory (gratuit, 1000 traductions/jour)
+  try {
+    const encodedText = encodeURIComponent(text);
+    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodedText}&langpair=${from}|${to}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; MemCard/1.0)',
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        console.warn('❌ MyMemory: Quota dépassé (429)');
+      } else {
+        console.warn(`❌ MyMemory error ${response.status}`);
+      }
+      return { translated: text, success: false };
+    }
+
+    const data = await response.json();
+
+    if (data.responseStatus === 200 && data.responseData && data.responseData.translatedText) {
+      const translatedText = data.responseData.translatedText;
+
+      // Vérifier si c'est un message d'erreur de limite de quota
+      if (translatedText.includes('MYMEMORY WARNING') ||
+          translatedText.includes('USED ALL AVAILABLE FREE TRANSLATIONS') ||
+          translatedText.includes('NEXT AVAILABLE IN')) {
+        console.warn('❌ MyMemory: Quota dépassé');
+        return { translated: text, success: false };
+      }
+
+      // Vérifier si la traduction est réellement différente du texte original
+      const isDifferent = translatedText.trim().toLowerCase() !== text.trim().toLowerCase();
+      console.log(`✅ MyMemory: Traduction réussie`);
+      return { translated: translatedText, success: isDifferent };
+    } else {
+      console.warn('❌ MyMemory: Réponse invalide');
+      return { translated: text, success: false };
+    }
+  } catch (error) {
+    console.warn('❌ Toutes les APIs ont échoué:', error);
+    return { translated: text, success: false };
+  }
+}
+
+/**
+ * Enrichit les données de jeu avec des traductions automatiques
+ */
+export async function enrichGameWithTranslations(gameData: GameData): Promise<GameData> {
+  // Si on a déjà une description française, pas besoin de traduire
+  if (gameData.description_fr) {
+    return gameData;
+  }
+
+  // Si on a une description anglaise mais pas française, on la traduit
+  if (gameData.description_en && !gameData.description_fr) {
+    try {
+      console.log(`🌐 Traduction automatique de la description pour "${gameData.title}"`);
+      const translatedDescription = await translateText(gameData.description_en, 'en', 'fr');
+      return {
+        ...gameData,
+        description_fr: translatedDescription,
+      };
+    } catch (error) {
+      console.warn(`❌ Échec de la traduction pour "${gameData.title}":`, error);
+      // En cas d'échec, on garde la description anglaise
+      return gameData;
+    }
+  }
+
+  // Pas de description du tout ou seulement française
+  return gameData;
+}
+
 // Types pour les données Supabase brutes
 interface SupabaseGameGenre {
   genre_id: string;
@@ -22,6 +165,7 @@ interface SupabaseGameData {
   description_fr: string | null;
   cover_url: string | null;
   console_id: string;
+  average_rating: number | null;
   game_genres?: SupabaseGameGenre[];
   [key: string]: unknown;
 }
@@ -50,6 +194,7 @@ interface SupabaseUserGameItem {
     description_fr: string | null;
     cover_url: string | null;
     console_id: string;
+    average_rating: number | null;
     consoles?: {
       name: string;
     } | null;
@@ -112,9 +257,9 @@ export function combineGameData(
 }
 
 /**
- * Transforme les données d'un user_game avec ses relations
+ * Transforme les données d'un user_game avec ses relations (version synchrone)
  */
-export function transformUserGameItem(item: SupabaseUserGameItem): {
+export function transformUserGameItemSync(item: SupabaseUserGameItem): {
   id: string;
   igdb_id: number;
   title: string;
@@ -126,6 +271,7 @@ export function transformUserGameItem(item: SupabaseUserGameItem): {
   cover_url: string | null;
   console_id: string;
   console_name?: string;
+  average_rating: number | null;
   genres: Array<{ id: string; name: string }>;
   status: string;
   rating: number | null;
@@ -154,6 +300,81 @@ export function transformUserGameItem(item: SupabaseUserGameItem): {
     cover_url: item.games.cover_url,
     console_id: item.games.console_id,
     console_name: item.games.consoles?.name,
+    average_rating: item.games.average_rating || null,
+    genres: item.games.game_genres?.map((g) => ({
+      id: g.genres?.id || '',
+      name: g.genres?.name || ''
+    })).filter(g => g.id && g.name) || [],
+    status: item.status,
+    rating: item.rating !== null && item.rating !== undefined ? Number(item.rating) : null,
+    notes: item.notes,
+    review: item.review,
+    created_at: item.created_at,
+    updated_at: item.updated_at,
+    purchase_date: item.purchase_date,
+    play_time: item.play_time,
+    completion_percentage: item.completion_percentage,
+    buy_price: item.buy_price
+  };
+}
+
+/**
+ * Transforme les données d'un user_game avec ses relations (version asynchrone avec traduction)
+ */
+export async function transformUserGameItem(item: SupabaseUserGameItem, autoTranslate: boolean = false): Promise<{
+  id: string;
+  igdb_id: number;
+  title: string;
+  release_date: string | null;
+  developer: string | null;
+  publisher: string | null;
+  description_en: string | null;
+  description_fr: string | null;
+  cover_url: string | null;
+  console_id: string;
+  console_name?: string;
+  average_rating: number | null;
+  genres: Array<{ id: string; name: string }>;
+  status: string;
+  rating: number | null;
+  notes: string | null;
+  review: string | null;
+  created_at: string;
+  updated_at: string;
+  purchase_date: string | null;
+  play_time: number | null;
+  completion_percentage: number | null;
+  buy_price: number | null;
+} | null> {
+  if (!item.games) {
+    return null;
+  }
+
+  let description_fr = item.games.description_fr || null;
+
+  // Traduction automatique si demandée et pas de description française
+  if (autoTranslate && item.games.description_en && !description_fr) {
+    try {
+      console.log(`🌐 Traduction automatique pour "${item.games.title}"`);
+      description_fr = await translateText(item.games.description_en, 'en', 'fr');
+    } catch (error) {
+      console.warn(`❌ Échec de la traduction pour "${item.games.title}":`, error);
+    }
+  }
+
+  return {
+    id: String(item.games.id), // Convertir l'id en string pour correspondre au type CollectionGame
+    igdb_id: item.games.igdb_id,
+    title: item.games.title,
+    release_date: item.games.release_date,
+    developer: item.games.developer,
+    publisher: item.games.publisher,
+    description_en: item.games.description_en || null,
+    description_fr: description_fr,
+    cover_url: item.games.cover_url,
+    console_id: item.games.console_id,
+    console_name: item.games.consoles?.name,
+    average_rating: item.games.average_rating || null,
     genres: item.games.game_genres?.map((g) => ({
       id: g.genres?.id || '',
       name: g.genres?.name || ''

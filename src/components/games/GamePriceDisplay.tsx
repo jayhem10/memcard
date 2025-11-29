@@ -210,12 +210,12 @@ export default function GamePriceDisplay({ gameId, className = '' }: GamePriceDi
                     <p className="mb-2" dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoDescription') }} />
                     <p className="mb-1.5">{t('gameDetails.priceInfoCriteria')}</p>
                     <ul className="list-disc list-inside space-y-0.5 ml-2 text-xs">
-                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoCondition') }} />
-                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoCompleteness') }} />
-                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoRegion') }} />
-                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoRarity') }} />
-                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoBox') }} />
-                      <li dangerouslySetInnerHTML={{ __html: t('gameDetails.priceInfoShipping') }} />
+                      <li>{t('gameDetails.priceInfoCondition')}</li>
+                      <li>{t('gameDetails.priceInfoCompleteness')}</li>
+                      <li>{t('gameDetails.priceInfoRegion')}</li>
+                      <li>{t('gameDetails.priceInfoRarity')}</li>
+                      <li>{t('gameDetails.priceInfoBox')}</li>
+                      <li>{t('gameDetails.priceInfoShipping')}</li>
                     </ul>
                     <p className="mt-1.5 text-xs italic">{t('gameDetails.priceInfoDisclaimer')}</p>
                   </AlertDescription>

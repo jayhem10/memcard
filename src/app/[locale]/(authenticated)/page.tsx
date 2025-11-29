@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/context/auth-context';
 import { useStats, useCollection, useProfile } from '@/store';
 import { supabase } from '@/lib/supabase';
-import { Gamepad, Calendar, TrendingUp, Trophy, Heart, Euro, Zap } from 'lucide-react';
+import { Gamepad, Calendar, TrendingUp, Trophy, Heart, Euro, Zap, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
+import { TranslatedGameStatus } from '@/components/games/TranslatedGameStatus';
 
 // Composant pour les statistiques
 function UserStats() {
@@ -264,10 +265,144 @@ function RecentGames() {
                 game.status === "WISHLIST" && "bg-gradient-to-r from-amber-600/90 to-amber-500/90 dark:from-amber-500/90 dark:to-amber-400/90 text-white border border-amber-400/50 dark:border-amber-300/50 group-hover:from-amber-600 group-hover:to-amber-500 dark:group-hover:from-amber-500 dark:group-hover:to-amber-400 shadow-sm"
               )}
             >
-              {game.status === "COMPLETED" && t('completed')}
-              {game.status === "IN_PROGRESS" && t('inProgress')}
-              {game.status === "NOT_STARTED" && t('notStarted')}
-              {game.status === "WISHLIST" && t('wished')}
+              <TranslatedGameStatus status={game.status} />
+            </Badge>
+          </Link>
+        ))}
+      </div>
+
+      <Button asChild variant="outline" className="w-full mt-3 rounded-lg shadow-md hover:shadow-lg transition-all text-sm">
+        <Link href="/collection">{t('viewFullCollection')}</Link>
+      </Button>
+    </div>
+  );
+}
+
+// Composant pour les meilleurs jeux notés
+function TopRatedGames() {
+  const t = useTranslations('home');
+  const { topRatedGames, isLoading } = useStats();
+  
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {/* Skeletons pour les meilleurs jeux */}
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 border border-border/50">
+            {/* Skeleton pour l'image */}
+            <div className="relative w-16 h-20 shrink-0 rounded-lg overflow-hidden bg-muted/50">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+            </div>
+            
+            {/* Skeleton pour les informations */}
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="relative h-4 bg-muted/50 rounded overflow-hidden" style={{ width: `${60 + i * 20}%` }}>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="relative h-3 bg-muted/50 rounded overflow-hidden" style={{ width: `${40 + i * 10}%` }}>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                </div>
+                <div className="relative h-3 bg-muted/50 rounded overflow-hidden" style={{ width: `${35 + i * 10}%` }}>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                </div>
+              </div>
+            </div>
+            
+            {/* Skeleton pour le badge */}
+            <div className="relative h-7 w-20 bg-muted/50 rounded-lg shrink-0 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (topRatedGames.length === 0) {
+    return (
+      <div className="space-y-4">
+        <p className="text-muted-foreground">{t('noRatedGames')}</p>
+        <Button asChild>
+          <Link href="/collection">{t('viewCollection')}</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-3">
+        {topRatedGames.map((game: { id: number; game_id: number; title: string; cover_url: string; console_name: string; average_rating: number | null; rating: number | null; status: string }) => (
+          <Link 
+            href={`/games/${game.game_id}`} 
+            key={`top-rated-game-${game.id}`}
+            className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-muted/30 to-muted/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 transition-all duration-300 group shadow-sm hover:shadow-md"
+          >
+            {/* Image du jeu */}
+            <div className="relative w-14 h-20 shrink-0 rounded-lg overflow-hidden bg-muted shadow-md group-hover:shadow-lg transition-shadow">
+              {game.cover_url ? (
+                <Image 
+                  src={game.cover_url}
+                  alt={game.title}
+                  fill
+                  sizes="(max-width: 640px) 56px, 80px"
+                  className="object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
+                  <span className="text-xs text-muted-foreground font-medium">{t('noCover')}</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Informations du jeu */}
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors" title={game.title}>
+                {game.title}
+              </p>
+              <div className="flex flex-col gap-1 mt-1.5 text-xs">
+                <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Gamepad className="h-3.5 w-3.5" />
+                    {game.console_name}
+                  </span>
+                </div>
+                {/* Notes côte à côte */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Note moyenne IGDB */}
+                  {game.average_rating !== null && (
+                    <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-medium">
+                      <Star className="h-3.5 w-3.5 fill-blue-500 text-blue-500" />
+                      {game.average_rating.toFixed(1)}/100
+                    </span>
+                  )}
+                  {/* Note personnelle */}
+                  {game.rating !== null ? (
+                    <span className="inline-flex items-center gap-1.5 text-yellow-600 dark:text-yellow-400 font-medium">
+                      <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                      {game.rating}/5 {t('yourRating')}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground text-xs">
+                      {t('notRated')}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Badge de statut */}
+            <Badge 
+              className={cn(
+                "shrink-0 transition-all duration-300 rounded-lg px-2.5 py-1 font-semibold text-xs backdrop-blur-sm",
+                game.status === "COMPLETED" && "bg-gradient-to-r from-green-600/90 to-green-500/90 dark:from-green-500/90 dark:to-green-400/90 text-white border border-green-400/50 dark:border-green-300/50 group-hover:from-green-600 group-hover:to-green-500 dark:group-hover:from-green-500 dark:group-hover:to-green-400 shadow-sm",
+                game.status === "IN_PROGRESS" && "bg-gradient-to-r from-blue-600/90 to-blue-500/90 dark:from-blue-500/90 dark:to-blue-400/90 text-white border border-blue-400/50 dark:border-blue-300/50 group-hover:from-blue-600 group-hover:to-blue-500 dark:group-hover:from-blue-500 dark:group-hover:to-blue-400 shadow-sm",
+                game.status === "NOT_STARTED" && "bg-gradient-to-r from-gray-600/90 to-gray-500/90 dark:from-gray-500/90 dark:to-gray-400/90 text-white border border-gray-400/50 dark:border-gray-300/50 group-hover:from-gray-600 group-hover:to-gray-500 dark:group-hover:from-gray-500 dark:group-hover:to-gray-400 shadow-sm",
+                game.status === "WISHLIST" && "bg-gradient-to-r from-amber-600/90 to-amber-500/90 dark:from-amber-500/90 dark:to-amber-400/90 text-white border border-amber-400/50 dark:border-amber-300/50 group-hover:from-amber-600 group-hover:to-amber-500 dark:group-hover:from-amber-500 dark:group-hover:to-amber-400 shadow-sm"
+              )}
+            >
+              <TranslatedGameStatus status={game.status} />
             </Badge>
           </Link>
         ))}
@@ -415,8 +550,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Statistiques */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Statistiques - Prend toute la largeur sur mobile, 1/3 sur desktop */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
           <div className="relative p-5">
@@ -444,25 +579,17 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Actions rapides */}
+        {/* Meilleurs jeux notés */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm hover:shadow-2xl transition-all duration-300">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 opacity-0 hover:opacity-100 transition-opacity duration-300" />
           <div className="relative p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="h-1 w-6 bg-gradient-to-r from-primary to-primary/50 rounded-full" />
-              <h3 className="text-base font-bold">{t('quickActions')}</h3>
+              <h3 className="text-base font-bold">{t('topRatedGames')}</h3>
             </div>
-            <div className="space-y-3">
-              <Button asChild className="w-full rounded-lg shadow-lg hover:shadow-xl transition-all">
-                <Link href="/search">{t('addGame')}</Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full rounded-lg border-primary/50 hover:border-primary">
-                <Link href="/collection">{t('manageCollection')}</Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full rounded-lg border-primary/50 hover:border-primary">
-                <Link href="/profile">{t('editProfile')}</Link>
-              </Button>
-            </div>
+            <Suspense fallback={<div>Chargement...</div>}>
+              <TopRatedGames />
+            </Suspense>
           </div>
         </div>
       </div>

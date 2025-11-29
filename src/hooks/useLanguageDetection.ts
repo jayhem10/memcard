@@ -50,7 +50,7 @@ export function useLanguageDetection() {
               }
             }
           } catch (error) {
-            console.log('Impossible de détecter le pays:', error);
+            console.error('Impossible de détecter le pays:', error);
           }
         }
 

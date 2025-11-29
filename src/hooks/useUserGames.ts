@@ -1,12 +1,12 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { transformUserGameItem } from '@/lib/game-utils';
+import { transformUserGameItemSync, translateText } from '@/lib/game-utils';
 import { useAuth } from '@/context/auth-context';
 import { USER_GAME_WITH_RELATIONS_SELECT } from '@/lib/supabase-queries';
 import { handleSupabaseError } from '@/lib/error-handler';
 import { queryKeys, collectionQueryOptions } from '@/lib/react-query-config';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 
 export type CollectionGame = {
@@ -21,6 +21,7 @@ export type CollectionGame = {
   cover_url: string | null;
   console_id: string;
   console_name?: string;
+  average_rating: number | null;
   genres: Array<{ id: string; name: string }>;
   status?: string;
   rating?: number | null;
@@ -185,7 +186,7 @@ export function useUserGames(filters?: UserGamesFilters) {
 
       // Les données RPC sont déjà filtrées et au bon format
       const formattedGames = result.data
-        ?.map(transformUserGameItem)
+        ?.map(transformUserGameItemSync)
         .filter(Boolean) as CollectionGame[] || [];
 
       return formattedGames;

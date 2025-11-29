@@ -16,7 +16,10 @@ import Game3DImage from '@/components/games/Game3DImage';
 import GamePriceDisplay from '@/components/games/GamePriceDisplay';
 import { GameRecentActivities } from '@/components/games/GameRecentActivities';
 import { SimilarGamesList } from '@/components/games/SimilarGamesList';
-import { STATUS_LABELS, EDITION_OPTIONS } from '@/types/games';
+import { TranslatedGameDescription } from '@/components/games/TranslatedGameDescription';
+import { TranslatedGameStatus } from '@/components/games/TranslatedGameStatus';
+import { AverageRatingDisplay } from '@/components/games/AverageRatingDisplay';
+import { EDITION_OPTIONS } from '@/types/games';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGame } from '@/hooks/useGame';
 import { useSimilarGames } from '@/hooks/useSimilarGames';
@@ -25,6 +28,7 @@ import { useTranslations } from 'next-intl';
 
 export default function GameDetailPage() {
   const t = useTranslations('gameDetails');
+  const tGames = useTranslations('games');
   const params = useParams();
   const gameId = params?.id as string | undefined;
   const router = useRouter();
@@ -428,7 +432,18 @@ export default function GameDetailPage() {
                 </AlertDialog>
               </div>
               
-              <p className="text-muted-foreground leading-relaxed text-base">{game.description_fr || game.description_en || ''}</p>
+              {/* Note moyenne de la communauté */}
+              {game.average_rating && (
+                <div className="mb-4">
+                  <AverageRatingDisplay rating={game.average_rating} size="md" />
+                </div>
+              )}
+
+              <TranslatedGameDescription
+                description_en={game.description_en}
+                description_fr={game.description_fr}
+                className="text-muted-foreground leading-relaxed text-base"
+              />
             </div>
           </div>
 
@@ -502,15 +517,15 @@ export default function GameDetailPage() {
                           status: e.target.value,
                         })}
                       >
-                        <option value="NOT_STARTED">{t('games.status.notStarted')}</option>
-                        <option value="IN_PROGRESS">{t('games.status.inProgress')}</option>
-                        <option value="COMPLETED">{t('games.status.completed')}</option>
-                        <option value="DROPPED">{t('games.status.dropped')}</option>
-                        <option value="WISHLIST">{t('games.status.wishlist')}</option>
+                        <option value="NOT_STARTED">{tGames('status.notStarted')}</option>
+                        <option value="IN_PROGRESS">{tGames('status.inProgress')}</option>
+                        <option value="COMPLETED">{tGames('status.completed')}</option>
+                        <option value="DROPPED">{tGames('status.dropped')}</option>
+                        <option value="WISHLIST">{tGames('status.wishlist')}</option>
                       </select>
                     ) : (
                       <p className="text-lg font-semibold text-foreground">
-                        {userGame?.status ? (STATUS_LABELS[userGame.status] || userGame.status) : t('notDefined')}
+                        {userGame?.status ? <TranslatedGameStatus status={userGame.status} /> : t('notDefined')}
                       </p>
                     )}
                   </div>

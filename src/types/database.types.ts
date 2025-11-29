@@ -17,6 +17,7 @@ export interface Game {
   description_fr: string | null;
   cover_url: string | null;
   console_id: string;
+  average_rating: number | null;
 }
 
 export interface Genre {

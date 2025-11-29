@@ -26,6 +26,7 @@ export type GameData = {
   publisher: string | null;
   release_date: string | null;
   console_id: string | null;
+  average_rating: number | null;
   user_games: UserGameData[];
   console: {
     id: string;

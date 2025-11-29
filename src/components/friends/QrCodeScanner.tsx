@@ -44,7 +44,6 @@ export function QrCodeScanner({ onScan, onError }: QrCodeScannerProps) {
           });
       } catch (error) {
           // Fallback: essayer d'accéder directement à la caméra
-          console.log('API Permissions non supportée, tentative d\'accès direct');
         setHasPermission(null);
       }
     };

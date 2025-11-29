@@ -12,6 +12,7 @@ export const GAME_GENRES_SELECT = 'game_genres(genre_id, genres(id, name))';
 // Sélection complète pour un jeu avec relations
 export const GAME_WITH_RELATIONS_SELECT = `
   *,
+  average_rating,
   ${CONSOLE_SELECT},
   ${GAME_GENRES_SELECT}
 `;
@@ -43,6 +44,7 @@ export const USER_GAME_WITH_RELATIONS_SELECT = `
     description_fr,
     cover_url,
     console_id,
+    average_rating,
     consoles:console_id(id, name),
     ${GAME_GENRES_SELECT}
   )

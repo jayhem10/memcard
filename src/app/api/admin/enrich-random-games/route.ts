@@ -312,6 +312,11 @@ export const POST = withApi(async (request, { user, supabase }) => {
               const gameName = getIGDBGameName(igdbGame);
               const gameSummary = getIGDBGameSummary(igdbGame);
               
+              // Calculer la note moyenne IGDB (priorité : total_rating > rating)
+              const averageRating = igdbGame.total_rating 
+                ? Math.round(igdbGame.total_rating * 10) / 10  // Arrondir à 1 décimale
+                : (igdbGame.rating ? Math.round(igdbGame.rating * 10) / 10 : null);
+
               const { data: newGame, error: gameError } = await supabaseAdmin
                 .from('games')
                 .insert({
@@ -325,7 +330,8 @@ export const POST = withApi(async (request, { user, supabase }) => {
                   cover_url: igdbGame.cover
                     ? getIGDBImageUrl(igdbGame.cover.image_id, '720p')
                     : null,
-                  console_id: consoleData.id
+                  console_id: consoleData.id,
+                  average_rating: averageRating
                 })
                 .select()
                 .single();

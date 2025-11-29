@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/react-query-config';
 import { Input } from '@/components/ui/input';
@@ -8,8 +9,8 @@ import { SearchInput } from '@/components/ui/search-input';
 import { formatIGDBReleaseDate, getIGDBReleaseYear } from '@/lib/date-utils';
 import { Button } from '@/components/ui/button';
 import { Search, Loader2, X, Check, ChevronDown } from 'lucide-react';
-import Image from 'next/image';
 import { queryIGDB, IGDB_ENDPOINTS, getIGDBGameName, getIGDBGameSummary } from '@/lib/igdb';
+// La traduction se fait maintenant via l'API route /api/translate
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { ConsoleSelectDialog } from '@/components/console-select-dialog';
@@ -75,6 +76,13 @@ const GameCover3D: React.FC<{
         sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
         className="object-cover brightness-105 contrast-105"
         priority={pageIndex === 0 && gameIndex < 6} // Priorité aux premières images visibles
+        onError={(e) => {
+          // Fallback en cas d'erreur de chargement
+          const target = e.target as HTMLImageElement;
+          if (target) {
+            target.style.display = 'none';
+          }
+        }}
       />
       {/* Effet de reflet statique */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/10 pointer-events-none" />
@@ -108,6 +116,8 @@ interface IGDBGame {
     id: number;
     name: string;
   }>;
+  rating?: number;
+  total_rating?: number;
 }
 
 interface Platform {
@@ -480,6 +490,45 @@ export default function SearchPage() {
           const gameName = getIGDBGameName(selectedGame);
           const gameSummary = getIGDBGameSummary(selectedGame);
           
+          // Calculer la note moyenne IGDB (priorité : total_rating > rating)
+          const averageRating = selectedGame.total_rating 
+            ? Math.round(selectedGame.total_rating * 10) / 10  // Arrondir à 1 décimale
+            : (selectedGame.rating ? Math.round(selectedGame.rating * 10) / 10 : null);
+          
+          // Traduire automatiquement la description en français via l'API route
+          let descriptionFr = null;
+          if (gameSummary) {
+            try {
+              console.log(`🌐 Traduction automatique de "${gameName}"...`);
+              const response = await fetch('/api/translate', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  text: gameSummary,
+                  from: 'en',
+                  to: 'fr',
+                }),
+              });
+
+              if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                  descriptionFr = data.translated;
+                  console.log(`✅ Traduction réussie pour "${gameName}"`);
+                } else {
+                  console.log(`⚠️ Traduction échouée pour "${gameName}" - jeu ajouté sans traduction`);
+                }
+              } else {
+                console.warn(`⚠️ Erreur API traduction pour "${gameName}":`, response.status);
+              }
+            } catch (error) {
+              console.warn(`⚠️ Erreur traduction pour "${gameName}":`, error);
+              // Continue sans traduction en cas d'erreur
+            }
+          }
+          
           const { data: newGame, error: gameError } = await (supabase
             .from('games') as any)
             .insert({
@@ -489,11 +538,12 @@ export default function SearchPage() {
               developer: developer || 'Unknown',
               publisher: publisher || 'Unknown',
               description_en: gameSummary,
-              description_fr: null, // Sera traduit plus tard via le bouton admin
+              description_fr: descriptionFr, // Traduction automatique ou null si échec
               cover_url: selectedGame.cover 
                 ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${selectedGame.cover.image_id}.jpg`
                 : null,
-              console_id: consoleId // Remettre console_id ici
+              console_id: consoleId, // Remettre console_id ici
+              average_rating: averageRating
             })
             .select()
             .single();

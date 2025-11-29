@@ -87,6 +87,7 @@ export const useStats = () => {
   const wishlist = useStore((state) => state.wishlist);
   const platforms = useStore((state) => state.platforms);
   const recentGames = useStore((state) => state.recentGames);
+  const topRatedGames = useStore((state) => state.topRatedGames);
   const isLoading = useStore((state) => state.statsLoading);
   const error = useStore((state) => state.statsError);
   const fetchUserStats = useStore((state) => state.fetchUserStats);
@@ -100,11 +101,12 @@ export const useStats = () => {
     wishlist,
     platforms,
     recentGames,
+    topRatedGames,
     isLoading,
     error,
     fetchUserStats,
     resetStats,
-  }), [total, completed, inProgress, notStarted, wishlist, platforms, recentGames, isLoading, error, fetchUserStats, resetStats]);
+  }), [total, completed, inProgress, notStarted, wishlist, platforms, recentGames, topRatedGames, isLoading, error, fetchUserStats, resetStats]);
 };
 
 // Export pour compatibilité ascendante (déprécié)
@@ -118,8 +120,4 @@ export const useProfileStore = useStore;
  */
 export const useCollectionStore = useStore;
 
-/**
- * @deprecated Utilisez useStats() à la place
- */
-export const useUserStatsStore = useStore;
 
