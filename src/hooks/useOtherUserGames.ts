@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { transformUserGameItem } from '@/lib/game-utils';
+import { transformUserGameItemSync } from '@/lib/game-utils';
 import { CollectionGame } from './useUserGames';
 import { supabase } from '@/lib/supabase';
 import { queryKeys, collectionQueryOptions } from '@/lib/react-query-config';
@@ -71,7 +71,7 @@ export function useOtherUserGames(userId: string | undefined, filters?: OtherUse
 
       // Transformer les données
       const formattedGames = data.games
-        .map(transformUserGameItem)
+        .map(transformUserGameItemSync)
         .filter(Boolean) as CollectionGame[];
 
       return formattedGames;

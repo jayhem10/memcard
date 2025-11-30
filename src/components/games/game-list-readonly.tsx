@@ -43,7 +43,7 @@ export function GameListReadonly({ games, onGameClick }: GameListReadonlyProps) 
                   {game.title}
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {game.developer}
+                  {game.developer || 'Développeur inconnu'}
                 </p>
                 {game.console_name && (
                   <p className="text-xs text-muted-foreground mt-1">

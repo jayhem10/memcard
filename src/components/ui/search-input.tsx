@@ -46,17 +46,17 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 
     const getPaddingClasses = () => {
       const leftPadding = searchIcon ? 'pl-10' : 'pl-4';
-      
+
       if (hasActionButton) {
         // Si il y a un bouton d'action (comme "Rechercher"), on laisse plus d'espace
         if (showClearButton && hasValue) {
-          return `${leftPadding} pr-28`; // Plus d'espace pour le bouton clear + action
+          return `${leftPadding} pr-20 sm:pr-28`; // Plus d'espace pour le bouton clear + action (responsive)
         }
-        return `${leftPadding} pr-24`; // Espace pour le bouton d'action
+        return `${leftPadding} pr-16 sm:pr-24`; // Espace pour le bouton d'action (responsive)
       } else {
         // Si pas de bouton d'action, padding normal
         if (showClearButton && hasValue) {
-          return clearButtonPosition === 'right' ? `${leftPadding} pr-20` : `${leftPadding} pr-10`;
+          return clearButtonPosition === 'right' ? `${leftPadding} pr-10 sm:pr-20` : `${leftPadding} pr-10`;
         }
         return `${leftPadding} pr-4`;
       }
@@ -82,7 +82,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
             size="sm"
             className={cn(
               "absolute top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted z-10",
-              hasActionButton ? 'right-28' : 'right-3' // Position différente selon le contexte
+              hasActionButton ? 'right-16 sm:right-28' : 'right-3' // Position responsive selon le contexte
             )}
             onClick={handleClear}
             type="button"

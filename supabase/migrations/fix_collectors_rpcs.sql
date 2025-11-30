@@ -192,3 +192,163 @@ $$;
 -- Donner les permissions nécessaires
 GRANT EXECUTE ON FUNCTION get_user_games_filtered_paginated TO authenticated;
 GRANT EXECUTE ON FUNCTION get_other_user_games_stats TO authenticated;
+
+-- =================================================================================
+-- PARTIE 2: SYSTÈME D'AMIS
+-- =================================================================================
+
+-- 1. Créer la table user_friends si elle n'existe pas
+CREATE TABLE IF NOT EXISTS public.user_friends (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    friend_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+
+    -- Contrainte pour éviter les auto-amis
+    CONSTRAINT no_self_friend CHECK (user_id != friend_id),
+
+    -- Contrainte unique pour éviter les doublons (unidirectionnel)
+    CONSTRAINT unique_user_friend UNIQUE (user_id, friend_id)
+);
+
+-- Activer RLS sur la table user_friends si ce n'est pas déjà fait
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE c.relname = 'user_friends'
+        AND n.nspname = 'public'
+        AND c.relrowsecurity = true
+    ) THEN
+        ALTER TABLE public.user_friends ENABLE ROW LEVEL SECURITY;
+        RAISE NOTICE 'RLS activé pour user_friends';
+    ELSE
+        RAISE NOTICE 'RLS déjà activé pour user_friends';
+    END IF;
+END $$;
+
+
+-- 3. Politiques RLS pour user_friends
+DO $$
+BEGIN
+    -- Politique SELECT (si elle n'existe pas)
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'user_friends'
+        AND schemaname = 'public'
+        AND policyname = 'Users can view their own friendships'
+    ) THEN
+        CREATE POLICY "Users can view their own friendships"
+        ON public.user_friends FOR SELECT
+        TO authenticated
+        USING (auth.uid() = user_id OR auth.uid() = friend_id);
+        RAISE NOTICE 'Politique SELECT créée pour user_friends';
+    ELSE
+        RAISE NOTICE 'Politique SELECT déjà existante pour user_friends';
+    END IF;
+
+    -- Politique INSERT (si elle n'existe pas)
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'user_friends'
+        AND schemaname = 'public'
+        AND policyname = 'Users can create their own friendships'
+    ) THEN
+        CREATE POLICY "Users can create their own friendships"
+        ON public.user_friends FOR INSERT
+        TO authenticated
+        WITH CHECK (auth.uid() = user_id);
+        RAISE NOTICE 'Politique INSERT créée pour user_friends';
+    ELSE
+        RAISE NOTICE 'Politique INSERT déjà existante pour user_friends';
+    END IF;
+
+    -- Politique DELETE (si elle n'existe pas)
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'user_friends'
+        AND schemaname = 'public'
+        AND policyname = 'Users can delete their own friendships'
+    ) THEN
+        CREATE POLICY "Users can delete their own friendships"
+        ON public.user_friends FOR DELETE
+        TO authenticated
+        USING (auth.uid() = user_id);
+        RAISE NOTICE 'Politique DELETE créée pour user_friends';
+    ELSE
+        RAISE NOTICE 'Politique DELETE déjà existante pour user_friends';
+    END IF;
+END $$;
+
+-- 4. Créer la fonction RPC are_users_friends
+CREATE OR REPLACE FUNCTION public.are_users_friends(
+    p_user_id UUID,
+    p_friend_id UUID
+)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+    SELECT EXISTS (
+        SELECT 1
+        FROM public.user_friends
+        WHERE (user_id = p_user_id AND friend_id = p_friend_id)
+           OR (user_id = p_friend_id AND friend_id = p_user_id)
+    );
+$$;
+
+-- 5. Créer des index pour optimiser les performances (si ils n'existent pas)
+CREATE INDEX IF NOT EXISTS idx_user_friends_user_id ON public.user_friends(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_friends_friend_id ON public.user_friends(friend_id);
+CREATE INDEX IF NOT EXISTS idx_user_friends_created_at ON public.user_friends(created_at);
+
+-- 6. Activer Realtime pour user_friends (si pas déjà fait)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables
+        WHERE pubname = 'supabase_realtime'
+        AND tablename = 'user_friends'
+        AND schemaname = 'public'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.user_friends;
+        RAISE NOTICE 'Table user_friends ajoutée à la publication Realtime';
+    ELSE
+        RAISE NOTICE 'Table user_friends déjà dans la publication Realtime';
+    END IF;
+END $$;
+
+-- 7. Ajouter la politique RLS pour que les amis puissent voir les collections
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies
+        WHERE tablename = 'user_games'
+        AND schemaname = 'public'
+        AND policyname = 'Friends can view user games'
+    ) THEN
+        CREATE POLICY "Friends can view user games"
+        ON public.user_games FOR SELECT
+        TO authenticated
+        USING (
+            -- L'utilisateur peut voir ses propres jeux
+            auth.uid() = user_id
+            -- Ou les jeux des utilisateurs dont il est ami
+            OR EXISTS (
+                SELECT 1 FROM user_friends
+                WHERE (user_id = auth.uid() AND friend_id = user_games.user_id)
+                   OR (user_id = user_games.user_id AND friend_id = auth.uid())
+            )
+            -- Ou les jeux des profils publics
+            OR is_profile_public(user_id)
+        );
+        RAISE NOTICE 'Politique RLS ajoutée pour les amis sur user_games';
+    ELSE
+        RAISE NOTICE 'Politique RLS pour les amis existe déjà sur user_games';
+    END IF;
+END $$;
+
+-- 8. Donner les permissions pour la fonction are_users_friends
+GRANT EXECUTE ON FUNCTION are_users_friends TO authenticated;

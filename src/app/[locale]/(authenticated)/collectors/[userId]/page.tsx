@@ -150,7 +150,7 @@ function CollectorCollectionContent() {
               p_friend_id: userId
             });
 
-          if (isFriend) {
+          if (isFriend === true) {
             hasAccess = true;
           } else if (data.is_public) {
             hasAccess = true;

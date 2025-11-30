@@ -14,9 +14,9 @@ export type CollectionGame = {
   igdb_id: number;
   title: string;
   release_date: string | null;
-  developer: string;
-  publisher: string;
-  description_en: string;
+  developer: string | null;
+  publisher: string | null;
+  description_en: string | null;
   description_fr: string | null;
   cover_url: string | null;
   console_id: string;

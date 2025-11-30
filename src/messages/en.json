@@ -204,7 +204,9 @@
       "collector": "Collector's edition",
       "deluxe": "Deluxe edition",
       "other": "Other"
-    }
+    },
+    "noImage": "No image",
+    "unknownConsole": "Unknown console"
   },
   "gameDetails": {
     "averageRating": "Community rating",
