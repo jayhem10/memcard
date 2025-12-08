@@ -31,8 +31,9 @@ export function AdBanner({ className, slotId, clientId }: AdBannerProps) {
 
   useEffect(() => {
     try {
-      // @ts-expect-error adsbygoogle injecté par le script
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
+      const ads = (window as any).adsbygoogle || [];
+      ads.push({});
+      (window as any).adsbygoogle = ads;
     } catch (err) {
       console.warn('[AdBanner] adsbygoogle push error', err);
     }
