@@ -81,17 +81,17 @@ export const STATUS_LABELS: Record<string, string> = {
 
 // Les options d'édition sont maintenant gérées via les traductions
 export const getEditionOptions = (t: (key: string) => string) => [
-  { value: 'standard', label: t('games.edition.standard') },
-  { value: 'enhanced', label: t('games.edition.enhanced') },
-  { value: 'collector', label: t('games.edition.collector') },
-  { value: 'limitee', label: t('games.edition.limitee') },
-  { value: 'deluxe', label: t('games.edition.deluxe') },
-  { value: 'ultimate', label: t('games.edition.ultimate') },
-  { value: 'goty', label: t('games.edition.goty') },
-  { value: 'day_one', label: t('games.edition.dayOne') },
-  { value: 'prestige', label: t('games.edition.prestige') },
-  { value: 'steelbook', label: t('games.edition.steelbook') },
-  { value: 'autres', label: t('games.edition.autres') },
+  { value: 'standard', label: t('edition.standard') },
+  { value: 'enhanced', label: t('edition.enhanced') },
+  { value: 'collector', label: t('edition.collector') },
+  { value: 'limitee', label: t('edition.limitee') },
+  { value: 'deluxe', label: t('edition.deluxe') },
+  { value: 'ultimate', label: t('edition.ultimate') },
+  { value: 'goty', label: t('edition.goty') },
+  { value: 'day_one', label: t('edition.dayOne') },
+  { value: 'prestige', label: t('edition.prestige') },
+  { value: 'steelbook', label: t('edition.steelbook') },
+  { value: 'autres', label: t('edition.autres') },
 ] as const;
 
 // Pour la compatibilité descendante

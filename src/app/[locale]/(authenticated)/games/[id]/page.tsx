@@ -19,7 +19,7 @@ import { SimilarGamesList } from '@/components/games/SimilarGamesList';
 import { TranslatedGameDescription } from '@/components/games/TranslatedGameDescription';
 import { TranslatedGameStatus } from '@/components/games/TranslatedGameStatus';
 import { AverageRatingDisplay } from '@/components/games/AverageRatingDisplay';
-import { EDITION_OPTIONS } from '@/types/games';
+import { EDITION_OPTIONS, getEditionOptions } from '@/types/games';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGame } from '@/hooks/useGame';
 import { useSimilarGames } from '@/hooks/useSimilarGames';
@@ -29,6 +29,20 @@ import { useTranslations } from 'next-intl';
 export default function GameDetailPage() {
   const t = useTranslations('gameDetails');
   const tGames = useTranslations('games');
+  const editionOptions = getEditionOptions((key) => tGames(key));
+  const getConditionLabel = (condition?: string | null) => {
+    if (!condition) return t('notSpecified');
+    const map: Record<string, string> = {
+      'neuf': t('conditionNew'),
+      'comme neuf': t('conditionLikeNew'),
+      'très bon état': t('conditionVeryGood'),
+      'bon état': t('conditionGood'),
+      'état moyen': t('conditionFair'),
+      'mauvais état': t('conditionPoor'),
+    };
+    return map[condition.toLowerCase()] ?? condition;
+  };
+
   const params = useParams();
   const gameId = params?.id as string | undefined;
   const router = useRouter();
@@ -551,9 +565,7 @@ export default function GameDetailPage() {
                       </select>
                     ) : (
                       <p className="text-lg font-semibold text-foreground">
-                        {userGame?.condition
-                          ? userGame.condition.charAt(0).toUpperCase() + userGame.condition.slice(1).toLowerCase()
-                          : 'Non renseigné'}
+                        {getConditionLabel(userGame?.condition)}
                       </p>
                     )}
                   </div>
@@ -571,10 +583,10 @@ export default function GameDetailPage() {
                           })}
                         >
                           <SelectTrigger className="w-full rounded-lg">
-                            <SelectValue placeholder="Standard" />
+                            <SelectValue placeholder={tGames('edition.standard')} />
                           </SelectTrigger>
                           <SelectContent>
-                            {EDITION_OPTIONS.map((option) => (
+                            {editionOptions.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.label}
                               </SelectItem>
@@ -598,8 +610,8 @@ export default function GameDetailPage() {
                         {userGame?.edition === 'autres' && userGame?.edition_other
                           ? userGame.edition_other
                           : userGame?.edition
-                          ? EDITION_OPTIONS.find(opt => opt.value === userGame.edition)?.label || userGame.edition
-                          : 'Standard'}
+                          ? editionOptions.find(opt => opt.value === userGame.edition)?.label || userGame.edition
+                          : tGames('edition.standard')}
                       </p>
                     )}
                   </div>

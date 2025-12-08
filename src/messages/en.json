@@ -203,7 +203,15 @@
       "standard": "Standard",
       "collector": "Collector's edition",
       "deluxe": "Deluxe edition",
-      "other": "Other"
+      "other": "Other",
+      "enhanced": "Enhanced edition",
+      "limitee": "Limited edition",
+      "ultimate": "Ultimate edition",
+      "goty": "Game of the Year edition",
+      "dayOne": "Day One edition",
+      "prestige": "Prestige edition",
+      "steelbook": "Steelbook edition",
+      "autres": "Other"
     },
     "noImage": "No image",
     "unknownConsole": "Unknown console"

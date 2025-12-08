@@ -200,10 +200,18 @@
       "wishlist": "Liste de souhaits"
     },
     "edition": {
-      "standard": "Standard",
+      "standard": "Édition standard",
       "collector": "Édition collector",
       "deluxe": "Édition deluxe",
-      "other": "Autre"
+      "other": "Autre",
+      "enhanced": "Édition améliorée",
+      "limitee": "Édition limitée",
+      "ultimate": "Édition ultime",
+      "goty": "Édition Game of the Year",
+      "dayOne": "Édition Day One",
+      "prestige": "Édition prestige",
+      "steelbook": "Édition Steelbook",
+      "autres": "Autres"
     },
     "noImage": "Pas d'image",
     "unknownConsole": "Console inconnue"
