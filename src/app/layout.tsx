@@ -130,6 +130,7 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <meta name="google-adsense-account" content="ca-pub-7235468269059593" />
         <WebSiteSchema />
         <OrganizationSchema />
         <WebApplicationSchema />

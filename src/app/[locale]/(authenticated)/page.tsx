@@ -12,6 +12,7 @@ import { Gamepad, Calendar, TrendingUp, Trophy, Heart, Euro, Zap, Star } from 'l
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { TranslatedGameStatus } from '@/components/games/TranslatedGameStatus';
+import { AdBanner } from '@/components/ads/AdBanner';
 
 // Composant pour les statistiques
 function UserStats() {
@@ -21,6 +22,7 @@ function UserStats() {
     platforms, isLoading
   } = useStats();
   const { totalValue } = useCollection();
+  const adEnabled = Boolean(process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID && process.env.NEXT_PUBLIC_ADSENSE_SLOT_ID);
 
   if (isLoading) {
     return (
@@ -69,6 +71,13 @@ function UserStats() {
 
   return (
     <div className="space-y-6">
+      {/* Encadré publicitaire (AdSense) */}
+      {adEnabled && (
+        <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card shadow-md p-3 sm:p-4">
+          <AdBanner className="w-full" />
+        </div>
+      )}
+
       {/* Cards de statistiques avec design moderne */}
       <div className="grid grid-cols-2 gap-4">
         <Link href="/collection" className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-50/50 via-card to-blue-50/30 dark:from-blue-950/20 dark:via-card dark:to-blue-950/10 border border-border/50 hover:border-primary/50 hover:from-primary/10 hover:to-primary/5 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
