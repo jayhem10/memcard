@@ -131,6 +131,31 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <meta name="google-adsense-account" content="ca-pub-7235468269059593" />
+        {/* Google CMP (Funding Choices) - 3 choix (Autoriser / Gérer / Refuser) */}
+        {process.env.NEXT_PUBLIC_FUNDING_CHOICES_ID && (
+          <>
+            <script
+              async
+              src={`https://fundingchoicesmessages.google.com/i/${process.env.NEXT_PUBLIC_FUNDING_CHOICES_ID}/fc.js?${process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID || 'ca-pub-7235468269059593'}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  (function() {
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('consent', 'default', {
+                      'ad_storage': 'denied',
+                      'analytics_storage': 'denied',
+                      'ad_user_data': 'denied',
+                      'ad_personalization': 'denied'
+                    });
+                  })();
+                `,
+              }}
+            />
+          </>
+        )}
         <WebSiteSchema />
         <OrganizationSchema />
         <WebApplicationSchema />

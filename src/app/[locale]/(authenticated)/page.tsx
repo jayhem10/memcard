@@ -528,6 +528,7 @@ export default function HomePage() {
   const greeting = displayName ? `${t('welcome')} ${displayName}` : t('welcome');
   // Afficher le skeleton si on charge OU si l'utilisateur existe mais qu'on n'a pas encore le profil
   const isLoading = profileLoading || authLoading || (user && !profile);
+  const adEnabledHome = Boolean(process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID && process.env.NEXT_PUBLIC_ADSENSE_SLOT_ID);
   
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -558,6 +559,13 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      {/* Publicité sous le bloc de bienvenue */}
+      {adEnabledHome && (
+        <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-card shadow-md p-3 sm:p-4">
+          <AdBanner className="w-full" />
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Statistiques - Prend toute la largeur sur mobile, 1/3 sur desktop */}
