@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense, useMemo } from 'react';
+import { useEffect, useState, Suspense, useMemo, useCallback } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -18,7 +18,12 @@ import { useAuth } from '@/context/auth-context';
 import { supabase } from '@/lib/supabase';
 import { ExportButton } from '@/components/ui/export-button';
 import { GameExportData } from '@/lib/excel-export';
-import { useUserGames, useUserGamesStats, UserGamesFilters } from '@/hooks/useUserGames';
+import {
+  useUserGames,
+  useUserGamesStats,
+  UserGamesFilters,
+  fetchAllUserGamesFiltered,
+} from '@/hooks/useUserGames';
 import { MobileFilterSelector } from '@/components/filters/mobile-filter-selector';
 import {
   Select,
@@ -114,6 +119,19 @@ function CollectionPageContent() {
   
   // Get auth context
   const { user } = useAuth();
+
+  const fetchGamesForExport = useCallback(async () => {
+    if (!user?.id) return [];
+    return fetchAllUserGamesFiltered(user.id, currentFilters);
+  }, [
+    user?.id,
+    activeTab,
+    statusFilter,
+    consoleFilter,
+    genreFilter,
+    searchQuery,
+    sortOrder,
+  ]);
 
   // Gérer les erreurs de chargement
   useEffect(() => {
@@ -432,6 +450,7 @@ function CollectionPageContent() {
               ) : (
                 <ExportButton
                   games={preparedGamesForGrid as GameExportData[]}
+                  fetchGamesForExport={fetchGamesForExport}
                   activeTab={activeTab}
                   filename="ma_collection"
                   size="sm"

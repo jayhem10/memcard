@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Download, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { FileSpreadsheet, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { exportCollectionToExcel, GameExportData } from '@/lib/excel-export';
 import { toast } from 'sonner';
@@ -9,6 +9,8 @@ import { useTranslations, useLocale } from 'next-intl';
 
 interface ExportButtonProps {
   games: GameExportData[];
+  /** Si défini, l’export charge toutes les pages (mêmes filtres/recherche que la liste) */
+  fetchGamesForExport?: () => Promise<GameExportData[]>;
   activeTab?: 'collection' | 'wishlist';
   filename?: string;
   variant?: 'default' | 'outline' | 'ghost';
@@ -25,6 +27,7 @@ interface ExportButtonProps {
 
 export function ExportButton({
   games,
+  fetchGamesForExport,
   activeTab = 'collection',
   filename = 'export',
   variant = 'outline',
@@ -46,9 +49,13 @@ export function ExportButton({
 
     try {
       setIsExporting(true);
-      
+
+      const sourceGames = fetchGamesForExport
+        ? await fetchGamesForExport()
+        : games;
+
       // Filtrer les jeux selon l'onglet actif
-      const filteredGames = games.filter(game => {
+      const filteredGames = sourceGames.filter(game => {
         const status = game.status || '';
         if (activeTab === 'collection') {
           return !['wishlist', 'WISHLIST'].includes(status);

@@ -47,6 +47,67 @@ export interface UserGamesFilters {
   sortOrder?: 'alphabetical' | 'date-desc' | 'rating-desc';
 }
 
+const USER_GAMES_PAGE_SIZE = 30;
+
+function buildUserGamesFilteredRpcParams(
+  userId: string,
+  filters: UserGamesFilters | undefined,
+  offset: number,
+  limit: number
+) {
+  return {
+    p_user_id: userId,
+    p_console_id: filters?.console_id && filters.console_id !== 'all' ? filters.console_id : null,
+    p_genre_id: filters?.genre_id && filters.genre_id !== 'all' ? filters.genre_id : null,
+    p_search_term: filters?.search?.trim() || null,
+    p_status_filter: filters?.status || 'all',
+    p_tab: filters?.tab || 'collection',
+    p_sort_order:
+      filters?.sortOrder === 'date-desc'
+        ? 'date_desc'
+        : filters?.sortOrder === 'alphabetical'
+          ? 'alphabetical'
+          : filters?.sortOrder === 'rating-desc'
+            ? 'rating_desc'
+            : 'date_desc',
+    p_offset: offset,
+    p_limit: limit,
+  };
+}
+
+/** Toutes les pages correspondant aux filtres (export, etc.) */
+export async function fetchAllUserGamesFiltered(
+  userId: string,
+  filters?: UserGamesFilters
+): Promise<CollectionGame[]> {
+  const all: CollectionGame[] = [];
+  let pageIndex = 0;
+
+  while (true) {
+    const offset = pageIndex * USER_GAMES_PAGE_SIZE;
+    const result = await supabase.rpc(
+      'get_user_games_filtered_paginated',
+      buildUserGamesFilteredRpcParams(userId, filters, offset, USER_GAMES_PAGE_SIZE)
+    );
+
+    if (result.error) {
+      console.error('RPC error:', result.error);
+      throw new Error('Service de filtrage non disponible');
+    }
+
+    const batch =
+      (result.data
+        ?.map(transformUserGameItemSync)
+        .filter(Boolean) as CollectionGame[]) || [];
+
+    all.push(...batch);
+    if (batch.length < USER_GAMES_PAGE_SIZE) break;
+    pageIndex++;
+  }
+
+  return all;
+}
+
 // Hook séparé pour récupérer les stats complètes (tous les jeux pour les compteurs)
 export function useUserGamesStats(tab: 'collection' | 'wishlist' = 'collection') {
   const { user, isLoading: authLoading } = useAuth();
@@ -162,23 +223,12 @@ export function useUserGames(filters?: UserGamesFilters) {
         throw new Error('Utilisateur non authentifié');
       }
 
-      const pageSize = 30;
-      const offset = (pageParam as number) * pageSize;
+      const offset = (pageParam as number) * USER_GAMES_PAGE_SIZE;
 
-      // Utiliser UNIQUEMENT la RPC optimisée (pas de fallback)
-      const result = await supabase.rpc('get_user_games_filtered_paginated', {
-        p_user_id: user.id,
-        p_console_id: filters?.console_id && filters.console_id !== 'all' ? filters.console_id : null,
-        p_genre_id: filters?.genre_id && filters.genre_id !== 'all' ? filters.genre_id : null,
-        p_search_term: filters?.search?.trim() || null,
-        p_status_filter: filters?.status || 'all',
-        p_tab: filters?.tab || 'collection',
-        p_sort_order: filters?.sortOrder === 'date-desc' ? 'date_desc' :
-                     filters?.sortOrder === 'alphabetical' ? 'alphabetical' :
-                     filters?.sortOrder === 'rating-desc' ? 'rating_desc' : 'date_desc',
-        p_offset: offset,
-        p_limit: pageSize
-      });
+      const result = await supabase.rpc(
+        'get_user_games_filtered_paginated',
+        buildUserGamesFilteredRpcParams(user.id, filters, offset, USER_GAMES_PAGE_SIZE)
+      );
 
       if (result.error) {
         console.error('RPC error:', result.error);
@@ -194,18 +244,11 @@ export function useUserGames(filters?: UserGamesFilters) {
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-      // Si la dernière page contient moins de 30 éléments, c'est la dernière page
-      return lastPage.length === 30 ? allPages.length : undefined;
+      return lastPage.length === USER_GAMES_PAGE_SIZE ? allPages.length : undefined;
     },
     enabled: !!user && !authLoading,
     ...collectionQueryOptions,
   });
-
-
-  return {
-    ...query,
-    games: query.data?.pages.flat() ?? [],
-  };
 
   // Écouter les changements en temps réel pour invalider le cache
   useEffect(() => {
