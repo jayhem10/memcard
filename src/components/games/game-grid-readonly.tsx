@@ -12,7 +12,7 @@ export function GameGridReadonly({ games, onGameClick }: GameGridReadonlyProps) 
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {games.map((game, index) => (
         <div
-          key={game.id}
+          key={game.user_game_id ?? game.id}
           onClick={() => onGameClick?.(game)}
           className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-muted cursor-pointer"
         >

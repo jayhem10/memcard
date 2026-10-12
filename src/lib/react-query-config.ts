@@ -97,5 +97,7 @@ export const queryKeys = {
   wishlistNotifications: (userId?: string) => ['wishlistNotifications', userId] as const,
   friends: (userId?: string) => ['friends', userId] as const,
   friendshipStatus: (userId?: string, targetUserId?: string) => ['friendship-status', userId, targetUserId] as const,
+  /** Jeux dont sell_price est renseigné (exclure de la collection si le RPC ne filtre pas) */
+  soldGameIds: (userId?: string) => ['soldGameIds', userId] as const,
 } as const;
 

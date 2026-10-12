@@ -3,16 +3,13 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { PlusCircle, Library, Gift, User, Users, UserPlus, Bell } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useProfile } from '@/store';
+import { PlusCircle, Library, Gift, UserPlus, Bell } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 
 export function BottomNavbar() {
   const t = useTranslations('navigation');
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { profile } = useProfile();
   const { user } = useAuth();
   
   const tabParam = searchParams.get('tab');
@@ -66,7 +63,6 @@ export function BottomNavbar() {
             <Gift className={`h-5 w-5 ${isWishlistActive ? 'text-primary' : ''}`} />
             <span className="text-xs font-medium">Wishlist</span>
           </Link>
-
 
           {/* Amis */}
           <Link

@@ -12,7 +12,7 @@ export function GameListReadonly({ games, onGameClick }: GameListReadonlyProps) 
     <div className="space-y-4">
       {games.map((game, index) => (
         <div
-          key={game.id}
+          key={game.user_game_id ?? game.id}
           onClick={() => onGameClick?.(game)}
           className="flex items-center space-x-4 p-4 rounded-lg bg-card border border-border/50 cursor-pointer hover:bg-accent/50 hover:border-primary/30 transition-all duration-200"
         >

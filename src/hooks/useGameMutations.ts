@@ -15,7 +15,11 @@ interface UpdateGameData {
   edition_other: string | null;
 }
 
-export function useGameMutations(gameId: string | undefined, userId: string | undefined) {
+export function useGameMutations(
+  gameId: string | undefined,
+  userId: string | undefined,
+  userGameId?: string
+) {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -25,15 +29,22 @@ export function useGameMutations(gameId: string | undefined, userId: string | un
         throw new Error('Utilisateur non authentifié ou ID de jeu manquant');
       }
       
-      // Vérifier si l'utilisateur a déjà ce jeu dans sa collection
-      const { data: existingUserGame, error: findError } = await supabase
-        .from('user_games')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('game_id', gameId)
-        .maybeSingle();
-      
-      if (findError) throw findError;
+      // Cibler l'exemplaire sélectionné ; sinon, s'il n'y a qu'un seul exemplaire, le retrouver
+      let targetUserGameId = userGameId;
+      if (!targetUserGameId) {
+        const { data: existingUserGames, error: findError } = await supabase
+          .from('user_games')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('game_id', gameId);
+        
+        if (findError) throw findError;
+        if (existingUserGames && existingUserGames.length === 1) {
+          targetUserGameId = existingUserGames[0].id;
+        } else if (existingUserGames && existingUserGames.length > 1) {
+          throw new Error('Plusieurs exemplaires trouvés : sélectionnez une édition');
+        }
+      }
       
       // Préparer les données à mettre à jour
       const updateData: {
@@ -54,7 +65,7 @@ export function useGameMutations(gameId: string | undefined, userId: string | un
         completion_percentage: data.completion_percentage || null,
         condition: null,
         review: null,
-        edition: null,
+        edition: 'standard',
         edition_other: null,
       };
       
@@ -67,9 +78,9 @@ export function useGameMutations(gameId: string | undefined, userId: string | un
       
       updateData.review = data.review || null;
       
-      // Gérer edition et edition_other
-      if (data.edition === '' || data.edition === undefined || data.edition === 'standard') {
-        updateData.edition = null;
+      // Gérer edition et edition_other ('standard' par défaut, jamais null)
+      if (!data.edition || data.edition === 'standard') {
+        updateData.edition = 'standard';
         updateData.edition_other = null;
       } else if (data.edition !== 'autres') {
         updateData.edition = data.edition;
@@ -80,11 +91,11 @@ export function useGameMutations(gameId: string | undefined, userId: string | un
       }
       
       let result;
-      if (existingUserGame) {
+      if (targetUserGameId) {
         result = await (supabase
           .from('user_games') as any)
           .update(updateData)
-          .eq('id', existingUserGame.id)
+          .eq('id', targetUserGameId)
           .select();
       } else {
         result = await (supabase
@@ -121,28 +132,35 @@ export function useGameMutations(gameId: string | undefined, userId: string | un
         throw new Error('Utilisateur non authentifié ou ID de jeu manquant');
       }
       
-      // Récupérer le statut du jeu avant suppression
-      const { data: userGame, error: fetchError } = await supabase
+      const { data: userGames, error: fetchError } = await supabase
         .from('user_games')
-        .select('status')
+        .select('id, status')
         .eq('user_id', userId)
-        .eq('game_id', gameId)
-        .single();
+        .eq('game_id', gameId);
       
       if (fetchError) throw fetchError;
       
-      const gameStatus = userGame?.status?.toUpperCase();
-      const isWishlist = gameStatus === 'WISHLIST' || gameStatus === 'wishlist';
+      const target = userGameId
+        ? userGames?.find((ug: { id: string }) => ug.id === userGameId)
+        : userGames?.length === 1
+          ? userGames[0]
+          : undefined;
+      
+      if (!target) {
+        throw new Error('Exemplaire introuvable : sélectionnez une édition');
+      }
+      
+      const gameStatus = target.status?.toUpperCase();
+      const isWishlist = gameStatus === 'WISHLIST';
       
       const { error } = await supabase
         .from('user_games')
         .delete()
-        .eq('user_id', userId)
-        .eq('game_id', gameId);
+        .eq('id', target.id);
 
       if (error) throw error;
       
-      return { isWishlist };
+      return { isWishlist, remaining: (userGames?.length ?? 1) - 1 };
     },
     onSuccess: async (data) => {
       const { queryKeys } = await import('@/lib/react-query-config');
@@ -157,6 +175,11 @@ export function useGameMutations(gameId: string | undefined, userId: string | un
         const statsStore = useStore.getState();
         statsStore.resetStats();
         statsStore.fetchUserStats(userId);
+      }
+      
+      if (data.remaining > 0) {
+        toast.success('Exemplaire supprimé');
+        return;
       }
       
       if (data.isWishlist) {

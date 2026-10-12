@@ -2,6 +2,13 @@
 
 import { GameData, UserGameData } from '@/types/games';
 
+/** Normalise un prix renvoyé par Supabase (champ numeric souvent typé en string côté client). */
+export function coercePriceToNumber(value: unknown): number | null {
+  if (value == null || value === '') return null;
+  const n = typeof value === 'number' ? value : parseFloat(String(value));
+  return Number.isFinite(n) ? n : null;
+}
+
 /**
  * Traduit un texte en utilisant l'API MyMemory (gratuite)
  * Version simple qui retourne toujours une string (pour compatibilité)
@@ -183,6 +190,9 @@ interface SupabaseUserGameItem {
   play_time: number | null;
   completion_percentage: number | null;
   buy_price: number | null;
+  sell_price: number | null;
+  edition?: string | null;
+  edition_other?: string | null;
   games: {
     id: number;
     igdb_id: number;
@@ -232,7 +242,7 @@ export function transformGenres(gameGenres: SupabaseGameGenre[]): Array<{
  */
 export function combineGameData(
   gameData: SupabaseGameData,
-  userGameData: UserGameData | null
+  userGameData: UserGameData | UserGameData[] | null
 ): GameData {
   const genres = transformGenres(gameData.game_genres || []);
   
@@ -252,7 +262,7 @@ export function combineGameData(
     id: String(gameData.id), // Convertir l'id en string pour correspondre au type GameData
     genres: genres,
     console: formattedConsole,
-    user_games: userGameData ? [userGameData] : []
+    user_games: Array.isArray(userGameData) ? userGameData : userGameData ? [userGameData] : []
   };
 }
 
@@ -261,6 +271,7 @@ export function combineGameData(
  */
 export function transformUserGameItemSync(item: SupabaseUserGameItem): {
   id: string;
+  user_game_id: string;
   igdb_id: number;
   title: string;
   release_date: string | null;
@@ -283,13 +294,17 @@ export function transformUserGameItemSync(item: SupabaseUserGameItem): {
   play_time: number | null;
   completion_percentage: number | null;
   buy_price: number | null;
+  sell_price: number | null;
+  edition: string | null;
+  edition_other: string | null;
 } | null {
   if (!item.games) {
     return null;
   }
-  
+
   return {
-    id: String(item.games.id), // Convertir l'id en string pour correspondre au type CollectionGame
+    id: String(item.games.id),
+    user_game_id: String(item.id),
     igdb_id: item.games.igdb_id,
     title: item.games.title,
     release_date: item.games.release_date,
@@ -314,7 +329,10 @@ export function transformUserGameItemSync(item: SupabaseUserGameItem): {
     purchase_date: item.purchase_date,
     play_time: item.play_time,
     completion_percentage: item.completion_percentage,
-    buy_price: item.buy_price
+    buy_price: item.buy_price,
+    sell_price: item.sell_price,
+    edition: item.edition ?? null,
+    edition_other: item.edition_other ?? null,
   };
 }
 
@@ -345,6 +363,7 @@ export async function transformUserGameItem(item: SupabaseUserGameItem, autoTran
   play_time: number | null;
   completion_percentage: number | null;
   buy_price: number | null;
+  sell_price: number | null;
 } | null> {
   if (!item.games) {
     return null;
@@ -363,7 +382,7 @@ export async function transformUserGameItem(item: SupabaseUserGameItem, autoTran
   }
 
   return {
-    id: String(item.games.id), // Convertir l'id en string pour correspondre au type CollectionGame
+    id: String(item.games.id),
     igdb_id: item.games.igdb_id,
     title: item.games.title,
     release_date: item.games.release_date,
@@ -388,7 +407,8 @@ export async function transformUserGameItem(item: SupabaseUserGameItem, autoTran
     purchase_date: item.purchase_date,
     play_time: item.play_time,
     completion_percentage: item.completion_percentage,
-    buy_price: item.buy_price
+    buy_price: item.buy_price,
+    sell_price: item.sell_price,
   };
 }
 

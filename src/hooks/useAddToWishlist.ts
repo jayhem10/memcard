@@ -93,19 +93,32 @@ export function useAddToWishlist() {
         }
       }
 
-      // Ajouter à la wishlist
-      const { error: insertError } = await (supabase
-        .from('user_games') as any)
-        .insert({
-          user_id: user.id,
-          game_id: gameId,
-          status: 'WISHLIST',
-        });
+      // Ne pas dupliquer une entr\u00e9e wishlist pour ce jeu (les exemplaires poss\u00e9d\u00e9s ne bloquent pas)
+      const { data: existingWishlist, error: wishlistCheckError } = await supabase
+        .from('user_games')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('game_id', gameId)
+        .in('status', ['WISHLIST', 'wishlist'])
+        .limit(1);
 
-      if (insertError) {
-        // Si le jeu est déjà dans la wishlist, c'est OK
-        if (insertError.code !== '23505') {
-          throw insertError;
+      if (wishlistCheckError) throw wishlistCheckError;
+
+      if (!existingWishlist?.length) {
+        const { error: insertError } = await (supabase
+          .from('user_games') as any)
+          .insert({
+            user_id: user.id,
+            game_id: gameId,
+            status: 'WISHLIST',
+            edition: 'standard',
+          });
+
+        if (insertError) {
+          // Si le jeu est d\u00e9j\u00e0 dans la wishlist, c'est OK
+          if (insertError.code !== '23505') {
+            throw insertError;
+          }
         }
       }
 

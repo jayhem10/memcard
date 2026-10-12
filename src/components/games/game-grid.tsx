@@ -2,18 +2,36 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Game } from '@/types/database.types';
-import { getStatusLabels } from '@/types/games';
+import { getStatusLabels, getEditionLabel } from '@/types/games';
 import { CollectionGame } from '@/hooks/useUserGames';
 import { useMobile } from '@/hooks/useMobile';
-import { Circle, Play, CheckCircle2, XCircle, Heart, Euro } from 'lucide-react';
+import { Circle, Play, CheckCircle2, XCircle, Heart, Euro, Layers } from 'lucide-react';
 
 export type GameGridItem = (Game | CollectionGame) & {
   status?: string;
   rating?: number | null;
   console_name?: string;
   buy_price?: number | null;
+  sell_price?: number | null;
   average_rating?: number | null;
+  user_game_id?: string;
+  edition?: string | null;
+  edition_other?: string | null;
 };
+
+/** Nombre d'exemplaires par jeu dans la liste affichée */
+export function countCopies(games: Array<{ id: string }>): Map<string, number> {
+  const counts = new Map<string, number>();
+  games.forEach((g) => counts.set(g.id, (counts.get(g.id) ?? 0) + 1));
+  return counts;
+}
+
+/** URL de la fiche jeu, ciblée sur l'exemplaire quand il y en a plusieurs */
+export function gameHref(game: { id: string; user_game_id?: string }, copies: number) {
+  return copies > 1 && game.user_game_id
+    ? `/games/${game.id}?copy=${game.user_game_id}`
+    : `/games/${game.id}`;
+}
 
 interface GameGridProps {
   games: GameGridItem[];
@@ -42,17 +60,21 @@ function getStatusIcon(status: string) {
 function GameCard({
   game,
   index,
+  copies = 1,
   readonly,
   onGameClick
 }: {
   game: GameGridItem;
   index: number;
+  copies?: number;
   readonly?: boolean;
   onGameClick?: (game: GameGridItem) => void;
 }) {
   const t = useTranslations();
   const isMobile = useMobile();
   const statusLabels = getStatusLabels((key: string) => t(key));
+  const hasEdition = !!game.edition && game.edition !== 'standard';
+  const editionLabel = getEditionLabel((key) => t(`games.${key}`), game.edition, game.edition_other);
 
   // Normaliser le rating (peut être string ou number)
   const ratingValue = typeof game.rating === 'number' 
@@ -90,6 +112,16 @@ function GameCard({
                 const StatusIcon = getStatusIcon(displayStatus);
                 return <StatusIcon className="w-3 h-3 text-primary-foreground" />;
               })()}
+            </div>
+          </div>
+        )}
+
+        {/* Compteur d'exemplaires (même jeu, plusieurs éditions) */}
+        {copies > 1 && (
+          <div className="absolute top-10 right-2 z-10" title={t('games.copiesCount', { count: copies })}>
+            <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-md bg-black/70 backdrop-blur-sm border border-white/20">
+              <Layers className="w-3 h-3 text-white" />
+              <span className="text-xs font-semibold text-white">×{copies}</span>
             </div>
           </div>
         )}
@@ -151,6 +183,12 @@ function GameCard({
         {/* Console */}
         <span className="text-xs text-muted-foreground truncate block">
           {game.console_name || t('games.unknownConsole')}
+          {hasEdition && (
+            <>
+              {' · '}
+              <span className="text-primary/90 font-medium">{editionLabel}</span>
+            </>
+          )}
         </span>
       </div>
     </>
@@ -171,7 +209,7 @@ function GameCard({
 
   return (
     <Link
-      href={`/games/${game.id}`}
+      href={gameHref(game, copies)}
       className={`${className} overflow-hidden`}
     >
       {cardContent}
@@ -180,13 +218,15 @@ function GameCard({
 }
 
 export function GameGrid({ games, readonly, onGameClick }: GameGridProps) {
+  const copies = countCopies(games);
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
       {games.map((game, index) => (
         <GameCard
-          key={game.id}
+          key={game.user_game_id ?? game.id}
           game={game}
           index={index}
+          copies={copies.get(game.id) ?? 1}
           readonly={readonly}
           onGameClick={onGameClick}
         />

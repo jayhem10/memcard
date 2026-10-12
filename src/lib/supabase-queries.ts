@@ -61,6 +61,7 @@ export const USER_GAME_DATA_SELECT = `
   created_at,
   updated_at,
   buy_price,
+  sell_price,
   condition,
   review,
   edition,

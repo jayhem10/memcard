@@ -18,6 +18,7 @@ import { useAuth } from '@/context/auth-context';
 import { Badge } from "@/components/ui/badge";
 import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { useTranslations } from 'next-intl';
+import { getEditionKey, getEditionLabel } from '@/types/games';
 
 // Composant pour l'effet 3D tactile des jaquettes de jeux
 const GameCover3D: React.FC<{
@@ -132,6 +133,7 @@ interface Platform {
 export default function SearchPage() {
   const t = useTranslations('search');
   const tCommon = useTranslations('common');
+  const tGames = useTranslations('games');
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [shouldSearch, setShouldSearch] = useState<boolean>(false);
@@ -378,44 +380,63 @@ export default function SearchPage() {
     const publisher = selectedGame.involved_companies?.find(company => company.publisher)?.company.name;
     
     try {
-      // Vérifier d'abord si l'utilisateur a déjà ce jeu dans sa collection (par IGDB ID)
+      const finalStatus = status || 'NOT_STARTED';
+      const isWishlistAdd = finalStatus.toUpperCase() === 'WISHLIST';
+
+      // Exemplaires déjà possédés / souhaités pour ce jeu sur cette console
       const { data: existingUserGames, error: userGamesError } = await supabase
         .from('user_games')
-        .select('id, game_id')
-        .eq('user_id', user.id)
-        // .returns<Array<{ id: string; game_id: string }>>();
+        .select('id, status, edition, edition_other, sell_price, games:game_id(igdb_id, console_id)')
+        .eq('user_id', user.id);
       
       if (userGamesError) throw userGamesError;
       
-      if (existingUserGames && existingUserGames.length > 0) {
-        // Récupérer tous les jeux correspondants avec leur console_id
-        const { data: games, error: gamesError } = await supabase
-          .from('games')
-          .select('id, igdb_id, console_id')
-          .in('id', existingUserGames.map((ug: any) => ug.game_id))
-          // .returns<Array<{ id: string; igdb_id: number; console_id: string }>>();
-        
-        if (gamesError) throw gamesError;
-        
-        // Vérifier si l'utilisateur a déjà ce jeu sur la même console
-        if (games && games.some((game: any) => game.igdb_id === selectedGame.id && game.console_id === consoleId)) {
-          toast.error(
-            `${selectedGame.name} existe déjà dans votre bibliothèque pour ${consoleDisplayName}`, 
-            { 
-              duration: 4000,
-              icon: '🚫',
-              style: {
-                border: '1px solid #ef4444',
-                padding: '16px',
-                color: '#ef4444',
-              },
-            }
-          );
-          // Fermer le dialogue et réinitialiser
-          setIsConsoleDialogOpen(false);
-          setSelectedGame(null);
-          return;
-        }
+      type OwnedCopy = {
+        id: string;
+        status: string | null;
+        edition: string | null;
+        edition_other: string | null;
+        sell_price: number | string | null;
+        games: { igdb_id: number; console_id: string } | null;
+      };
+      const copiesForThisGame = ((existingUserGames ?? []) as OwnedCopy[]).filter(
+        (ug) => ug.games?.igdb_id === selectedGame.id && ug.games?.console_id === consoleId
+      );
+      const wishlistCopy = copiesForThisGame.find((ug) => ug.status?.toUpperCase() === 'WISHLIST');
+      const newEditionKey = getEditionKey(edition, editionOther);
+      // Les exemplaires vendus ne bloquent pas un nouvel achat de la même édition
+      const sameEditionOwned = copiesForThisGame.some(
+        (ug) =>
+          ug.status?.toUpperCase() !== 'WISHLIST' &&
+          ug.sell_price == null &&
+          getEditionKey(ug.edition, ug.edition_other) === newEditionKey
+      );
+      
+      const blockedMessage = isWishlistAdd
+        ? wishlistCopy
+          ? t('gameAlreadyInWishlist', { game: selectedGame.name, console: consoleDisplayName })
+          : null
+        : sameEditionOwned
+          ? t('gameEditionAlreadyInCollection', {
+              game: selectedGame.name,
+              console: consoleDisplayName,
+              edition: getEditionLabel((key) => tGames(key), edition, editionOther),
+            })
+          : null;
+
+      if (blockedMessage) {
+        toast.error(blockedMessage, { 
+          duration: 4000,
+          icon: '🚫',
+          style: {
+            border: '1px solid #ef4444',
+            padding: '16px',
+            color: '#ef4444',
+          },
+        });
+        setIsConsoleDialogOpen(false);
+        setSelectedGame(null);
+        return;
       }
       
       // Vérifier si le jeu existe déjà dans la base de données avec le même IGDB ID et console ID
@@ -429,8 +450,6 @@ export default function SearchPage() {
       if (findError) throw findError;
       
       // Vérifier si le jeu existe pour un autre console
-      type GameIdData = { id: string }[];
-      
       const { data: existingGameOtherConsole, error: findErrorOther } = await supabase
         .from('games')
         .select('id')
@@ -442,41 +461,10 @@ export default function SearchPage() {
       
       let gameId;
       // Vérifier si le jeu existe déjà pour une autre console
-      let isNewConsole = existingGameOtherConsole && Array.isArray(existingGameOtherConsole) && existingGameOtherConsole.length > 0;
+      const isNewConsole = existingGameOtherConsole && Array.isArray(existingGameOtherConsole) && existingGameOtherConsole.length > 0;
       
-      // Vérifier si l'utilisateur possède déjà ce jeu pour cette console
       if (existingGame) {
         gameId = existingGame.id;
-        
-        // Vérifier si l'utilisateur possède déjà ce jeu
-        // S'assurer que gameId est une chaîne ou un nombre avant de l'utiliser
-        const gameIdString = typeof gameId === 'string' || typeof gameId === 'number' ? String(gameId) : '';
-        
-        const { data: existingUserGame, error: userGameFindError } = await supabase
-          .from('user_games')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('game_id', gameIdString)
-          .maybeSingle();
-        
-        if (userGameFindError) throw userGameFindError;
-        
-        if (existingUserGame) {
-          // Le jeu est déjà dans la collection de l'utilisateur pour cette console
-          toast.error(
-            t('gameAlreadyInCollection', { game: selectedGame.name, console: consoleDisplayName }), 
-            { 
-              duration: 4000,
-              icon: '🚫',
-              style: {
-                border: '1px solid #ef4444',
-                padding: '16px',
-                color: '#ef4444',
-              },
-            }
-          );
-          return; // Arrêter le processus d'ajout
-        }
       }
       
         // Créer une nouvelle entrée de jeu si nécessaire
@@ -597,26 +585,33 @@ export default function SearchPage() {
       }
       
       // Ajouter le jeu à la collection de l'utilisateur
-      const finalStatus = status || 'NOT_STARTED';
       // Si le statut est WISHLIST, réinitialiser condition à NULL
       // (car un jeu en wishlist n'a pas encore d'état physique)
-      const finalCondition = (finalStatus === 'WISHLIST' || finalStatus === 'wishlist') 
-        ? null 
-        : (condition || null);
+      const finalCondition = isWishlistAdd ? null : (condition || null);
       
-        const { error: userGameError } = await (supabase
-          .from('user_games') as any)
-          .insert({
-          user_id: user.id,
-          game_id: gameId,
-          status: finalStatus,
-          rating: 0,
-          notes: '',
-          buy_price: buyPrice || null,
-          condition: finalCondition,
-          edition: edition || null,
-          edition_other: edition === 'autres' ? (editionOther || null) : null
-        });
+      const userGameValues = {
+        status: finalStatus,
+        buy_price: buyPrice || null,
+        condition: finalCondition,
+        edition: edition || 'standard',
+        edition_other: edition === 'autres' ? (editionOther || null) : null,
+      };
+
+      // Achat d'un jeu déjà en wishlist : on convertit l'entrée plutôt que d'en créer une seconde
+      const { error: userGameError } = !isWishlistAdd && wishlistCopy
+        ? await (supabase
+            .from('user_games') as any)
+            .update({ ...userGameValues, buy: false })
+            .eq('id', wishlistCopy.id)
+        : await (supabase
+            .from('user_games') as any)
+            .insert({
+              user_id: user.id,
+              game_id: gameId,
+              rating: 0,
+              notes: '',
+              ...userGameValues,
+            });
       
       if (userGameError) throw userGameError;
       

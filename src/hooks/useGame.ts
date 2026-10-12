@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { GameData, UserGameData } from '@/types/games';
-import { combineGameData, enrichGameWithTranslations } from '@/lib/game-utils';
+import { combineGameData, enrichGameWithTranslations, coercePriceToNumber } from '@/lib/game-utils';
 import { useAuth } from '@/context/auth-context';
 import { GAME_WITH_RELATIONS_SELECT, USER_GAME_DATA_SELECT } from '@/lib/supabase-queries';
 import { handleSupabaseError } from '@/lib/error-handler';
@@ -30,20 +30,29 @@ export function useGame(gameId: string | undefined) {
         handleSupabaseError(gameError, 'useGame', 'Erreur lors de la récupération du jeu');
       }
       
-      // 2. Récupérer les données spécifiques à l'utilisateur pour ce jeu
-      const { data: userGameData, error: userGameError } = await supabase
+      // 2. Récupérer tous les exemplaires (éditions) de ce jeu pour l'utilisateur
+      const { data: userGamesData, error: userGameError } = await supabase
         .from('user_games')
         .select(USER_GAME_DATA_SELECT)
         .eq('game_id', gameId)
         .eq('user_id', user.id)
-        .maybeSingle();
+        .order('created_at', { ascending: true });
 
       if (userGameError) {
         handleSupabaseError(userGameError, 'useGame', 'Erreur lors de la récupération des données utilisateur pour le jeu');
       }
+
+      const normalizedUserGames = ((userGamesData ?? []) as Array<Record<string, unknown>>).map(
+        (ug) =>
+          ({
+            ...ug,
+            buy_price: coercePriceToNumber(ug.buy_price),
+            sell_price: coercePriceToNumber(ug.sell_price),
+          }) as UserGameData
+      );
       
       // 3. Combiner les données
-      let combinedGameData = combineGameData(gameData, userGameData);
+      let combinedGameData = combineGameData(gameData, normalizedUserGames);
 
       // 4. Enrichir avec des traductions automatiques si l'utilisateur est en français
       if (locale === 'fr') {

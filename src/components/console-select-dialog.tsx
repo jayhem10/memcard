@@ -155,7 +155,7 @@ export function ConsoleSelectDialog({ isOpen, onClose, onSelect, gameName, gameP
       // Si wishlist, pas de prix ni d'état
       const finalPrice = isWishlist ? undefined : numericPrice;
       const finalCondition = isWishlist ? undefined : (condition || undefined);
-      const finalEdition = edition && edition !== 'standard' ? edition : undefined;
+      const finalEdition = edition || 'standard';
       const finalEditionOther = edition === 'autres' ? (editionOther || undefined) : undefined;
       // Pass both ID, name, status, price, condition, edition and editionOther to the parent component
       onSelect(selectedConsoleId, selectedConsole?.name || 'Console sélectionnée', finalStatus, finalPrice, finalCondition, finalEdition, finalEditionOther);

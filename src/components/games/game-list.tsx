@@ -2,9 +2,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Game } from '@/types/database.types';
-import { getStatusLabels } from '@/types/games';
+import { getStatusLabels, getEditionLabel } from '@/types/games';
 import { useMobile } from '@/hooks/useMobile';
-import { Circle, Play, CheckCircle2, XCircle, Heart } from 'lucide-react';
+import { Circle, Play, CheckCircle2, XCircle, Heart, Layers } from 'lucide-react';
+import { countCopies, gameHref } from './game-grid';
 
 interface GameListProps {
   games: (Game & {
@@ -13,6 +14,9 @@ interface GameListProps {
     completion_percentage?: number;
     play_time?: number;
     console_name?: string;
+    user_game_id?: string;
+    edition?: string | null;
+    edition_other?: string | null;
   })[];
 }
 
@@ -38,13 +42,14 @@ export function GameList({ games }: GameListProps) {
   const t = useTranslations();
   const isMobile = useMobile();
   const statusLabels = getStatusLabels((key: string) => t(key));
+  const copies = countCopies(games);
 
   return (
     <div className="space-y-4">
       {games.map((game, index) => (
         <Link
-          key={game.id}
-          href={`/games/${game.id}`}
+          key={game.user_game_id ?? game.id}
+          href={gameHref(game, copies.get(game.id) ?? 1)}
           className="block group"
         >
           <div className="flex items-center space-x-4 p-4 rounded-lg bg-card border border-border/50 hover:bg-accent/50 hover:border-primary/30 transition-all duration-200">
@@ -78,10 +83,20 @@ export function GameList({ games }: GameListProps) {
                     {game.developer}
                   </p>
                   {game.console_name && (
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-1.5">
                       <span className="inline-block px-1.5 py-0.5 rounded-sm bg-secondary/30 text-secondary-foreground">
                         {game.console_name}
                       </span>
+                      {game.edition && game.edition !== 'standard' && (
+                        <span className="inline-block px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary font-medium">
+                          {getEditionLabel((key) => t(`games.${key}`), game.edition, game.edition_other)}
+                        </span>
+                      )}
+                      {(copies.get(game.id) ?? 1) > 1 && (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground">
+                          <Layers className="w-3 h-3" />×{copies.get(game.id)}
+                        </span>
+                      )}
                     </p>
                   )}
                 </div>

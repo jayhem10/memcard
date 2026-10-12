@@ -154,7 +154,8 @@ export const createStatsSlice: StateCreator<
           id,
           status
         `)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .is('sell_price', null);
 
       if (statsError) throw statsError;
 
@@ -177,6 +178,7 @@ export const createStatsSlice: StateCreator<
             status
           `)
           .eq('user_id', userId)
+          .is('sell_price', null)
           .neq('status', 'WISHLIST');
 
         if (platformError) throw platformError;
@@ -225,6 +227,7 @@ export const createStatsSlice: StateCreator<
             game:game_id(id, title, cover_url, console:console_id(name))
           `)
           .eq('user_id', userId)
+          .is('sell_price', null)
           .neq('status', 'WISHLIST')
           .order('created_at', { ascending: false })
           .limit(5);
@@ -268,6 +271,7 @@ export const createStatsSlice: StateCreator<
             game:game_id(id, title, cover_url, average_rating, console:console_id(name))
           `)
           .eq('user_id', userId)
+          .is('sell_price', null)
           .neq('status', 'WISHLIST') // Exclure les jeux de la wishlist
           .not('game.average_rating', 'is', null); // Uniquement les jeux avec une note moyenne IGDB
 

@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Loader2, Trash2, Pencil } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Trash2, Pencil, Layers, BadgeEuro } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { GameFormDialog } from '@/components/game-form-dialog';
@@ -22,16 +23,24 @@ import { useGame } from '@/hooks/useGame';
 import { useSimilarGames } from '@/hooks/useSimilarGames';
 import { useGameMutations } from '@/hooks/useGameMutations';
 import { useTranslations } from 'next-intl';
+import { getEditionLabel } from '@/types/games';
 
 export default function GameDetailPage() {
   const t = useTranslations('gameDetails');
+  const tGames = useTranslations('games');
+  const tCommon = useTranslations('common');
   const params = useParams();
+  const searchParams = useSearchParams();
   const gameId = params?.id as string | undefined;
   const router = useRouter();
   const { user } = useAuth();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isPriceDialogOpen, setIsPriceDialogOpen] = useState(false);
+  const [priceDialogMode, setPriceDialogMode] = useState<'prices' | 'sell'>('prices');
+  const [selectedUserGameId, setSelectedUserGameId] = useState<string | undefined>(
+    searchParams?.get('copy') ?? undefined
+  );
   
   // Rediriger si l'ID du jeu n'est pas défini
   useEffect(() => {
@@ -46,8 +55,12 @@ export default function GameDetailPage() {
   // Récupérer les jeux similaires
   const { data: similarGames, isLoading: isLoadingSimilar } = useSimilarGames(gameId);
 
-  // Mutations pour mettre à jour et supprimer
-  const { updateMutation, deleteMutation } = useGameMutations(gameId, user?.id);
+  // Exemplaires (éditions) possédés pour ce jeu ; retombe sur le premier si la sélection n'existe plus
+  const userGames = game?.user_games ?? [];
+  const userGame = userGames.find((ug) => ug.id === selectedUserGameId) ?? userGames[0];
+
+  // Mutations pour mettre à jour et supprimer (ciblées sur l'exemplaire sélectionné)
+  const { updateMutation, deleteMutation } = useGameMutations(gameId, user?.id, userGame?.id);
 
   if (isLoading) {
     return (
@@ -60,27 +73,63 @@ export default function GameDetailPage() {
   if (!game) {
     return (
       <div className="text-center py-12">
-        <h1 className="text-2xl font-bold">Jeu non trouvé</h1>
+        <h1 className="text-2xl font-bold">{t('gameNotFound')}</h1>
         <Button
           variant="link"
           onClick={() => router.back()}
           className="mt-4"
         >
-          Retour
+          {tCommon('back')}
         </Button>
       </div>
     );
   }
 
-  const userGame = game.user_games?.[0];
-
   const handleSaveEdit = (data: EditedGameData) => {
     updateMutation.mutate(data);
+  };
+
+  const editionLabel = (ug: { edition: string | null; edition_other: string | null }) =>
+    getEditionLabel((key) => tGames(key), ug.edition, ug.edition_other);
+
+  const isSold = userGame?.sell_price != null;
+  const isWishlistCopy = userGame?.status?.toUpperCase() === 'WISHLIST';
+
+  const openPriceDialog = (mode: 'prices' | 'sell') => {
+    setPriceDialogMode(mode);
+    setIsPriceDialogOpen(true);
   };
 
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-screen-2xl">
+      {userGames.length > 1 && userGame && (
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Layers className="h-4 w-4" />
+            {t('copiesOwned', { count: userGames.length })}
+          </div>
+          <Tabs value={userGame.id} onValueChange={setSelectedUserGameId}>
+            <TabsList className="h-auto flex-wrap justify-start rounded-xl p-1 bg-muted/50">
+              {userGames.map((ug, index) => (
+                <TabsTrigger
+                  key={ug.id}
+                  value={ug.id}
+                  className="text-xs sm:text-sm rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-md"
+                >
+                  {editionLabel(ug)}
+                  {ug.sell_price != null && (
+                    <span className="ml-1 text-amber-600 dark:text-amber-400">({t('sold')})</span>
+                  )}
+                  {userGames.filter((o) => editionLabel(o) === editionLabel(ug)).length > 1 && (
+                    <span className="ml-1 text-muted-foreground">#{index + 1}</span>
+                  )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+      )}
       <div className="grid gap-6 md:gap-8 md:grid-cols-[320px_1fr] xl:grid-cols-[320px_1fr_320px]">
         {/* Colonne gauche - Image et informations */}
         <div className="space-y-6">
@@ -95,7 +144,7 @@ export default function GameDetailPage() {
               </div>
             ) : (
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-xl flex items-center justify-center bg-gradient-to-br from-muted to-muted/50 border border-border/50">
-                <span className="text-muted-foreground">Pas d'image</span>
+                <span className="text-muted-foreground">{tGames('noImage')}</span>
               </div>
             )}
           </div>
@@ -104,7 +153,8 @@ export default function GameDetailPage() {
           <GameInfoCard
             game={game}
             userGame={userGame}
-            onEditPrice={() => setIsPriceDialogOpen(true)}
+            onEditPrice={() => openPriceDialog('prices')}
+            onMarkAsSold={userGame && !isSold && !isWishlistCopy ? () => openPriceDialog('sell') : undefined}
           />
         </div>
 
@@ -115,9 +165,17 @@ export default function GameDetailPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-50" />
             <div className="relative p-6 md:p-8">
               <div className="flex items-start justify-between gap-4 mb-6">
-                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent leading-tight">
-                  {game.title}
-                </h1>
+                <div className="min-w-0">
+                  <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent leading-tight">
+                    {game.title}
+                  </h1>
+                  {isSold && (
+                    <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-950/40 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                      <BadgeEuro className="h-3 w-3" />
+                      {t('soldBadge', { price: userGame!.sell_price!.toFixed(2) })}
+                    </span>
+                  )}
+                </div>
                 
                 <div className="flex items-center gap-2">
                   <Button 
@@ -145,7 +203,9 @@ export default function GameDetailPage() {
                     <AlertDialogHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
                       <AlertDialogTitle>{t('deleteFromCollection')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        {t('deleteGameConfirm', { gameTitle: game.title })}
+                        {userGames.length > 1 && userGame
+                          ? t('deleteCopyConfirm', { gameTitle: game.title, edition: editionLabel(userGame) })
+                          : t('deleteGameConfirm', { gameTitle: game.title })}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-2 sm:gap-0 px-4 pb-4 pt-2 sm:px-6 sm:pb-6 sm:pt-4">
@@ -220,10 +280,14 @@ export default function GameDetailPage() {
         isOpen={isPriceDialogOpen}
         onClose={() => setIsPriceDialogOpen(false)}
         gameId={gameId || ''}
-        initialBuyPrice={typeof userGame?.buy_price === 'number' ? userGame.buy_price : undefined}
+        userGameId={userGame?.id}
+        initialBuyPrice={userGame?.buy_price != null ? userGame.buy_price : undefined}
+        initialSellPrice={userGame?.sell_price ?? null}
+        mode={priceDialogMode}
       />
 
       <GameEditDialog
+        key={userGame?.id ?? 'none'}
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
         onSave={handleSaveEdit}

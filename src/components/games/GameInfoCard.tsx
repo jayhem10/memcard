@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Pencil, TrendingUp, BadgeEuro } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { UserGameData } from '@/types/games';
@@ -24,9 +24,11 @@ interface GameInfoCardProps {
   };
   userGame?: UserGameData;
   onEditPrice: () => void;
+  /** Absent si l'exemplaire est déjà vendu ou en wishlist */
+  onMarkAsSold?: () => void;
 }
 
-export function GameInfoCard({ game, userGame, onEditPrice }: GameInfoCardProps) {
+export function GameInfoCard({ game, userGame, onEditPrice, onMarkAsSold }: GameInfoCardProps) {
   const t = useTranslations('gameDetails');
 
   return (
@@ -64,13 +66,8 @@ export function GameInfoCard({ game, userGame, onEditPrice }: GameInfoCardProps)
           </div>
           
           <div className="space-y-1 col-span-2">
-            <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{t('purchasePrice')}</span>
             <div className="flex items-center justify-between">
-              <p className="font-semibold text-foreground">
-                {userGame?.buy_price
-                  ? `${userGame.buy_price.toFixed(2)} €`
-                  : t('notSpecified')}
-              </p>
+              <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{t('purchasePrice')}</span>
               <Button
                 variant="ghost"
                 size="icon"
@@ -80,8 +77,47 @@ export function GameInfoCard({ game, userGame, onEditPrice }: GameInfoCardProps)
                 <Pencil className="h-4 w-4" />
               </Button>
             </div>
+            <p className="font-semibold text-foreground">
+              {userGame?.buy_price
+                ? `${userGame.buy_price.toFixed(2)} €`
+                : t('notSpecified')}
+            </p>
           </div>
+
+          {userGame?.sell_price != null && (
+            <div className="space-y-1 col-span-2">
+              <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{t('sellPriceLabel')}</span>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-foreground">{userGame.sell_price.toFixed(2)} €</p>
+                {userGame.buy_price != null && (
+                  <span className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
+                    userGame.sell_price - userGame.buy_price >= 0
+                      ? 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400'
+                      : 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400'
+                  }`}>
+                    <TrendingUp className="h-3 w-3" />
+                    {userGame.sell_price - userGame.buy_price >= 0 ? '+' : ''}
+                    {(userGame.sell_price - userGame.buy_price).toFixed(2)} €
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+
+        {onMarkAsSold && (
+          <div className="pt-4 border-t border-border/50">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onMarkAsSold}
+              className="w-full border-primary/50 hover:border-primary rounded-lg"
+            >
+              <BadgeEuro className="h-4 w-4 mr-2" />
+              {t('markAsSold')}
+            </Button>
+          </div>
+        )}
         
         {game.genres && game.genres.length > 0 && (
           <div className="pt-4 border-t border-border/50">

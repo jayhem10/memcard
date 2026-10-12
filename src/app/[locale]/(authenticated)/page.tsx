@@ -463,6 +463,7 @@ export default function HomePage() {
         .from('user_games')
         .select('buy_price')
         .eq('user_id', user.id)
+        .is('sell_price', null)
         // .returns();
 
       if (error) {

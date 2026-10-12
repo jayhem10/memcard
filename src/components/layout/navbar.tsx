@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import { LogOut, User, MoreVertical, Heart, PlusCircle, Library, Shield, Trophy, Sparkles, Mail, Gift, HelpCircle, Gamepad2, Users, UserPlus } from 'lucide-react';
+import { LogOut, User, MoreVertical, Heart, PlusCircle, Library, Shield, Trophy, Sparkles, Mail, Gift, HelpCircle, Gamepad2, Users, UserPlus, TrendingUp } from 'lucide-react';
 import { ThemeSelector } from '@/components/theme/theme-selector';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useProfile } from '@/store';
@@ -48,6 +48,7 @@ function NavbarContent() {
     { name: t('collection'), href: '/collection', icon: Library },
     { name: t('collectors'), href: '/collectors', icon: Users },
     { name: t('friends'), href: '/friends', icon: UserPlus },
+    { name: t('finance'), href: '/finance', icon: TrendingUp },
   ];
   
   // Afficher le rang si le quiz est complété, sinon afficher le bouton pour le quiz
@@ -382,6 +383,12 @@ function NavbarContent() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link href="/finance" className="cursor-pointer">
+                      <TrendingUp className="mr-2 h-4 w-4" />
+                      {t('finance')}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link href="/collectors" className="cursor-pointer">
                       <Users className="mr-2 h-4 w-4" />
                       {t('collectors')}
@@ -454,6 +461,12 @@ function NavbarContent() {
                     <Link href="/achievements" className="cursor-pointer">
                       <Trophy className="mr-2 h-4 w-4" />
                       {t('achievements')}
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/finance" className="cursor-pointer">
+                      <TrendingUp className="mr-2 h-4 w-4" />
+                      {t('finance')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

@@ -44,7 +44,7 @@ export function GameEditDialog({ isOpen, onClose, onSave, userGame, isLoading }:
     completion_percentage: userGame?.completion_percentage || 0,
     condition: userGame?.condition || null,
     review: userGame?.review || null,
-    edition: userGame?.edition || null,
+    edition: userGame?.edition || 'standard',
     edition_other: userGame?.edition_other || null,
   });
 
@@ -178,7 +178,7 @@ export function GameEditDialog({ isOpen, onClose, onSave, userGame, isLoading }:
                   value={formData.edition || 'standard'}
                   onValueChange={(value) => setFormData({
                     ...formData,
-                    edition: value === 'standard' ? null : value,
+                    edition: value,
                     edition_other: value === 'autres' ? formData.edition_other : null,
                   })}
                 >

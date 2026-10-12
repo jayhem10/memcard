@@ -14,6 +14,7 @@ export type UserGameData = {
   review: string | null;
   edition: string | null;
   edition_other: string | null;
+  sell_price: number | null;
 };
 
 export type GameData = {
@@ -110,4 +111,22 @@ export const EDITION_OPTIONS = [
 ] as const;
 
 export type EditionValue = typeof EDITION_OPTIONS[number]['value'];
+
+/** Clé normalisée d'une édition : null/''/'standard' => 'standard', 'autres' inclut le libellé libre. */
+export const getEditionKey = (edition?: string | null, editionOther?: string | null) => {
+  if (!edition || edition === 'standard') return 'standard';
+  if (edition === 'autres') return `autres:${(editionOther || '').trim().toLowerCase()}`;
+  return edition;
+};
+
+/** Libellé lisible d'une édition (t = traducteur du namespace `games`). */
+export const getEditionLabel = (
+  t: (key: string) => string,
+  edition?: string | null,
+  editionOther?: string | null
+) => {
+  if (edition === 'autres' && editionOther) return editionOther;
+  if (!edition || edition === 'standard') return t('edition.standard');
+  return getEditionOptions(t).find((opt) => opt.value === edition)?.label || edition;
+};
 

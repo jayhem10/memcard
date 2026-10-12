@@ -166,13 +166,10 @@ function CollectionPageContent() {
   // Préparer les jeux pour GameList (n'accepte pas null pour rating et completion_percentage)
   const preparedGamesForList = games.map(game => ({
     ...game,
-    rating: game.rating ?? undefined, // Convertir null en undefined
-    completion_percentage: game.completion_percentage ?? undefined, // Convertir null en undefined
-    play_time: game.play_time ?? undefined, // Convertir null en undefined
+    rating: game.rating ?? undefined,
+    completion_percentage: game.completion_percentage ?? undefined,
+    play_time: game.play_time ?? undefined,
   }));
-
-  // Les jeux sont maintenant filtrés côté serveur, on utilise directement les jeux
-  const filteredGames = preparedGamesForGrid;
 
   // Hook pour l'infinite scroll
   const { ref: loadMoreRef, inView } = useInView({
@@ -187,8 +184,7 @@ function CollectionPageContent() {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Les jeux sont maintenant filtrés et triés côté Supabase
-  // On utilise directement les jeux récupérés
+  // Les jeux vendus sont exclus dans useUserGames (IDs avec sell_price renseigné)
   const sortedGames = games;
 
   const filterButtons: { label: string; value: FilterStatus }[] = [

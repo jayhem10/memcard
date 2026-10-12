@@ -1,16 +1,17 @@
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { transformUserGameItemSync, translateText } from '@/lib/game-utils';
+import { transformUserGameItemSync } from '@/lib/game-utils';
 import { useAuth } from '@/context/auth-context';
-import { USER_GAME_WITH_RELATIONS_SELECT } from '@/lib/supabase-queries';
 import { handleSupabaseError } from '@/lib/error-handler';
 import { queryKeys, collectionQueryOptions } from '@/lib/react-query-config';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 
 export type CollectionGame = {
   id: string;
+  /** id de la ligne user_games (un jeu peut avoir plusieurs exemplaires/éditions) */
+  user_game_id?: string;
   igdb_id: number;
   title: string;
   release_date: string | null;
@@ -33,6 +34,7 @@ export type CollectionGame = {
   play_time?: number | null;
   completion_percentage?: number | null;
   buy_price?: number | null;
+  sell_price?: number | null;
   edition?: string | null;
   edition_other?: string | null;
 };
@@ -48,6 +50,27 @@ export interface UserGamesFilters {
 }
 
 const USER_GAMES_PAGE_SIZE = 30;
+
+/** IDs des exemplaires (user_games.id) marqués vendus (sell_price non null) — le RPC n’expose pas toujours sell_price. */
+export async function fetchSoldGameIdsSet(userId: string): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from('user_games')
+    .select('id')
+    .eq('user_id', userId)
+    .not('sell_price', 'is', null);
+
+  if (error) {
+    console.error('fetchSoldGameIdsSet:', error);
+    throw new Error('Impossible de charger les jeux vendus');
+  }
+
+  return new Set((data ?? []).map((r: { id: string }) => String(r.id)));
+}
+
+const isSold = (soldSet: Set<string>, g: CollectionGame) =>
+  soldSet.has(g.user_game_id ?? g.id);
+
+type UserGamesRpcPage = { games: CollectionGame[]; rpcRowCount: number };
 
 function buildUserGamesFilteredRpcParams(
   userId: string,
@@ -80,6 +103,7 @@ export async function fetchAllUserGamesFiltered(
   userId: string,
   filters?: UserGamesFilters
 ): Promise<CollectionGame[]> {
+  const soldSet = await fetchSoldGameIdsSet(userId);
   const all: CollectionGame[] = [];
   let pageIndex = 0;
 
@@ -95,13 +119,14 @@ export async function fetchAllUserGamesFiltered(
       throw new Error('Service de filtrage non disponible');
     }
 
-    const batch =
-      (result.data
-        ?.map(transformUserGameItemSync)
-        .filter(Boolean) as CollectionGame[]) || [];
+    const rawRows = result.data ?? [];
+    const batch = (rawRows
+      .map(transformUserGameItemSync)
+      .filter(Boolean) as CollectionGame[])
+      .filter((g) => !isSold(soldSet, g));
 
     all.push(...batch);
-    if (batch.length < USER_GAMES_PAGE_SIZE) break;
+    if (rawRows.length < USER_GAMES_PAGE_SIZE) break;
     pageIndex++;
   }
 
@@ -125,13 +150,15 @@ export function useUserGamesStats(tab: 'collection' | 'wishlist' = 'collection')
         .from('user_games')
         .select(`
           status,
+          sell_price,
           games:game_id(
             console_id,
             consoles:console_id(id, name),
             game_genres(genre_id, genres(id, name))
           )
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .is('sell_price', null);
 
       if (error) {
         handleSupabaseError(error, 'useUserGamesStats', 'Erreur lors de la récupération des stats');
@@ -216,7 +243,7 @@ export function useUserGames(filters?: UserGamesFilters) {
   const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
 
-  const query = useInfiniteQuery<CollectionGame[], Error>({
+  const query = useInfiniteQuery<UserGamesRpcPage, Error>({
     queryKey: queryKeys.userGames(user?.id, filters),
     queryFn: async ({ pageParam }) => {
       if (!user) {
@@ -224,6 +251,13 @@ export function useUserGames(filters?: UserGamesFilters) {
       }
 
       const offset = (pageParam as number) * USER_GAMES_PAGE_SIZE;
+
+      // staleTime 0 : toujours à jour après une vente (ensureQueryData renverrait le cache invalidé)
+      const soldIds = await queryClient.fetchQuery({
+        queryKey: queryKeys.soldGameIds(user.id),
+        queryFn: () => fetchSoldGameIdsSet(user.id),
+        staleTime: 0,
+      });
 
       const result = await supabase.rpc(
         'get_user_games_filtered_paginated',
@@ -235,16 +269,21 @@ export function useUserGames(filters?: UserGamesFilters) {
         throw new Error('Service de filtrage non disponible');
       }
 
-      // Les données RPC sont déjà filtrées et au bon format
-      const formattedGames = result.data
-        ?.map(transformUserGameItemSync)
-        .filter(Boolean) as CollectionGame[] || [];
+      const rawRows = result.data ?? [];
+      const formattedGames = rawRows
+        .map(transformUserGameItemSync)
+        .filter(Boolean) as CollectionGame[];
 
-      return formattedGames;
+      const games = formattedGames.filter((g) => !isSold(soldIds, g));
+
+      return { games, rpcRowCount: rawRows.length };
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-      return lastPage.length === USER_GAMES_PAGE_SIZE ? allPages.length : undefined;
+      const rowCount = Array.isArray(lastPage)
+        ? lastPage.length
+        : lastPage.rpcRowCount;
+      return rowCount === USER_GAMES_PAGE_SIZE ? allPages.length : undefined;
     },
     enabled: !!user && !authLoading,
     ...collectionQueryOptions,
@@ -266,16 +305,14 @@ export function useUserGames(filters?: UserGamesFilters) {
           filter: `user_id=eq.${user.id}`,
         },
         async (_payload: any) => {
-          // Invalider le cache et forcer un refetch immédiat
+          await queryClient.invalidateQueries({ queryKey: queryKeys.soldGameIds(user.id) });
           await queryClient.invalidateQueries({ queryKey: queryKeys.userGames(user.id) });
 
-          // Attendre un peu pour s'assurer que l'invalidation est propagée
           await new Promise(resolve => setTimeout(resolve, 100));
 
-          // Forcer un refetch immédiat même si la query n'est pas active
           await queryClient.refetchQueries({
             queryKey: queryKeys.userGames(user.id),
-            type: 'all' // Refetch même si la query n'est pas active
+            type: 'all'
           });
         }
       )
@@ -292,7 +329,16 @@ export function useUserGames(filters?: UserGamesFilters) {
 
   return {
     ...query,
-    games: query.data?.pages.flat() ?? [],
+    games:
+      query.data?.pages.flatMap((p: UserGamesRpcPage | CollectionGame[]) => {
+        if (p && typeof p === 'object' && 'games' in p && Array.isArray((p as UserGamesRpcPage).games)) {
+          return (p as UserGamesRpcPage).games;
+        }
+        if (Array.isArray(p)) {
+          return p as CollectionGame[];
+        }
+        return [];
+      }) ?? [],
     hasNextPage: query.hasNextPage,
     fetchNextPage: query.fetchNextPage,
     isFetchingNextPage: query.isFetchingNextPage,
