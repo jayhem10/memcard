@@ -130,7 +130,7 @@ export default function HelpPage() {
             <div className="pt-3 border-t">
               <h3 className="font-semibold mb-1 flex items-center gap-2">
                 <Gift className="h-5 w-5 text-primary" />
-                {t('wishlistTitle')}
+                {t('wishlistSection')}
               </h3>
                 <p className="text-sm text-muted-foreground mb-2">
                   {t('wishlistDescription')}
@@ -143,10 +143,10 @@ export default function HelpPage() {
             <div className="pt-3 border-t">
               <h3 className="font-semibold mb-1 flex items-center gap-2">
                 <Play className="h-5 w-5 text-primary" />
-                {t('statusIconsTitle')}
+                {t('statusIconsMeaning')}
               </h3>
               <p className="text-sm text-muted-foreground mb-2">
-                {t('statusIconsDescription')}
+                {t('mobileStatusDisplay')}
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -712,4 +712,3 @@ export default function HelpPage() {
     </div>
   );
 }
-

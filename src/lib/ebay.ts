@@ -10,6 +10,7 @@ export type EbaySearchParams = {
   title: string;
   platformName?: string;
   regionHint?: 'EUR' | 'PAL';
+  signal?: AbortSignal;
 };
 
 let cachedAccessToken: { token: string; expiresAt: number } | null = null;
@@ -146,7 +147,7 @@ function getMarketplaceId(): string {
   return env === 'sandbox' ? 'EBAY_US' : 'EBAY_FR';
 }
 
-async function getOAuthToken(): Promise<string> {
+async function getOAuthToken(signal?: AbortSignal): Promise<string> {
   // 1) Si EBAY_BEARER_TOKEN est présent, on l'utilise (pratique en dev/tests)
   const staticBearer = getBearer();
   if (staticBearer) return staticBearer;
@@ -173,6 +174,7 @@ async function getOAuthToken(): Promise<string> {
   const scope = 'https://api.ebay.com/oauth/api_scope';
 
   const resp = await fetch(tokenUrl, {
+    signal,
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -204,7 +206,7 @@ async function getOAuthToken(): Promise<string> {
 // mais peut nécessiter des accès partenaires. On tente d'abord le Browse API
 // comme fallback pour un MVP, sachant que ce ne sont pas des ventes terminées.
 export async function fetchEbayPriceSamples(params: EbaySearchParams): Promise<{used: EbayPriceSample[], new: EbayPriceSample[]}> {
-  const bearer = await getOAuthToken();
+  const bearer = await getOAuthToken(params.signal);
 
   const base = getEbayApiBase();
 
@@ -218,6 +220,7 @@ export async function fetchEbayPriceSamples(params: EbaySearchParams): Promise<{
     const effectiveLimit = Math.min(limit, 200);
     const endpoint = `${base}/buy/browse/v1/item_summary/search?q=${q}&limit=${effectiveLimit}&offset=${offset}&filter=priceCurrency:${priceCurrency}${conditionFilter}`;
     const resp = await fetch(endpoint, {
+      signal: params.signal,
       headers: {
         Authorization: `Bearer ${bearer}`,
         'Content-Type': 'application/json',
@@ -234,8 +237,9 @@ export async function fetchEbayPriceSamples(params: EbaySearchParams): Promise<{
       // Si 401, retenter une fois en régénérant un token (cache invalide ou expiré)
       if (resp.status === 401 && attempt === 1) {
         cachedAccessToken = null;
-        const fresh = await getOAuthToken();
+        const fresh = await getOAuthToken(params.signal);
         const retry = await fetch(endpoint, {
+          signal: params.signal,
           headers: {
             Authorization: `Bearer ${fresh}`,
             'Content-Type': 'application/json',
@@ -627,5 +631,4 @@ export function summarizePrices(samples: EbayPriceSample[], newSamples?: EbayPri
     currency: dominantCurrency,
   };
 }
-
 

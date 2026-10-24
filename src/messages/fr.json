@@ -305,6 +305,9 @@
     "new": "Neuf",
     "noData": "Pas de données",
     "lastUpdated": "Dernière mise à jour: {date}",
+    "outdatedPrices": "Prix anciens",
+    "priceNotAvailable": "Non disponible",
+    "priceError": "Erreur lors du chargement des prix",
     "noPriceData": "Aucune donnée de prix disponible pour ce jeu",
     "priceAutoUpdate": "Les prix sont mis à jour automatiquement toutes les 24 heures",
     "priceInfoTitle": "Informations sur ces prix (eBay - indicatif)",
@@ -427,6 +430,16 @@
     "deleting": "Suppression...",
     "deletePermanently": "Supprimer définitivement"
   },
+  "addFriendPage": {
+    "friendAdded": "Ami ajouté avec succès",
+    "loginRequired": "Connexion requise",
+    "loginRequiredDescription": "Connectez-vous pour ajouter cette personne à vos amis.",
+    "signIn": "Se connecter",
+    "yourFriendCode": "Code ami :",
+    "addingFriend": "Ajout d'un ami",
+    "searchingUser": "Recherche de l'utilisateur avec le code",
+    "addingInProgress": "Ajout en cours..."
+  },
   "notifications": {
     "title": "Notifications",
     "noNotifications": "Aucune notification",
@@ -451,6 +464,11 @@
     "someoneBoughtGame": "Quelqu'un vous a offert un jeu !",
     "validate": "Valider",
     "refuse": "Refuser",
+    "dismissError": "Impossible de supprimer la notification",
+    "gameAddedToCollection": "Jeu ajouté à votre collection",
+    "validationError": "Impossible de valider l'ajout du jeu à votre collection",
+    "gameLeftInWishlist": "Le jeu reste dans votre liste de souhaits",
+    "refuseError": "Impossible de refuser l'ajout du jeu à votre collection",
     "points": "points"
   },
   "quiz": {

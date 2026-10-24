@@ -8,10 +8,12 @@ import { Loader2 } from 'lucide-react';
 import { AdminGuard } from '@/components/auth/admin-guard';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/auth-context';
+import { updateOutdatedPrices } from '@/lib/update-prices';
 
 export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [loadingPrices, setLoadingPrices] = useState(false);
+  const [priceProgress, setPriceProgress] = useState<string | null>(null);
   const [loadingRandomGames, setLoadingRandomGames] = useState(false);
   const [result, setResult] = useState<null | { success: boolean; message: string; added: number; updated: number; total: number }>(null);
   const [priceResult, setPriceResult] = useState<null | { success: boolean; message: string }>(null);
@@ -25,6 +27,7 @@ export default function AdminPage() {
     setLoadingPrices(true);
     setPriceResult(null);
     setPriceError(null);
+    setPriceProgress(null);
 
     try {
       // Récupérer la session pour obtenir le token d'authentification
@@ -34,24 +37,10 @@ export default function AdminPage() {
         throw new Error('Vous devez être connecté pour mettre à jour les prix');
       }
 
-      const response = await fetch('/api/admin/update-outdated-prices', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || errorData.message || 'Erreur lors de la mise à jour des prix');
-      }
-
-      const data = await response.json();
+      const data = await updateOutdatedPrices(session.access_token, setPriceProgress);
       setPriceResult(data);
-    } catch (err: any) {
-      setPriceError(err.message || 'Une erreur est survenue');
+    } catch (err: unknown) {
+      setPriceError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
       setLoadingPrices(false);
     }
@@ -174,10 +163,16 @@ export default function AdminPage() {
               )}
             </Button>
 
+            {loadingPrices && priceProgress && (
+              <p className="mt-4 text-sm text-muted-foreground" role="status">{priceProgress}</p>
+            )}
+
             {priceResult && (
-              <Alert className="mt-4 border border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-200">
-                <AlertTitle className="text-green-800 dark:text-green-200">Mise à jour réussie</AlertTitle>
-                <AlertDescription className="text-green-700 dark:text-green-200">{priceResult.message}</AlertDescription>
+              <Alert className={priceResult.success
+                ? 'mt-4 border border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-200'
+                : 'mt-4 border border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-200'}>
+                <AlertTitle>{priceResult.success ? 'Mise à jour réussie' : 'Mise à jour terminée avec des erreurs'}</AlertTitle>
+                <AlertDescription>{priceResult.message}</AlertDescription>
               </Alert>
             )}
 

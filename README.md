@@ -35,3 +35,19 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 # memcard
+
+## Mise à jour des prix eBay
+
+Depuis l'administration, la mise à jour parcourt les jeux par pages de 100 et
+traite au maximum 3 jeux par requête. Seuls les jeux sans prix exploitables ou
+dont les prix datent de plus de 7 jours sont ciblés. Le navigateur enchaîne les
+lots et affiche la progression : gardez la page ouverte jusqu'au bilan final.
+
+Chaque recherche de prix est limitée à 20 secondes, OAuth et recherches de
+repli inclus. La route déclare `maxDuration = 60` ; l'hébergement doit autoriser
+cette durée. Les erreurs par jeu figurent dans le bilan et les logs serveur.
+Une réponse non JSON de l'hébergeur est signalée avec son statut HTTP, sans
+masquer l'erreur par une erreur de parsing JSON. Les prix déjà enregistrés
+restent conservés en cas d'interruption.
+
+Tests ciblés : `node --test tests/update-prices.test.cjs`.

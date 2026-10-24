@@ -306,6 +306,9 @@
     "new": "New",
     "noData": "No data",
     "lastUpdated": "Last updated: {date}",
+    "outdatedPrices": "Outdated prices",
+    "priceNotAvailable": "Not available",
+    "priceError": "Error loading prices",
     "noPriceData": "No price data available for this game",
     "priceAutoUpdate": "Prices are automatically updated every 24 hours",
     "priceInfoTitle": "Information about these prices (eBay - indicative)",
@@ -428,6 +431,16 @@
     "deleting": "Deleting...",
     "deletePermanently": "Delete permanently"
   },
+  "addFriendPage": {
+    "friendAdded": "Friend added successfully",
+    "loginRequired": "Sign-in required",
+    "loginRequiredDescription": "Sign in to add this person as a friend.",
+    "signIn": "Sign in",
+    "yourFriendCode": "Friend code:",
+    "addingFriend": "Adding a friend",
+    "searchingUser": "Looking for the user with code",
+    "addingInProgress": "Adding friend..."
+  },
   "notifications": {
     "title": "Notifications",
     "noNotifications": "No notifications",
@@ -452,6 +465,11 @@
     "someoneBoughtGame": "Someone bought you a game!",
     "validate": "Validate",
     "refuse": "Refuse",
+    "dismissError": "Unable to dismiss the notification",
+    "gameAddedToCollection": "Game added to your collection",
+    "validationError": "Unable to confirm adding the game to your collection",
+    "gameLeftInWishlist": "The game remains in your wishlist",
+    "refuseError": "Unable to decline adding the game to your collection",
     "points": "points"
   },
   "quiz": {
