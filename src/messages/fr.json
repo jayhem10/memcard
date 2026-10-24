@@ -1,4 +1,38 @@
 {
+  "seo": {
+    "title": "MemCard - Gérez votre collection de jeux vidéo",
+    "description": "MemCard est l'application gratuite pour cataloguer votre collection de jeux vidéo : suivi de la valeur de vos jeux, liste de souhaits, succès, amis collectionneurs, toutes consoles de PlayStation à Nintendo en passant par le retrogaming.",
+    "loginTitle": "Connexion – Gérez votre collection de jeux vidéo",
+    "loginDescription": "Rejoignez MemCard gratuitement avec Google, Discord ou Twitch. Cataloguez vos jeux vidéo, suivez leur valeur, créez votre liste de souhaits et partagez votre collection avec vos amis.",
+    "featuresTitle": "Pourquoi MemCard ?",
+    "intro": "MemCard est la bibliothèque personnelle des collectionneurs de jeux vidéo : retrouvez tous vos jeux, toutes consoles confondues, au même endroit.",
+    "features": {
+      "catalog": {
+        "title": "Catalogue complet",
+        "description": "Ajoutez vos jeux en quelques secondes grâce à une base de données de milliers de titres, avec jaquettes et fiches détaillées."
+      },
+      "value": {
+        "title": "Suivi de la valeur",
+        "description": "Suivez le prix de vos jeux et la valeur totale de votre collection au fil du temps."
+      },
+      "wishlist": {
+        "title": "Liste de souhaits",
+        "description": "Notez les jeux qu'il vous manque et partagez votre wishlist avec vos proches."
+      },
+      "achievements": {
+        "title": "Succès et récompenses",
+        "description": "Débloquez des succès, grimpez dans les rangs et testez vos connaissances avec les quiz."
+      },
+      "friends": {
+        "title": "Communauté de collectionneurs",
+        "description": "Ajoutez vos amis avec un code, comparez vos collections et découvrez d'autres collectionneurs."
+      },
+      "platforms": {
+        "title": "Toutes les plateformes",
+        "description": "PlayStation, Xbox, Nintendo, PC, Sega, consoles rétro… des années 80 à aujourd'hui."
+      }
+    }
+  },
   "common": {
     "loading": "Chargement...",
     "error": "Erreur",

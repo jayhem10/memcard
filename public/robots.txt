@@ -1,32 +1,19 @@
 # robots.txt pour MemCard
+# Les URLs sont préfixées par la langue (/fr/..., /en/...)
 User-agent: *
 Allow: /
-Allow: /collection
-Allow: /games/
-Allow: /search
-Allow: /help
-Allow: /contact
 
 # Pages privées à ne pas indexer
 Disallow: /api/
-Disallow: /admin/
-Disallow: /profile/
-Disallow: /wishlist/
-Disallow: /auth/
-Disallow: /login
-Disallow: /reset-password
-Disallow: /update-password
+Disallow: /*/admin/
+Disallow: /*/profile
+Disallow: /*/finance
+Disallow: /*/friends
+Disallow: /*/add-friend
+Disallow: /*/auth/
+Disallow: /*/reset-password
+Disallow: /*/update-password
 
 # Sitemap
 Sitemap: https://www.memcard.fr/sitemap.xml
-
-# Règles spécifiques pour Googlebot
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 0
-
-# Règles pour Bingbot
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
 

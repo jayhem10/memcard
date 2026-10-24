@@ -97,13 +97,9 @@ export const metadata: Metadata = {
 
   category: "gaming",
 
+  // Optionnel : uniquement si la Search Console est vérifiée via "Balise HTML"
   verification: {
-    // Ajoutez vos codes de vérification Google Search Console ici
-    // google: 'votre-code-de-verification-google',
-  },
-
-  alternates: {
-    canonical: "/",
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
 };
 

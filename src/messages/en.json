@@ -1,4 +1,38 @@
 {
+  "seo": {
+    "title": "MemCard - Manage your video game collection",
+    "description": "MemCard is the free app to catalog your video game collection: track the value of your games, build a wishlist, unlock achievements, connect with fellow collectors, across every console from PlayStation to Nintendo and retro gaming.",
+    "loginTitle": "Sign in – Manage your video game collection",
+    "loginDescription": "Join MemCard for free with Google, Discord or Twitch. Catalog your video games, track their value, build your wishlist and share your collection with friends.",
+    "featuresTitle": "Why MemCard?",
+    "intro": "MemCard is the personal library for video game collectors: keep every game, across every console, in one place.",
+    "features": {
+      "catalog": {
+        "title": "Complete catalog",
+        "description": "Add your games in seconds from a database of thousands of titles, with cover art and detailed pages."
+      },
+      "value": {
+        "title": "Value tracking",
+        "description": "Follow the price of your games and the total value of your collection over time."
+      },
+      "wishlist": {
+        "title": "Wishlist",
+        "description": "Keep track of the games you're missing and share your wishlist with friends and family."
+      },
+      "achievements": {
+        "title": "Achievements and rewards",
+        "description": "Unlock achievements, climb the ranks and test your knowledge with quizzes."
+      },
+      "friends": {
+        "title": "Collector community",
+        "description": "Add friends with a code, compare collections and discover other collectors."
+      },
+      "platforms": {
+        "title": "Every platform",
+        "description": "PlayStation, Xbox, Nintendo, PC, Sega, retro consoles… from the 80s to today."
+      }
+    }
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

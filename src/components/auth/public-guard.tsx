@@ -1,25 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
 
 export function PublicGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
-  const [isPublic, setIsPublic] = useState(false);
 
   useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        // L'utilisateur est déjà connecté, le rediriger vers la page d'accueil
-        window.location.href = '/';
-      } else {
-        setIsPublic(true);
-      }
+    if (!isLoading && user) {
+      // L'utilisateur est déjà connecté, le rediriger vers la page d'accueil
+      window.location.href = '/';
     }
   }, [user, isLoading]);
 
-  // Pendant le chargement ou si la redirection est en cours, on affiche un spinner
-  if (isLoading || !isPublic) {
+  // Spinner uniquement pendant la redirection d'un utilisateur connecté ;
+  // sinon on rend le contenu public dès le SSR (indexable par les moteurs).
+  if (user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -27,6 +23,5 @@ export function PublicGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Si l'utilisateur n'est pas authentifié, on affiche le contenu public
   return <>{children}</>;
 }
