@@ -272,8 +272,8 @@ export function LoginHero() {
   const t = useTranslations('auth');
   
   const styles = {
-    container: 'bg-primary relative overflow-hidden',
-    overlay: 'absolute inset-0 bg-gradient-to-br from-primary/90 to-primary/50',
+    container: 'login-hero-container relative overflow-hidden',
+    overlay: 'login-hero-overlay absolute inset-0',
     title: 'text-5xl font-bold mb-6 text-primary-foreground',
     description: 'text-xl text-center max-w-md text-primary-foreground',
   };

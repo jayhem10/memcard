@@ -63,6 +63,11 @@
   text-shadow: none !important;
 }
 
+.login-page.login-page .login-hero-container,
+.login-page.login-page .login-hero-overlay {
+  background: #18181b !important;
+}
+
 .login-page.login-page button {
   background-color: hsl(var(--card)) !important;
   background-image: none !important;
