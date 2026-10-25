@@ -341,17 +341,6 @@ export function LoginHero() {
   
   return (
     <>
-      {/* Effet d'arrière-plan pour mobile - visible partout */}
-      <div className="md:hidden fixed inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Effet brouillard avec dégradé pour mobile */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-white/2 to-transparent backdrop-blur-[2px]" />
-        
-        {/* Formes géométriques animées pour mobile */}
-        <MatrixShapes />
-        {/* Overlay thématique en haut (semi-transparente) */}
-        <div className={`${styles.overlay} opacity-60`} />
-      </div>
-      
       {/* Section hero pour desktop */}
       <div className={`hidden md:flex md:w-1/2 ${styles.container}`}>
         {/* Effet brouillard avec dégradé */}
