@@ -57,15 +57,27 @@
 
 .login-page.login-page .login-hero-title,
 .login-page.login-page .login-hero-description {
-  color: hsl(var(--primary-foreground)) !important;
+  color: #ffffff !important;
   -webkit-text-fill-color: currentColor !important;
   background: none !important;
   text-shadow: none !important;
 }
 
-.login-page.login-page .login-hero-container,
-.login-page.login-page .login-hero-overlay {
+.login-page.login-page .login-hero-container {
   background: #18181b !important;
+}
+
+.login-page.login-page .login-hero-overlay {
+  background: transparent !important;
+}
+
+.login-page.login-page .login-hero-atmosphere {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02), transparent);
+  backdrop-filter: blur(2px);
+}
+
+.login-page.login-page .login-hero-container .particle {
+  background: #ffffff !important;
 }
 
 .login-page.login-page button {
@@ -202,60 +214,4 @@
     transform: translateY(-15px) translateX(3px) scale(1.05);
     opacity: 0.7;
   }
-}
-
-/* Variations thématiques élégantes */
-[data-theme="cyberpunk"] .elegant-text {
-  background: linear-gradient(135deg,
-    #00ff88 0%,
-    rgba(255,255,255,0.9) 25%,
-    #00ff88 50%,
-    rgba(255,255,255,0.9) 75%,
-    #00ff88 100%);
-}
-
-[data-theme="retro"] .elegant-text {
-  background: linear-gradient(135deg,
-    #ff6b35 0%,
-    rgba(255,255,255,0.9) 25%,
-    #ff6b35 50%,
-    rgba(255,255,255,0.9) 75%,
-    #ff6b35 100%);
-  font-family: 'Courier New', monospace;
-}
-
-[data-theme="nintendo"] .elegant-text {
-  background: linear-gradient(135deg,
-    #e4000f 0%,
-    rgba(255,255,255,0.9) 25%,
-    #e4000f 50%,
-    rgba(255,255,255,0.9) 75%,
-    #e4000f 100%);
-}
-
-[data-theme="playstation"] .elegant-text {
-  background: linear-gradient(135deg,
-    #003087 0%,
-    rgba(255,255,255,0.9) 25%,
-    #003087 50%,
-    rgba(255,255,255,0.9) 75%,
-    #003087 100%);
-}
-
-[data-theme="xbox"] .elegant-text {
-  background: linear-gradient(135deg,
-    #107c10 0%,
-    rgba(255,255,255,0.9) 25%,
-    #107c10 50%,
-    rgba(255,255,255,0.9) 75%,
-    #107c10 100%);
-}
-
-[data-theme="dark"] .elegant-text {
-  background: linear-gradient(135deg,
-    #60a5fa 0%,
-    rgba(255,255,255,0.9) 25%,
-    #60a5fa 50%,
-    rgba(255,255,255,0.9) 75%,
-    #60a5fa 100%);
 }

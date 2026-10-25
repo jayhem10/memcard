@@ -66,7 +66,7 @@ function MatrixShapes() {
       
       switch (shape.type) {
         case 'psCircle': {
-          const color = '#D83C3C'; // Rouge (O)
+          const color = '#ffffff';
           // Anneau blanc externe pour contraste
           ctx.beginPath();
           ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
@@ -76,7 +76,7 @@ function MatrixShapes() {
           // Bouton coloré
           ctx.beginPath();
           ctx.arc(0, 0, r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(216, 60, 60, 0.18)';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
           ctx.fill();
           ctx.strokeStyle = color;
           ctx.lineWidth = 3;
@@ -90,7 +90,7 @@ function MatrixShapes() {
           break;
         }
         case 'psTriangle': {
-          const color = '#22C55E'; // Vert (△)
+          const color = '#ffffff';
           // Anneau blanc externe
           ctx.beginPath();
           ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
@@ -100,7 +100,7 @@ function MatrixShapes() {
           // Bouton coloré
           ctx.beginPath();
           ctx.arc(0, 0, r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(34, 197, 94, 0.18)';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
           ctx.fill();
           ctx.strokeStyle = color;
           ctx.lineWidth = 3;
@@ -121,7 +121,7 @@ function MatrixShapes() {
           break;
         }
         case 'psSquare': {
-          const color = '#A855F7'; // Violet/rose (□)
+          const color = '#ffffff';
           // Anneau blanc externe
           ctx.beginPath();
           ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
@@ -131,7 +131,7 @@ function MatrixShapes() {
           // Bouton coloré
           ctx.beginPath();
           ctx.arc(0, 0, r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(168, 85, 247, 0.18)';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
           ctx.fill();
           ctx.strokeStyle = color;
           ctx.lineWidth = 3;
@@ -147,7 +147,7 @@ function MatrixShapes() {
           break;
         }
         case 'psCross': {
-          const color = '#3B82F6'; // Bleu (×)
+          const color = '#ffffff';
           // Anneau blanc externe
           ctx.beginPath();
           ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
@@ -157,7 +157,7 @@ function MatrixShapes() {
           // Bouton coloré
           ctx.beginPath();
           ctx.arc(0, 0, r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(59, 130, 246, 0.18)';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
           ctx.fill();
           ctx.strokeStyle = color;
           ctx.lineWidth = 3;
@@ -176,7 +176,7 @@ function MatrixShapes() {
           break;
         }
         case 'buttonA': {
-          const color = '#22C55E'; // Vert (A)
+          const color = '#ffffff';
           // Anneau blanc externe
           ctx.beginPath();
           ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
@@ -186,7 +186,7 @@ function MatrixShapes() {
           // Bouton coloré
           ctx.beginPath();
           ctx.arc(0, 0, r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(34, 197, 94, 0.18)';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
           ctx.fill();
           ctx.strokeStyle = color;
           ctx.lineWidth = 3;
@@ -200,7 +200,7 @@ function MatrixShapes() {
           break;
         }
         case 'buttonB': {
-          const color = '#D83C3C'; // Rouge (B)
+          const color = '#ffffff';
           // Anneau blanc externe
           ctx.beginPath();
           ctx.arc(0, 0, r + 1.5, 0, Math.PI * 2);
@@ -210,7 +210,7 @@ function MatrixShapes() {
           // Bouton coloré
           ctx.beginPath();
           ctx.arc(0, 0, r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(216, 60, 60, 0.18)';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
           ctx.fill();
           ctx.strokeStyle = color;
           ctx.lineWidth = 3;
@@ -274,8 +274,8 @@ export function LoginHero() {
   const styles = {
     container: 'login-hero-container relative overflow-hidden',
     overlay: 'login-hero-overlay absolute inset-0',
-    title: 'text-5xl font-bold mb-6 text-primary-foreground',
-    description: 'text-xl text-center max-w-md text-primary-foreground',
+    title: 'text-5xl font-bold mb-6 login-hero-title',
+    description: 'text-xl text-center max-w-md login-hero-description',
   };
   
   return (
@@ -283,14 +283,14 @@ export function LoginHero() {
       {/* Section hero pour desktop */}
       <div className={`hidden md:flex md:w-1/2 ${styles.container}`}>
         {/* Effet brouillard avec dégradé */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-white/2 to-transparent backdrop-blur-[2px] pointer-events-none" />
+        <div className="login-hero-atmosphere absolute inset-0 pointer-events-none" />
         
         {/* Formes géométriques animées */}
         <MatrixShapes />
         
         <div className={styles.overlay}>
           <div className="flex flex-col justify-center items-center h-full p-8 relative z-10">
-            <h1 className={`${styles.title} login-hero-title elegant-title`}>
+            <h1 className={`${styles.title} elegant-title`}>
               <span className="elegant-text">MemCard</span>
               <div className="elegant-particles">
                 <div className="particle particle-1"></div>
