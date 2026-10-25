@@ -123,17 +123,23 @@ test('eligibility includes missing/empty prices, null dates and strictly older t
   rows[3].last_updated = null;
   const fixture = routeFixture(games(5), rows);
   const first = await fixture.post();
-  assert.equal(first.total, 3);
-  assert.equal(first.updated, 3);
-  assert.equal(first.nextCursor, id(4));
-  assert.deepEqual(fixture.calls.map(call => call.title), ['Game 2', 'Game 3', 'Game 4']);
+  assert.equal(first.total, 1);
+  assert.equal(first.updated, 1);
+  assert.equal(first.nextCursor, id(2));
+  assert.deepEqual(fixture.calls.map(call => call.title), ['Game 2']);
   assert.equal(fixture.rows.get(id(1)).average_price, 10);
-  assert.equal(fixture.rows.get(id(4)).average_price, 20);
+  assert.equal(fixture.rows.get(id(2)).average_price, 20);
   assert.ok(fixture.calls.every(call => call.signal instanceof AbortSignal));
   assert.equal(fixture.maxDuration, 60);
   const second = await fixture.post({ cursor: first.nextCursor });
   assert.equal(second.total, 1);
-  assert.equal(second.nextCursor, null);
+  assert.equal(second.nextCursor, id(3));
+  const third = await fixture.post({ cursor: second.nextCursor });
+  assert.equal(third.total, 1);
+  assert.equal(third.nextCursor, id(4));
+  const fourth = await fixture.post({ cursor: third.nextCursor });
+  assert.equal(fourth.total, 1);
+  assert.equal(fourth.nextCursor, null);
 });
 
 test('skipped and failed games advance the cursor without overwriting existing prices', async () => {
@@ -141,14 +147,14 @@ test('skipped and failed games advance the cursor without overwriting existing p
     'Game 1': 'skip', 'Game 2': new Error('eBay rate limit'),
   });
   const first = await fixture.post();
-  assert.equal(first.updated, 1);
+  assert.equal(first.updated, 0);
   assert.equal(first.skipped, 1);
-  assert.equal(first.errorsCount, 1);
-  assert.equal(first.errorSamples[0].reason, 'eBay rate limit');
   assert.equal(fixture.rows.get(id(1)).average_price, 10);
+  const second = await fixture.post({ cursor: first.nextCursor });
+  assert.equal(second.errorsCount, 1);
+  assert.equal(second.errorSamples[0].reason, 'eBay rate limit');
   assert.equal(fixture.rows.get(id(2)).last_updated, null);
-  await fixture.post({ cursor: first.nextCursor });
-  assert.equal(fixture.calls.length, 4);
+  assert.equal(fixture.calls.length, 2);
 });
 
 test('pagination traverses more than the Supabase default of 1000 rows', async () => {
@@ -176,8 +182,11 @@ function clientFixture(responses) {
     fetch: async (url, options) => {
       requests.push({ url, ...options });
       assert.ok(responses.length, 'Unexpected extra request');
-      return responses.shift();
+      const response = responses.shift();
+      if (response instanceof Error) throw response;
+      return response;
     },
+    setTimeout(callback) { callback(); return 0; },
   });
   return { ...client, requests };
 }
@@ -208,8 +217,40 @@ test('client reports plain text hosting failures instead of a JSON syntax error'
   const fixture = clientFixture([
     batch({ nextCursor: id(3) }),
     new Response('An error occurred with your deployment', { status: 504 }),
+    new Response('An error occurred with your deployment', { status: 504 }),
+    new Response('An error occurred with your deployment', { status: 504 }),
   ]);
   await assert.rejects(fixture.updateOutdatedPrices('test-token', () => {}), /non JSON \(HTTP 504\).*après 1 jeux/);
+});
+
+test('client retries an interrupted batch using the same cursor and keeps the run moving', async () => {
+  const fixture = clientFixture([
+    new TypeError('Failed to fetch'),
+    new Response('Gateway Timeout', { status: 504 }),
+    batch({ nextCursor: id(3), updated: 2, total: 2 }),
+    batch({ updated: 1, total: 1 }),
+  ]);
+  const progress = [];
+  const result = await fixture.updateOutdatedPrices('test-token', message => progress.push(message));
+  assert.equal(fixture.requests.length, 4);
+  assert.equal(fixture.requests[0].body, fixture.requests[1].body);
+  assert.equal(fixture.requests[1].body, fixture.requests[2].body);
+  assert.equal(JSON.parse(fixture.requests[3].body).cursor, id(3));
+  assert.equal(result.success, true);
+  assert.equal(result.message, 'Mise à jour terminée : 3 mis à jour, 0 ignorés, 0 erreurs sur 3 jeux ciblés.');
+  assert.equal(progress.filter(message => message.includes('nouvelle tentative')).length, 2);
+});
+
+test('client stops after repeated network failures with a recovery message', async () => {
+  const fixture = clientFixture([
+    new TypeError('Failed to fetch'),
+    new TypeError('Failed to fetch'),
+    new TypeError('Failed to fetch'),
+  ]);
+  await assert.rejects(
+    fixture.updateOutdatedPrices('test-token', () => {}),
+    /3 tentatives.*dernier lot confirmé/s,
+  );
 });
 
 test('client preserves API errors and rejects malformed responses or stalled cursors', async () => {

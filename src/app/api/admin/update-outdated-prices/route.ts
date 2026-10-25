@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 const pageSize = 100;
-const batchSize = 3;
+const batchSize = 1;
 const bodySchema = z.object({ cursor: z.string().uuid().nullable().optional() });
 
 type Game = {

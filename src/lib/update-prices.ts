@@ -12,6 +12,48 @@ const batchSchema = z.object({
 
 export type PriceUpdateBatch = z.infer<typeof batchSchema>;
 
+async function requestBatch(
+  accessToken: string,
+  cursor: string | null,
+  onRetry: (attempt: number) => void,
+) {
+  const maxAttempts = 3;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch('/api/admin/update-outdated-prices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({ cursor }),
+      });
+      const text = await response.text();
+
+      if ([502, 503, 504].includes(response.status) && attempt < maxAttempts) {
+        onRetry(attempt);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        continue;
+      }
+
+      return { response, text };
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        throw new Error(
+          `Impossible de joindre le serveur après ${maxAttempts} tentatives. La progression reprend au dernier lot confirmé ; les prix déjà enregistrés sont conservés.`,
+          { cause: error },
+        );
+      }
+      onRetry(attempt);
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+    }
+  }
+
+  throw new Error('Impossible de récupérer le lot de prix.');
+}
+
 export async function updateOutdatedPrices(
   accessToken: string,
   onProgress: (message: string) => void,
@@ -25,16 +67,9 @@ export async function updateOutdatedPrices(
   const errorSamples: PriceUpdateBatch['errorSamples'] = [];
 
   do {
-    const response = await fetch('/api/admin/update-outdated-prices', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      credentials: 'include',
-      body: JSON.stringify({ cursor }),
+    const { response, text } = await requestBatch(accessToken, cursor, attempt => {
+      onProgress(`Le lot n’a pas abouti ; nouvelle tentative ${attempt}/2… ${total} jeux déjà traités.`);
     });
-    const text = await response.text();
     let data: unknown;
     try {
       data = JSON.parse(text);
