@@ -47,6 +47,36 @@
   text-shadow: none;
 }
 
+.login-page.login-page .elegant-text {
+  background: none;
+  color: hsl(var(--primary-foreground));
+  -webkit-text-fill-color: currentColor;
+  animation: none;
+  text-shadow: none;
+}
+
+.login-page.login-page .login-hero-title,
+.login-page.login-page .login-hero-description {
+  color: hsl(var(--primary-foreground)) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background: none !important;
+  text-shadow: none !important;
+}
+
+.login-page.login-page button {
+  background-color: hsl(var(--card)) !important;
+  background-image: none !important;
+  border-color: hsl(var(--border)) !important;
+  box-shadow: none !important;
+  color: hsl(var(--foreground)) !important;
+  text-shadow: none !important;
+}
+
+.login-page.login-page button:hover:enabled {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
 .retro .login-page.login-page * {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
   -webkit-font-smoothing: antialiased;
