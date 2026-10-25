@@ -1,6 +1,5 @@
 'use client';
 
-import { useTheme } from 'next-themes';
 import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import './login-hero.css';
@@ -270,74 +269,14 @@ function MatrixShapes() {
 }
 
 export function LoginHero() {
-  const { theme, resolvedTheme } = useTheme();
-  const currentTheme = theme || resolvedTheme || 'light';
   const t = useTranslations('auth');
   
-  // Theme-specific styles
-  const getThemeStyles = () => {
-    switch (currentTheme) {
-      case 'cyberpunk':
-        return {
-          container: 'bg-black relative overflow-hidden',
-          overlay: 'absolute inset-0 bg-gradient-to-br from-purple-900/90 to-blue-900/70',
-          title: 'text-5xl font-bold mb-6 text-yellow-300',
-          description: 'text-xl text-center max-w-md text-cyan-300'
-        };
-      case 'retro':
-        return {
-          container: 'bg-amber-900 relative',
-          overlay: 'absolute inset-0 bg-gradient-to-br from-amber-800/90 to-amber-950/70',
-          title: 'text-5xl font-bold mb-6 text-amber-200 font-mono',
-          description: 'text-xl text-center max-w-md text-amber-100 font-mono'
-        };
-      case 'colorblind':
-        return {
-          container: 'bg-slate-800 relative',
-          overlay: 'absolute inset-0 bg-gradient-to-br from-slate-700/90 to-slate-900/70',
-          title: 'text-5xl font-bold mb-6 text-white',
-          description: 'text-xl text-center max-w-md text-white'
-        };
-      case 'nintendo':
-        return {
-          container: 'bg-red-600 relative',
-          overlay: 'absolute inset-0 bg-gradient-to-br from-red-600/90 to-red-800/70',
-          title: 'text-5xl font-bold mb-6 text-white',
-          description: 'text-xl text-center max-w-md text-white'
-        };
-      case 'playstation':
-        return {
-          container: 'bg-blue-900 relative',
-          overlay: 'absolute inset-0 bg-gradient-to-br from-blue-800/90 to-blue-950/70',
-          title: 'text-5xl font-bold mb-6 text-white',
-          description: 'text-xl text-center max-w-md text-gray-200'
-        };
-      case 'xbox':
-        return {
-          container: 'bg-green-800 relative',
-          overlay: 'absolute inset-0 bg-gradient-to-br from-green-700/90 to-green-900/70',
-          title: 'text-5xl font-bold mb-6 text-white',
-          description: 'text-xl text-center max-w-md text-gray-200'
-        };
-      case 'dark':
-        return {
-          container: 'bg-gray-900 relative',
-          overlay: 'absolute inset-0 bg-gradient-to-br from-gray-800/90 to-gray-950/70',
-          title: 'text-5xl font-bold mb-6 text-white',
-          description: 'text-xl text-center max-w-md text-gray-300'
-        };
-      case 'light':
-      default:
-        return {
-          container: 'bg-primary relative',
-          overlay: 'absolute inset-0 bg-gradient-to-br from-primary/90 to-primary/50',
-          title: 'text-5xl font-bold mb-6 text-primary-foreground',
-          description: 'text-xl text-center max-w-md text-primary-foreground'
-        };
-    }
+  const styles = {
+    container: 'bg-primary relative overflow-hidden',
+    overlay: 'absolute inset-0 bg-gradient-to-br from-primary/90 to-primary/50',
+    title: 'text-5xl font-bold mb-6 text-primary-foreground',
+    description: 'text-xl text-center max-w-md text-primary-foreground',
   };
-  
-  const styles = getThemeStyles();
   
   return (
     <>
@@ -351,7 +290,7 @@ export function LoginHero() {
         
         <div className={styles.overlay}>
           <div className="flex flex-col justify-center items-center h-full p-8 relative z-10">
-            <h1 className={`${styles.title} elegant-title`}>
+            <h1 className={`${styles.title} login-hero-title elegant-title`}>
               <span className="elegant-text">MemCard</span>
               <div className="elegant-particles">
                 <div className="particle particle-1"></div>

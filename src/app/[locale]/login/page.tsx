@@ -22,8 +22,8 @@ export default function LoginPage() {
 
   return (
     <PublicGuard>
-      <div className="min-h-screen flex flex-col md:flex-row relative bg-background">
-        {/* Left side - Theme-aware hero section */}
+      <div className="login-page min-h-screen flex flex-col md:flex-row relative bg-background">
+        {/* Left side - Light-theme hero section */}
         <LoginHero />
 
         {/* Right side - Auth form */}
