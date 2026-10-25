@@ -5,6 +5,7 @@ import {
   Library, 
   Gift, 
   PlusCircle, 
+  Award,
   Bell, 
   CheckCircle2, 
   XCircle, 
@@ -26,7 +27,6 @@ import {
   Circle,
   Play
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SupportDialog } from '@/components/ui/support-dialog';
 import Link from 'next/link';
@@ -97,7 +97,7 @@ export default function HelpPage() {
                     <div className="flex flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <Database className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">Plateformes</span>
+                        <span className="text-xs text-muted-foreground">{t('platforms')}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <svg className="h-4 w-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -107,7 +107,7 @@ export default function HelpPage() {
                           <path d="M3 5h4" />
                           <path d="M17 19h4" />
                         </svg>
-                        <span className="text-xs text-muted-foreground">Genres</span>
+                        <span className="text-xs text-muted-foreground">{t('genres')}</span>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground ml-6">
@@ -136,7 +136,7 @@ export default function HelpPage() {
                   {t('wishlistDescription')}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">{t('wishlistTip').split(':')[0]} :</strong> {t('wishlistTip').split(':')[1]}
+                  {t('wishlistTip')}
                 </p>
             </div>
 
@@ -220,6 +220,42 @@ export default function HelpPage() {
             </div>
           </div>
         </CardContent>
+        </Card>
+      </div>
+
+      {/* Finances, achievements et rang */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-card/95 border border-border/50 shadow-xl backdrop-blur-sm">
+        <Card className="border-0 shadow-none bg-transparent">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              {t('trackingTitle')}
+            </CardTitle>
+            <CardDescription>{t('trackingDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <h3 className="font-semibold flex items-center gap-2">
+                <DollarSign className="h-5 w-5 text-primary" />
+                {t('financesTitle')}
+              </h3>
+              <p className="text-sm text-muted-foreground">{t('financesDescription')}</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Award className="h-5 w-5 text-primary" />
+                {t('achievementsTitle')}
+              </h3>
+              <p className="text-sm text-muted-foreground">{t('achievementsDescription')}</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                {t('rankTitle')}
+              </h3>
+              <p className="text-sm text-muted-foreground">{t('rankDescription')}</p>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
